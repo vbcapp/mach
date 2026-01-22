@@ -1,13 +1,214 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html class="light" lang="zh-TW">
 
 <head>
     <meta charset="utf-8" />
-    <title>My test page</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>VibeCoding 簡約首頁列表</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ffd400",
+                        "background-light": "#f7f7f7",
+                        "background-dark": "#1a1a1a",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        .neo-shadow {
+            box-shadow: 4px 4px 0px 0px #000000;
+        }
+        .neo-shadow-sm {
+            box-shadow: 2px 2px 0px 0px #000000;
+        }
+        .neo-border {
+            border: 2px solid #000000;
+        }
+        .neo-border-thick {
+            border: 3px solid #000000;
+        }
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: max(884px, 100dvh);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
 </head>
 
-<body>
-    <img src="images/firefox-icon.png" alt="My test image" />
+<body class="bg-background-light dark:bg-background-dark text-[#1a1a1a] dark:text-white min-h-screen pb-32">
+    <header
+        class="sticky top-0 z-50 bg-background-light dark:bg-background-dark border-b-2 border-black px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <div class="bg-primary neo-border p-1 flex items-center justify-center">
+                <span class="material-symbols-outlined text-black font-bold">terminal</span>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight uppercase italic">VIBECODING</h1>
+        </div>
+        <a href="build.html"
+            class="w-10 h-10 neo-border flex items-center justify-center bg-primary text-black neo-shadow-sm active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all">
+            <span class="material-symbols-outlined font-bold">add</span>
+        </a>
+    </header>
+    <div class="mx-4 mt-4 bg-black border-[3px] border-primary p-4 flex items-center gap-4">
+        <div class="w-16 h-16 border-[3px] border-primary flex items-center justify-center bg-black flex-shrink-0">
+            <div class="w-10 h-10 bg-primary relative overflow-hidden">
+                <div class="absolute top-1 left-1 right-1 h-3 bg-black"></div>
+                <div class="absolute bottom-4 left-2 w-1.5 h-1.5 bg-black"></div>
+                <div class="absolute bottom-4 right-2 w-1.5 h-1.5 bg-black"></div>
+                <div class="absolute bottom-1.5 left-3 right-3 h-1 bg-black"></div>
+            </div>
+        </div>
+        <div class="flex-1 space-y-1">
+            <div class="flex items-end justify-between">
+                <div class="text-primary text-2xl font-black italic tracking-tighter leading-none">Lv. 12</div>
+                <div class="text-[12px] font-bold text-primary italic pr-1">95/100</div>
+            </div>
+            <div class="w-full h-2 border border-zinc-600 bg-zinc-900 overflow-hidden">
+                <div class="h-full bg-primary" style="width: 60%;"></div>
+            </div>
+            <div class="text-[10px] font-bold text-white tracking-widest uppercase opacity-80">NEXT LEVEL: 200 XP</div>
+        </div>
+    </div>
+    <main class="p-4 space-y-6">
+        <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-black italic tracking-tighter uppercase">單字卡庫</h2>
+            <span class="text-[10px] font-bold opacity-50 bg-zinc-200 dark:bg-zinc-800 px-2 py-1 neo-border">24
+                CARDS</span>
+        </div>
+        <div class="flex gap-2">
+            <div class="relative flex-1">
+                <input
+                    class="w-full h-12 neo-border-thick px-10 bg-white dark:bg-zinc-800 focus:outline-none text-sm font-bold"
+                    placeholder="搜尋術語..." type="text" />
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-xl">search</span>
+            </div>
+            <button
+                class="w-12 h-12 neo-border-thick bg-white dark:bg-zinc-800 flex items-center justify-center neo-shadow-sm active:shadow-none active:translate-x-[1px] active:translate-y-[1px]">
+                <span class="material-symbols-outlined">tune</span>
+            </button>
+        </div>
+        <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+            <button
+                class="flex-none px-4 py-2 neo-border-thick bg-white dark:bg-zinc-800 font-bold text-xs neo-shadow-sm">不熟悉卡</button>
+            <button
+                class="flex-none px-5 py-2 neo-border-thick bg-primary font-black text-xs neo-shadow-sm">Lv.1</button>
+            <button
+                class="flex-none px-5 py-2 neo-border-thick bg-white dark:bg-zinc-800 font-bold text-xs neo-shadow-sm">Lv.2</button>
+            <button
+                class="flex-none px-5 py-2 neo-border-thick bg-white dark:bg-zinc-800 font-bold text-xs neo-shadow-sm">Lv.3</button>
+            <button
+                class="flex-none px-5 py-2 neo-border-thick bg-white dark:bg-zinc-800 font-bold text-xs neo-shadow-sm">Lv.4</button>
+            <button
+                class="flex-none px-5 py-2 neo-border-thick bg-white dark:bg-zinc-800 font-bold text-xs neo-shadow-sm">Lv.5</button>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <a href="card.html"
+                class="bg-white dark:bg-zinc-900 neo-border-thick neo-shadow p-3 flex flex-col min-h-[140px] relative transition-transform active:scale-[0.98]">
+                <div class="mb-2">
+                    <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">Backend</span>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1">API</h3>
+                    <p class="text-[10px] leading-tight opacity-70 line-clamp-2">應用程式介面。定義不同組件互動規範。</p>
+                </div>
+                <div class="flex justify-end gap-2 mt-2">
+                    <span
+                        class="material-symbols-outlined text-base cursor-pointer hover:text-primary">edit_square</span>
+                    <span class="material-symbols-outlined text-base cursor-pointer text-red-500">delete</span>
+                </div>
+            </a>
+            <a href="card.html"
+                class="bg-white dark:bg-zinc-900 neo-border-thick neo-shadow p-3 flex flex-col min-h-[140px] relative transition-transform active:scale-[0.98]">
+                <div class="mb-2">
+                    <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">Frontend</span>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1">DOM</h3>
+                    <p class="text-[10px] leading-tight opacity-70 line-clamp-2">文件物件模型。HTML 文件的結構化表示。</p>
+                </div>
+                <div class="flex justify-end gap-2 mt-2">
+                    <span
+                        class="material-symbols-outlined text-base cursor-pointer hover:text-primary">edit_square</span>
+                    <span class="material-symbols-outlined text-base cursor-pointer text-red-500">delete</span>
+                </div>
+            </a>
+            <a href="card.html"
+                class="bg-white dark:bg-zinc-900 neo-border-thick neo-shadow p-3 flex flex-col min-h-[140px] relative transition-transform active:scale-[0.98]">
+                <div class="mb-2">
+                    <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">JS</span>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1">Closure</h3>
+                    <p class="text-[10px] leading-tight opacity-70 line-clamp-2">閉包。函式及其引用的周圍環境組合。</p>
+                </div>
+                <div class="flex justify-end gap-2 mt-2">
+                    <span
+                        class="material-symbols-outlined text-base cursor-pointer hover:text-primary">edit_square</span>
+                    <span class="material-symbols-outlined text-base cursor-pointer text-red-500">delete</span>
+                </div>
+            </a>
+            <a href="card.html"
+                class="bg-white dark:bg-zinc-900 neo-border-thick neo-shadow p-3 flex flex-col min-h-[140px] relative transition-transform active:scale-[0.98]">
+                <div class="mb-2">
+                    <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">Lib</span>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1">React</h3>
+                    <p class="text-[10px] leading-tight opacity-70 line-clamp-2">用於構建使用者介面的 JavaScript 庫。</p>
+                </div>
+                <div class="flex justify-end gap-2 mt-2">
+                    <span
+                        class="material-symbols-outlined text-base cursor-pointer hover:text-primary">edit_square</span>
+                    <span class="material-symbols-outlined text-base cursor-pointer text-red-500">delete</span>
+                </div>
+            </a>
+        </div>
+    </main>
+    <nav
+        class="fixed bottom-0 left-0 right-0 h-24 bg-white dark:bg-zinc-900 border-t-2 border-black flex items-center justify-around px-6 z-50">
+        <a class="flex flex-col items-center gap-1 group relative h-full justify-center" href="#">
+            <div
+                class="w-16 h-12 bg-primary neo-border-thick flex items-center justify-center neo-shadow-sm absolute -top-4">
+                <span class="material-symbols-outlined text-black font-bold text-3xl">style</span>
+            </div>
+            <span class="text-xs font-bold text-black dark:text-white mt-10">學習卡</span>
+        </a>
+        <a class="flex flex-col items-center gap-1 group h-full justify-center" href="rank.html">
+            <span class="material-symbols-outlined text-3xl text-black dark:text-white">bar_chart</span>
+            <span class="text-xs font-bold text-black dark:text-white">排行榜</span>
+        </a>
+        <a class="flex flex-col items-center gap-1 group h-full justify-center" href="profile.html">
+            <span class="material-symbols-outlined text-3xl text-black dark:text-white">person</span>
+            <span class="text-xs font-bold text-black dark:text-white">個人</span>
+        </a>
+    </nav>
+
 </body>
 
 </html>
