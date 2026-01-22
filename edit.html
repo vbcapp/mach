@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Edit Card - VibeCoding</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;0,900;1,700;1,900&amp;display=swap"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#FACC15", // Bright Yellow
+                        danger: "#EF4444", // Red
+                        "background-light": "#F4F4F1",
+                        "background-dark": "#121212",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "system-ui", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "1.5rem",
+                    },
+                    boxShadow: {
+                        'neo': '8px 8px 0px 0px rgba(0, 0, 0, 1)',
+                        'neo-sm': '4px 4px 0px 0px rgba(0, 0, 0, 1)',
+                    }
+                },
+            },
+        };
+    </script>
+    <style type="text/tailwindcss">
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .neo-border {
+            border: 3px solid black;
+        }
+        .neo-shadow {
+            box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+        }
+        .neo-shadow-sm {
+            box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        input, textarea, select {
+            @apply neo-border rounded-xl px-3 py-2 w-full bg-white dark:bg-zinc-800 text-black dark:text-white font-bold focus:outline-none;
+        }
+        label {
+            @apply block text-xs font-black mb-1 text-black dark:text-white;
+        }
+    </style>
+    <style>
+        body {
+            min-height: 100dvh;
+        }
+
+        /* Custom scrollbar for textareas */
+        textarea {
+            max-height: 9em;
+            /* Approx 4 lines with padding/line-height */
+            overflow-y: auto;
+            resize: vertical;
+            /* Allow vertical resize */
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col items-center overflow-x-hidden transition-colors duration-300">
+    <header
+        class="w-full bg-primary neo-border border-t-0 border-x-0 py-4 px-6 flex justify-between items-center sticky top-0 z-40">
+        <h1 class="text-xl font-black text-black tracking-tight">編輯卡片</h1>
+        <button onclick="window.location.href='cardi.html'"
+            class="w-10 h-10 flex items-center justify-center rounded-full bg-white neo-border neo-shadow-sm active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all">
+            <span class="material-symbols-outlined text-black font-black">close</span>
+        </button>
+    </header>
+    <main class="w-full max-w-md px-6 py-4 flex flex-col space-y-3 flex-grow">
+        <div>
+            <label>難度等級 (1-5):</label>
+            <div class="relative">
+                <select class="appearance-none bg-none">
+                    <option>不熟悉卡</option>
+                    <option>Lv. 1</option>
+                    <option selected="">Lv. 2</option>
+                    <option>Lv. 3</option>
+                    <option>Lv. 4</option>
+                    <option>Lv. 5</option>
+                </select>
+                <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <span class="material-symbols-outlined">expand_more</span>
+                </div>
+            </div>
+        </div>
+        <div>
+            <label>分類:</label>
+            <input type="text" value="Web Development" />
+        </div>
+        <div>
+            <label>英文原文:</label>
+            <input type="text" value="API" />
+        </div>
+        <div>
+            <label>中文翻譯:</label>
+            <input type="text" value="應用程式介面" />
+        </div>
+        <div>
+            <label>代號或縮寫:</label>
+            <input type="text" value="API" />
+        </div>
+        <div>
+            <label>內容說明:</label>
+            <textarea rows="3">API 是軟體與軟體之間溝通的橋樑，讓不同程式可以互相交換資料或使用彼此的功能，而不需要知道對方的內部程式碼怎麼寫。</textarea>
+        </div>
+        <div>
+            <label>生活化比喻:</label>
+            <textarea
+                rows="3">API 就像是餐廳的服務生，你（用戶端）看菜單點餐，服務生將你的需求傳達給廚房（伺服器），最後再把做好的菜送到你桌上。你不需要知道廚房怎麼開火，只需要透過服務生就能得到食物。</textarea>
+        </div>
+        <div
+            class="mt-4 mb-4 p-3 bg-red-50 dark:bg-red-900/20 border-2 border-red-500 rounded-2xl flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-red-600 dark:text-red-400">
+                <span class="material-symbols-outlined">delete_sweep</span>
+                <span class="font-black text-base">危險區域</span>
+            </div>
+            <button
+                class="px-3 py-1.5 bg-red-500 text-white font-black rounded-lg neo-border neo-shadow-sm active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all text-sm">
+                刪除卡片
+            </button>
+        </div>
+    </main>
+    <footer class="w-full max-w-md px-6 pb-8">
+        <div class="pt-4 border-t-2 border-black dark:border-zinc-700 flex gap-4">
+            <button onclick="window.location.href='cardi.html'"
+                class="flex-1 py-3 bg-white dark:bg-zinc-800 text-black dark:text-white font-black italic text-lg rounded-xl neo-border neo-shadow-sm active:translate-y-1 active:translate-x-1 active:shadow-none transition-all">
+                取消
+            </button>
+            <button
+                class="flex-1 py-3 bg-primary text-black font-black italic text-lg rounded-xl neo-border neo-shadow-sm active:translate-y-1 active:translate-x-1 active:shadow-none transition-all">
+                儲存變更
+            </button>
+        </div>
+    </footer>
+    <div class="fixed bottom-4 right-4 z-50">
+        <button class="p-3 bg-zinc-800 dark:bg-white text-white dark:text-black rounded-full shadow-lg"
+            onclick="document.documentElement.classList.toggle('dark')">
+            <span class="material-symbols-outlined text-sm block dark:hidden">dark_mode</span>
+            <span class="material-symbols-outlined text-sm hidden dark:block">light_mode</span>
+        </button>
+    </div>
+
+</body>
+
+</html>

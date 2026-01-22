@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>VibeCoding 個人中心 - Hero Layout (修訂版)</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&amp;display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#FFD600",
+                        "background-light": "#EEEEEE",
+                        "background-dark": "#111827",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0px",
+                    },
+                },
+            },
+        };
+    </script>
+    <style type="text/tailwindcss">
+        .neo-brutalism-card {
+            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+            border: 4px solid black;
+        }
+        .neo-brutalism-button:active {
+            box-shadow: 0px 0px 0px 0px rgba(0,0,0,1);
+            transform: translate(2px, 2px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-black dark:text-white min-h-screen flex flex-col">
+    <section class="bg-primary pt-12 pb-10 px-6 border-b-8 border-black relative overflow-hidden">
+        <div class="absolute top-4 left-6 right-6 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="bg-white border-4 border-black p-1 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                    <span class="material-symbols-outlined text-black block text-xl">terminal</span>
+                </div>
+                <h1 class="text-xl font-black italic tracking-tighter">VIBECODING</h1>
+            </div>
+            <button
+                class="bg-white border-4 border-black p-2 neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <span class="material-symbols-outlined text-black block">settings</span>
+            </button>
+        </div>
+        <div class="flex flex-col items-center mt-12 mb-12">
+            <div class="relative">
+                <div
+                    class="w-32 h-32 bg-white border-4 border-black flex items-center justify-center shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                    <span class="material-symbols-outlined text-black text-7xl">person</span>
+                </div>
+                <div
+                    class="absolute -top-3 -right-6 bg-black text-white border-4 border-black px-4 py-1 font-black italic shadow-[4px_4px_0px_0px_rgba(255,214,0,1)]">
+                    Lv. 7
+                </div>
+            </div>
+            <h2 class="text-6xl font-black italic mt-6 tracking-tight">琳的</h2>
+        </div>
+        <div class="max-w-md mx-auto">
+            <div class="flex justify-between items-end mb-1">
+                <span class="text-xs font-black italic uppercase tracking-wider">XP POINTS</span>
+                <span class="text-xs font-black italic">12,450 / 15,000</span>
+            </div>
+            <div class="h-10 w-full border-4 border-black bg-white">
+                <div class="h-full bg-black border-r-4 border-black" style="width: 75%"></div>
+            </div>
+        </div>
+    </section>
+    <main class="flex-grow p-6 space-y-6 pb-32">
+        <div
+            class="bg-white dark:bg-gray-800 border-4 border-black p-4 flex justify-between items-center neo-brutalism-card">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-black dark:text-white">style</span>
+                <span class="text-xl font-black italic">我的卡片</span>
+            </div>
+            <div class="text-4xl font-black italic bg-primary px-3 border-l-4 border-black">110</div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 space-y-4 neo-brutalism-card">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-black dark:text-white">cloud_upload</span>
+                <span class="text-xl font-black italic uppercase">資料備份</span>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <button
+                    class="w-full bg-primary border-4 border-black py-3 px-2 font-black italic flex items-center justify-center text-center leading-tight neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    匯出所有卡片 (JSON)
+                </button>
+                <button
+                    class="w-full bg-white border-4 border-black py-3 px-2 font-black italic flex items-center justify-center text-center leading-tight neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    匯入備份資料 (JSON)
+                </button>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 space-y-4 neo-brutalism-card">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-black dark:text-white">share</span>
+                <span class="text-xl font-black italic uppercase">社群追蹤</span>
+            </div>
+            <div class="grid grid-cols-4 gap-3">
+                <button
+                    class="aspect-square bg-black border-4 border-black flex items-center justify-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <span class="text-white font-black text-xl">@</span>
+                </button>
+                <button
+                    class="aspect-square bg-[#1877F2] border-4 border-black flex items-center justify-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <span class="text-white font-black text-xl italic">f</span>
+                </button>
+                <button
+                    class="aspect-square bg-gradient-to-tr from-[#F58529] via-[#DD2A7B] to-[#8134AF] border-4 border-black flex items-center justify-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <span class="material-symbols-outlined text-white">camera_alt</span>
+                </button>
+                <button
+                    class="aspect-square bg-[#06C755] border-4 border-black flex items-center justify-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <span class="material-symbols-outlined text-white">chat_bubble</span>
+                </button>
+            </div>
+        </div>
+    </main>
+    <nav
+        class="fixed bottom-0 left-0 right-0 h-24 bg-white dark:bg-zinc-900 border-t-2 border-black flex items-center justify-around px-6 z-50">
+        <a class="flex flex-col items-center gap-1 group h-full justify-center" href="index.html">
+            <span class="material-symbols-outlined text-3xl text-black dark:text-white">style</span>
+            <span class="text-xs font-bold text-black dark:text-white">學習卡</span>
+        </a>
+        <a class="flex flex-col items-center gap-1 group h-full justify-center" href="rank.html">
+            <span class="material-symbols-outlined text-3xl text-black dark:text-white">bar_chart</span>
+            <span class="text-xs font-bold text-black dark:text-white">排行榜</span>
+        </a>
+        <a class="flex flex-col items-center gap-1 group relative h-full justify-center" href="#">
+            <div
+                class="w-16 h-12 bg-primary border-[3px] border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] absolute -top-4">
+                <span class="material-symbols-outlined text-black font-bold text-3xl">person</span>
+            </div>
+            <span class="text-xs font-bold text-black dark:text-white mt-10">個人</span>
+        </a>
+    </nav>
+
+</body>
+
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-Hant">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    <title>Quiz Overlay - VibeCoding</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&amp;family=Noto+Sans+TC:wght@400;500;700;900&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#FACC15", // Vibrant Yellow
+                        secondary: "#FB7185", // Pinkish Red from the '測驗' button
+                        "background-light": "#F8F8F8",
+                        "background-dark": "#121212",
+                        "accent-orange": "#F97316",
+                        "accent-green": "#4ADE80"
+                    },
+                    fontFamily: {
+                        display: ["Lexend", "Noto Sans TC", "sans-serif"],
+                        sans: ["Lexend", "Noto Sans TC", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "16px",
+                    },
+                    boxShadow: {
+                        'neo': '4px 4px 0px 0px #000000',
+                        'neo-lg': '8px 8px 0px 0px #000000',
+                    }
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Lexend', 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            /* Prevent scrolling on body */
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .neo-border {
+            border: 3px solid #000000;
+        }
+
+        .blur-overlay {
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .dark .blur-overlay {
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-black dark:text-white h-screen w-screen overflow-hidden relative">
+    <!-- Blurred Background Layer -->
+    <div class="fixed inset-0 flex flex-col p-4 filter blur-[4px] pointer-events-none">
+        <header class="flex items-center justify-between mb-6">
+            <button class="w-10 h-10 flex items-center justify-center">
+                <span class="material-icons text-3xl">chevron_left</span>
+            </button>
+            <h1 class="text-xl font-extrabold tracking-tight">VibeCoding</h1>
+            <button class="w-10 h-10 flex items-center justify-center">
+                <span class="material-icons text-2xl">more_horiz</span>
+            </button>
+        </header>
+        <div class="mb-8 px-2">
+            <div class="flex justify-between items-end mb-1">
+                <span class="text-[10px] font-black tracking-widest uppercase opacity-60">XP POINTS</span>
+                <span class="text-[10px] font-black tracking-widest opacity-60">750 / 1000</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex-grow h-6 bg-white dark:bg-zinc-800 neo-border rounded-full overflow-hidden">
+                    <div class="h-full bg-primary" style="width: 75%;"></div>
+                </div>
+                <div class="relative w-14 h-14 rounded-full neo-border bg-white dark:bg-zinc-800 overflow-hidden p-1">
+                    <div class="absolute inset-0 border-4 border-primary rounded-full"></div>
+                    <img alt="Profile Avatar" class="w-full h-full rounded-full"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYBSr0qx4zxGUpzrKZNMjMdm1N72pTh3biJv2ELYGS7ZpkfLrrx8uQAcGwczsfUJWmAHVsmcSs7SIxWi052c6E5ghtl0SF6z6Pcb074vfEJvbqGjm7jZ9QYG3Q0lT2yyfucDvMk7fbyox_wJ7WM-A5or4kQ_DxLOH5XPmIN-g4pCv6vi97R-8ElrkbBGXsPk0Iz_Yo7n7J4GVfvbr5fWi0ZJ-HAWZPWQwNmoMsFsQFmjhzUqZiB72s4H_LU8DWKQZoxj_pugP-Eg" />
+                </div>
+            </div>
+        </div>
+        <hr class="border-t-2 border-black dark:border-white mb-8 opacity-100" />
+        <div class="flex-grow flex flex-col items-center">
+            <div class="w-full max-w-sm bg-white dark:bg-zinc-900 neo-border rounded-3xl p-8 shadow-neo-lg relative">
+                <div class="flex justify-between items-start mb-8">
+                    <div
+                        class="bg-primary text-black px-3 py-1 neo-border font-black text-xs uppercase tracking-wider rounded-sm">
+                        BACKEND</div>
+                    <div class="bg-white dark:bg-zinc-800 neo-border px-2 py-1 font-black text-xs rounded-sm">Lv.2</div>
+                </div>
+                <div class="text-center mb-10">
+                    <h2 class="text-6xl font-black mb-2">API</h2>
+                    <p class="text-zinc-500 font-bold mb-1">(API)</p>
+                    <p class="text-2xl font-black italic">應用程式介面</p>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="font-black text-lg mb-2 flex items-center gap-2">
+                            <span class="w-2 h-5 bg-primary block"></span> 內容說明
+                        </h3>
+                        <p class="text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed">
+                            API 是軟體與軟體之間溝通的橋樑，讓不同程式可以互相交換資料或使用彼此的功能，而不需要知道對方的內部程式碼怎麼寫。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center justify-between gap-4 py-6">
+            <div
+                class="w-14 h-14 rounded-full bg-white dark:bg-zinc-800 neo-border shadow-neo flex items-center justify-center">
+                <span class="material-icons">edit</span>
+            </div>
+            <div
+                class="flex-grow h-14 rounded-full bg-secondary text-white neo-border shadow-neo flex items-center justify-center gap-2 font-black text-xl">
+                <span class="material-icons">psychology</span> 測驗
+            </div>
+            <div
+                class="w-14 h-14 rounded-full bg-white dark:bg-zinc-800 neo-border shadow-neo flex items-center justify-center">
+                <span class="material-icons">share</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Overlay -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-6 blur-overlay h-full w-full">
+        <div
+            class="w-full max-w-md max-h-full bg-white dark:bg-zinc-900 neo-border rounded-[32px] shadow-neo-lg overflow-hidden flex flex-col">
+            <div class="pt-8 flex flex-col items-center shrink-0">
+                <div
+                    class="bg-primary text-black px-6 py-2 neo-border flex items-center gap-2 rounded-xl shadow-neo font-black text-lg mb-4">
+                    <span class="material-icons text-xl">psychology</span>
+                    小測驗
+                </div>
+                <div class="text-zinc-500 font-bold tracking-widest text-sm mb-6">題目 1 / 3</div>
+            </div>
+            <div class="border-t-4 border-black dark:border-zinc-700 shrink-0"></div>
+            <div class="px-6 py-6 flex-grow overflow-y-auto">
+                <h3 class="text-2xl font-black text-center mb-8 leading-tight">
+                    為什麼開發者要使用 API？
+                </h3>
+                <div class="space-y-4" id="quiz-options">
+                    <button
+                        class="w-full text-left bg-white dark:bg-zinc-800 neo-border p-4 rounded-2xl shadow-neo transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none group">
+                        <p class="font-bold text-lg leading-snug">
+                            A. 為了增加程式碼的行數
+                        </p>
+                    </button>
+                    <button
+                        class="w-full text-left bg-white dark:bg-zinc-800 neo-border p-4 rounded-2xl shadow-neo transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none group">
+                        <p class="font-bold text-lg leading-snug">
+                            B. 為了讓電腦運行速度變慢
+                        </p>
+                    </button>
+                    <button
+                        class="w-full text-left bg-white dark:bg-zinc-800 neo-border p-4 rounded-2xl shadow-neo transition-transform active:translate-x-1 active:translate-y-1 active:shadow-none border-primary">
+                        <p class="font-bold text-lg leading-snug">
+                            C. 為了重複使用現有的功能，節省開發時間
+                        </p>
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 pb-8 pt-2 flex gap-4 shrink-0">
+                <button id="end-quiz-btn"
+                    class="flex-1 bg-accent-orange text-white neo-border rounded-2xl py-4 font-black text-lg shadow-neo active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+                    結束測驗
+                </button>
+                <button
+                    class="flex-1 bg-accent-green text-white neo-border rounded-2xl py-4 font-black text-lg shadow-neo active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+                    下一題
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const options = document.querySelectorAll('#quiz-options button');
+            const endQuizBtn = document.getElementById('end-quiz-btn');
+
+            options.forEach(option => {
+                option.addEventListener('click', function () {
+                    // Check if this option is already selected (has border-primary class)
+                    // Note: In the HTML above, Option C has 'border-primary' hardcoded.
+                    // The classList check handles both initial state and dynamic clicks.
+                    if (this.classList.contains('border-primary')) {
+                        // Deselect logic:
+                        this.classList.remove('border-primary');
+                        // We also need to remove 'bg-primary' if we were using it, 
+                        // but here we are just looking at 'border-primary' as per the user's request (black border -> yellow border).
+                        // Wait, user said "options are black boxes, click becomes yellow".
+                        // Yellow border or Yellow background?
+                        // The request says "click becomes yellow box".
+                        // The code provided has 'border-primary' on option C. 
+                        // 'border-primary' makes the BORDER yellow?
+                        // Let's check the CSS. primary is #FACC15 (Yellow).
+                        // neo-border is 3px solid black.
+                        // Adding border-primary might conflict or override.
+                        // Tailwind: border-primary -> border-color: ...
+                        // If I want the BOX to be yellow (background), I should toggle bg-primary.
+                        // But the user's image shows the border being yellow?
+                        // Let's look at the image `uploaded_image_1769052741913.png`.
+                        // Option C has a YELLOW BORDER and White background.
+                        // So it is the border color.
+                    } else {
+                        // Select logic:
+                        // First deselect all
+                        options.forEach(opt => opt.classList.remove('border-primary'));
+                        // Select current
+                        this.classList.add('border-primary');
+                    }
+                });
+            });
+
+            if (endQuizBtn) {
+                endQuizBtn.addEventListener('click', () => {
+                    window.location.href = 'cardi.html';
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

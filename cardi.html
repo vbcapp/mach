@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-TW">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ffd400",
+                        "secondary": "#ff6b8b",
+                        "accent-blue": "#4a90e2",
+                        "background-light": "#f5f5f5",
+                        "background-dark": "#1a1a1a",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderWidth: {
+                        '3': '3px',
+                    },
+                    boxShadow: {
+                        'neo': '4px 4px 0px 0px rgba(0,0,0,1)',
+                        'neo-lg': '10px 10px 0px 0px rgba(0,0,0,1)',
+                        'neo-sm': '3px 3px 0px 0px rgba(0,0,0,1)',
+                        'neo-dark': '4px 4px 0px 0px rgba(255,255,255,0.2)',
+                        'neo-lg-dark': '10px 10px 0px 0px rgba(255,255,255,0.15)',
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+    <style>
+        body {
+            min-height: 100dvh;
+        }
+
+        .centered-container {
+            width: 100%;
+            max-width: 360px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-[#1d1a0c] dark:text-white min-h-screen flex flex-col items-center overflow-x-hidden">
+    <header
+        class="w-full bg-background-light dark:bg-background-dark border-b-3 border-black dark:border-white/20 p-2 sm:p-4 shrink-0 z-50 flex flex-col items-center">
+        <div class="w-full max-w-md">
+            <div class="flex items-center justify-between relative h-10 sm:h-12">
+                <button onclick="window.location.href='index.html'"
+                    class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center active:opacity-50 transition-opacity z-10 text-black dark:text-white">
+                    <span class="material-symbols-outlined text-xl sm:text-2xl font-bold">arrow_back_ios_new</span>
+                </button>
+                <h1
+                    class="text-lg sm:text-xl font-bold tracking-tight absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
+                    VibeCoding</h1>
+                <button
+                    class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center active:opacity-50 transition-opacity z-10">
+                    <span class="material-symbols-outlined text-xl sm:text-2xl">more_horiz</span>
+                </button>
+            </div>
+            <div class="flex items-center gap-3 sm:gap-4 mt-2 sm:mt-6">
+                <div class="flex-1 flex flex-col gap-1 sm:gap-2">
+                    <div class="flex justify-between items-end px-1">
+                        <p class="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider">XP Points</p>
+                        <p class="text-[8px] sm:text-[10px] font-bold">750 / 1000</p>
+                    </div>
+                    <div
+                        class="rounded-full border-3 border-black dark:border-white/40 bg-white dark:bg-black overflow-hidden h-3 sm:h-4">
+                        <div class="h-full bg-primary" style="width: 75%;"></div>
+                    </div>
+                </div>
+                <div class="relative flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 shrink-0">
+                    <svg class="absolute w-full h-full">
+                        <circle class="text-black/10 dark:text-white/10 stroke-current" cx="50%" cy="50%"
+                            fill="transparent" r="45%" stroke-width="3"></circle>
+                        <circle class="text-primary stroke-current progress-ring-circle" cx="50%" cy="50%"
+                            fill="transparent" r="45%" stroke-dasharray="150.8" stroke-dashoffset="37.7"
+                            stroke-linecap="round" stroke-width="3"></circle>
+                    </svg>
+                    <div
+                        class="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-3 border-black overflow-hidden bg-white z-10">
+                        <img alt="User Avatar" class="w-full h-full object-cover"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuYYRJr1ZfyP7HfvdNlHcImyuVZ353z2mW-gWOdI73IPvXbRubwg-JI7n-rK31HQXFiJj4lRGsKtXXnd-R81BZJLdOqmcOHS9jAAIdxA9yXOwVD6eNl91MCrzPq2L0xkcmGZEDmp80ek1_LOpAgHIJfS3ziy_XFiTbkwTSZcHZkY5zQtawnWq3yE12FLFPO_ddAmwIcyqMDN0hYJqVaDbIsZ_sHT1vXdv8N6cemW5uq6iiKDqjfO-yo7MKd-WY--4tUxLeYMgvfHY3" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="flex-1 flex flex-col items-center justify-start p-6 w-full">
+        <div class="centered-container h-full">
+            <div
+                class="w-full bg-white dark:bg-[#2a2a2a] border-3 border-black dark:border-white shadow-neo-lg dark:shadow-neo-lg-dark rounded-xl flex flex-col relative overflow-hidden h-full">
+                <div class="absolute top-4 left-4">
+                    <div class="bg-primary border-3 border-black px-2 py-0.5 rounded shadow-neo-sm">
+                        <span class="text-[10px] font-bold tracking-widest uppercase">BACKEND</span>
+                    </div>
+                </div>
+                <div class="absolute top-4 right-4">
+                    <div
+                        class="bg-white dark:bg-black border-3 border-black dark:border-white px-2 py-0.5 rounded shadow-neo-sm">
+                        <span class="text-[10px] font-bold">Lv.2</span>
+                    </div>
+                </div>
+                <div class="p-6 pb-2 pt-14 shrink-0">
+                    <div class="flex flex-col items-center gap-1">
+                        <h2 class="text-7xl font-bold tracking-tighter text-center">API</h2>
+                        <span class="text-lg font-bold text-gray-500 mb-1">(API)</span>
+                        <span class="text-xl font-bold italic mb-6">應用程式介面</span>
+                        <button onclick="window.location.href='card.html'"
+                            class="bg-primary border-3 border-black px-6 py-2 rounded-lg shadow-neo-sm flex items-center gap-2 hover:bg-yellow-400 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all">
+                            <span class="text-xs font-bold">收合詳細資訊</span>
+                            <span class="material-symbols-outlined text-sm font-bold">expand_less</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-6 py-2 flex flex-col gap-4 overflow-y-auto flex-1 h-0">
+                    <div>
+                        <h3 class="text-sm font-bold mb-2 flex items-center gap-2">
+                            <span class="w-2 h-4 bg-primary border border-black inline-block"></span>
+                            內容說明
+                        </h3>
+                        <div
+                            class="max-h-[4.5em] overflow-y-auto leading-relaxed text-sm text-gray-800 dark:text-gray-200">
+                            API
+                            是軟體與軟體之間溝通的橋樑，讓不同程式可以互相交換資料或使用彼此的功能，而不需要知道對方的內部程式碼怎麼寫。這是一個比較長的測試文本，用來測試是否會出現捲軸。這是一個比較長的測試文本，用來測試是否會出現捲軸。
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold mb-2 flex items-center gap-2">
+                            <span class="w-2 h-4 bg-primary border border-black inline-block"></span>
+                            生活化比喻
+                        </h3>
+                        <div
+                            class="bg-gray-50 dark:bg-black/20 border-3 border-black p-4 rounded-lg relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-1.5 h-full bg-primary"></div>
+                            <div
+                                class="max-h-[9em] overflow-y-auto leading-relaxed text-sm text-gray-700 dark:text-gray-300 italic">
+                                💡 API
+                                就像是餐廳的服務生。你（客戶端）看菜單點餐，服務生將你的需求傳達給廚房（伺服器），最後再把做好的菜送到你桌上。你不需要知道廚房怎麼開火，只需要透過服務生就能得到食物。這是一個比較長的測試文本，用來測試是否會出現捲軸。這是一個比較長的測試文本，用來測試是否會出現捲軸。這是一個比較長的測試文本，用來測試是否會出現捲軸。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 pb-6 pt-2 shrink-0">
+                    <div class="flex items-center justify-between gap-3">
+                        <a href="edit.html"
+                            class="w-12 h-12 rounded-full border-3 border-black bg-white dark:bg-black shadow-neo flex items-center justify-center active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all shrink-0 text-black dark:text-white">
+                            <span class="material-symbols-outlined text-xl">edit</span>
+                        </a>
+                        <a href="test.html"
+                            class="flex-1 py-3 bg-secondary border-3 border-black dark:border-white shadow-neo active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all rounded-full flex items-center justify-center text-white gap-2 group">
+                            <span class="material-symbols-outlined text-xl font-bold">psychology</span>
+                            <span class="text-base font-bold tracking-wider">測驗</span>
+                        </a>
+                        <a href="share.html"
+                            class="w-12 h-12 rounded-full border-3 border-black bg-white dark:bg-black shadow-neo flex items-center justify-center active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all shrink-0 text-black dark:text-white">
+                            <span class="material-symbols-outlined text-xl">share</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div
+        class="fixed top-20 left-1/2 -translate-x-[150px] w-32 h-32 bg-primary/20 rounded-full blur-3xl pointer-events-none -z-10">
+    </div>
+    <div
+        class="fixed bottom-40 left-1/2 translate-x-[50px] w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10">
+    </div>
+
+</body>
+
+</html>

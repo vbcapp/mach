@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-TW">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>等級達人榜 (包含個人排名)</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&amp;family=Space+Mono:wght@400;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#FFD600",
+                        "background-light": "#F3F4F6",
+                    },
+                    fontFamily: {
+                        display: ["Noto Sans TC", "sans-serif"],
+                        mono: ["Space Mono", "monospace"],
+                    },
+                    boxShadow: {
+                        'brutal': '4px 4px 0px 0px rgba(0,0,0,1)',
+                        'brutal-lg': '8px 8px 0px 0px rgba(0,0,0,1)',
+                    }
+                },
+            },
+        };
+    </script>
+    <style type="text/tailwindcss">
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .neo-border {
+            border: 3px solid black;
+        }
+        .neo-card {
+            border: 3px solid black;
+            box-shadow: 4px 4px 0px 0px black;
+        }
+        .neo-card-user {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px 0px black;
+        }
+        .neo-card-lg {
+            border: 3px solid black;
+            box-shadow: 8px 8px 0px 0px black;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+            display: inline-block;
+            line-height: 1;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="bg-background-light text-black pb-12">
+    <header class="p-6">
+        <div class="flex items-center gap-4 mb-6">
+            <a href="rank.html"
+                class="neo-border bg-white p-2 flex items-center justify-center active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
+                <span class="material-symbols-outlined text-2xl">arrow_back</span>
+            </a>
+            <h1 class="text-3xl font-black">等級達人榜</h1>
+        </div>
+        <div class="space-y-1">
+            <p class="text-lg font-bold">總共 1,240 位學習者</p>
+            <p class="text-sm font-bold text-gray-500">最後更新：2024/05/20 上午 10:30</p>
+        </div>
+    </header>
+    <main class="px-6 space-y-8">
+        <div class="flex items-end justify-center gap-3 pt-4">
+            <div class="flex-1 flex flex-col items-center">
+                <div class="neo-card bg-white w-full pt-6 pb-4 flex flex-col items-center relative">
+                    <div
+                        class="absolute -top-6 neo-border bg-white rounded-full w-12 h-12 flex items-center justify-center font-black text-xl">
+                        2</div>
+                    <div class="w-12 h-12 neo-border bg-gray-200 rounded-full mb-2 overflow-hidden">
+                        <img alt="avatar"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_pS2297B8uWe9YMQ_nwgY8tyfJSSl4Zjo9tsvrZgedomBYyDXWGlYiS0oJFfvVQMNL6KtsOvgXyeldosNtoct28N-xlJuc8CcWTDJnLo7fORvdheSkj6w9dbZp_aXDYFfvyVf5tckzKqjNz4HqiqVuZU7Pf5UwuZpYjpl-afOR-fTPvY0VgSK6p_vP_KUOuqwhafqi9bns7S3a3akupqn51ywUPJiPk7lLmpAB6kGwP2JgXfzx3G5C6TLZ2OkN0NXMWMY7ZOBxyKY" />
+                    </div>
+                    <span class="font-black text-sm truncate w-full text-center px-1">王小明</span>
+                    <span class="font-black text-2xl italic">14</span>
+                    <span class="text-[10px] font-bold text-gray-500">289 張卡片</span>
+                </div>
+            </div>
+            <div class="flex-1 flex flex-col items-center scale-110 z-10">
+                <div class="neo-card-lg bg-primary w-full pt-8 pb-6 flex flex-col items-center relative">
+                    <div
+                        class="absolute -top-8 neo-border bg-primary rounded-full w-14 h-14 flex items-center justify-center font-black text-2xl">
+                        <span class="material-symbols-outlined text-3xl">workspace_premium</span>
+                    </div>
+                    <div class="w-16 h-16 neo-border bg-white rounded-full mb-2 overflow-hidden">
+                        <img alt="avatar"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFkz4f23tCsJx2XoWDwRbqOuT7ykrttxTJpEBUBj7buLZ29cFWTodfR05lCnqUVLh3ryGm95QIuMgz8Ut0bpEEuzJ9f89UpWhesieG9w93R2Fsh_3QgrvRu7hyTQXRdBvHIThU-UpRjQwE236gxRaLPmkIISJuouE3wQsycoWG8cb1CJHPoxt4pux1BXWyJhcntBJqar-6xrur66Khwxp5zPrB3dZ-SoKwcDubog8SekixtpZtWO9F63OMvpmxSGtOl6uykNrf0si3" />
+                    </div>
+                    <span class="font-black text-base truncate w-full text-center px-1">程式之神</span>
+                    <span class="font-black text-4xl italic">15</span>
+                    <span class="text-[11px] font-bold text-black/60">412 張卡片</span>
+                </div>
+            </div>
+            <div class="flex-1 flex flex-col items-center">
+                <div class="neo-card bg-white w-full pt-6 pb-4 flex flex-col items-center relative">
+                    <div
+                        class="absolute -top-6 neo-border bg-white rounded-full w-12 h-12 flex items-center justify-center font-black text-xl">
+                        3</div>
+                    <div class="w-12 h-12 neo-border bg-gray-100 rounded-full mb-2 overflow-hidden">
+                        <img alt="avatar"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-UDWSnEnI8KXSS7dR1Q5mEIKZ01gfPTstZ1DZMwyqCUaZxEvO7d8Gg1bAQkb3W-WDYr2jXJk1Iw9J1HA5dt52E90joHaaRl-CkHl_8hHfOfD2E5fBBPp1t6HemEmGe_kql9WTqBrjA_WSEd3AGcwj6Z-QtQ1R0JLYZ_46MgJq-FsJE9t73jugOZ6kxs9rHDkkU869KLGD6VWpwcucabbfWUzjQ8rC65RAcR2UDzpukksnQe2sjyIoxIMETPa78J55mhdPRe2A9zfN" />
+                    </div>
+                    <span class="font-black text-sm truncate w-full text-center px-1">李大華</span>
+                    <span class="font-black text-2xl italic">12</span>
+                    <span class="text-[10px] font-bold text-gray-500">256 張卡片</span>
+                </div>
+            </div>
+        </div>
+        <div class="space-y-4">
+            <div class="neo-card bg-white p-4 flex items-center gap-4">
+                <span class="font-black text-xl w-8 text-center">4</span>
+                <div class="w-12 h-12 neo-border rounded-full overflow-hidden bg-zinc-100">
+                    <img alt="avatar"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHUliyY67lkZv1PhWEsPLZsAV39RC9A-YJRbNs-ur1lT5TE5QY7uSfaPQlPTTpFOlCku7CnwR6a2heaIHMZxzE-BHeba3BxdZfJ5Y-nbo7z3m9MSMnPKlCH18kFL9L0jc8WjZzpvaUJbH5BfMjxGdg3ogIzQzjic5t3tuImdJ6efRCfhqYvwpCuJcH0ciYDLTqGDt-Hf-ca0Er-bEZ-acCgl6Cms6W7KOL318vw6mqLw_8s1OkAJVn5pB85BXJ4ryVTbjcjI8ukVDX" />
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-black text-lg">前端小白</h3>
+                    <p class="text-xs font-bold text-gray-500">342 張卡片</p>
+                </div>
+                <div class="text-4xl font-black italic pr-2">11</div>
+            </div>
+            <div class="neo-card bg-white p-4 flex items-center gap-4">
+                <span class="font-black text-xl w-8 text-center">5</span>
+                <div class="w-12 h-12 neo-border rounded-full overflow-hidden bg-zinc-100">
+                    <img alt="avatar"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBIjEJdKzQs4F-XAmmXiAAWhlizOVxSNC58Yxi12-KFfj9en1E-63qEz3GkxustAz0sZizI23fowcOGFG6ZEiB7jRXZ2pVX2DvKKuFuKEalQ2CTTfBR1_tJPnTOjgx-P7VQjYemsSn_wdQewcZSgZhlDKRFbVVKSMMqRQyGX2NEEcMqWUpB6PcXGmVo6XK65dOxNyLe0ulEIRL8oQJ6LfH3e0IgoC4vyNcDkwrh41-tnKp2-ES24_22Fr8ECPzcPWhqq_aZwNjQsdq" />
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-black text-lg">後端大師</h3>
+                    <p class="text-xs font-bold text-gray-500">311 張卡片</p>
+                </div>
+                <div class="text-4xl font-black italic pr-2">11</div>
+            </div>
+            <div class="neo-card bg-white p-4 flex items-center gap-4">
+                <span class="font-black text-xl w-8 text-center">6</span>
+                <div class="w-12 h-12 neo-border rounded-full overflow-hidden bg-zinc-100">
+                    <img alt="avatar"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCG6-VZYNfH80T5e5XUg5vxNrI3XMRFRsjEANehtX_EK6gwt4IwV7WFCjFv_s211JQIsFoCEBrv9VNnuBBG8x9KF5KfikE4FjyAJGBEuWAEuli5SNvTu8HzdJALsqh5bU0cJWpCZ_vv3_0KFcAYus3-ylxNJudDn2PkrXq65k2IV6jEQvbi0bX30eWPfBp3qpnrN6bNbj_VZkSQsCk2VZAUQtqy0aDVUi1_RzXZo2DchbdktbabXmbDV_AIebn5C-fTgtSb9_e-azgs" />
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-black text-lg">林曉培</h3>
+                    <p class="text-xs font-bold text-gray-500">298 張卡片</p>
+                </div>
+                <div class="text-4xl font-black italic pr-2">10</div>
+            </div>
+            <div class="neo-card-user bg-yellow-50 p-4 flex items-center gap-4 ring-2 ring-primary ring-inset">
+                <span class="font-black text-xl w-8 text-center">#42</span>
+                <div class="w-12 h-12 neo-border rounded-full overflow-hidden bg-white">
+                    <img alt="avatar"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwEoHhjt4LkTubPFdXcu4DocGNRWn83JXbsh9KJmJia5zOX8qtEDa5jA7SOt65CeLdYi11d5_Npls0v7HIcXDpWLwJt6oF2gMB0qUGkeyTcDQI1W5hgFMhCs13CUBEOVBrtYMJ6oYteC52oJTQKvvEB7_yo8Z6rst4BHYvp5oFlFUJPXD5glqzl-L7SnRiapiBxxbuGI7gK0yhXl4qjWexc6PXN_Fl6asZM07fajaR_g_aewaOOXhvmPrNHEtjTf4ChtScyRSS0Xsu" />
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-black text-lg">你 (You)</h3>
+                    <p class="text-xs font-bold text-gray-500">110 張卡片</p>
+                </div>
+                <div class="text-4xl font-black italic pr-2">7</div>
+            </div>
+            <div class="neo-card bg-white p-4 flex items-center gap-4 opacity-70">
+                <span class="font-black text-xl w-8 text-center">7</span>
+                <div class="w-12 h-12 neo-border rounded-full overflow-hidden bg-zinc-100">
+                    <img alt="avatar"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgn-UDLe1wnfqH5z93BW1HS2jD84ITQv96uF6-0apXHKophtO9PyOB8wNamcQrJxO-_-h3YBDaVa45H8Fskq_Hm_YHOq5rv6iuxgJUuc3BZf2Ib0fmzSqTNaVOL-yYs56edsmoJXwEZcayca1xNiymgSAnc0o60brbe-sST-y9a5aqng_z4GsD5OVvWiT4uqBG9wj6jOBr1pM2CE0nLIVnp-o9yB2sFYcSulwt6XoGT-bvxhBzHC9Kpk99wWW32tWZTiD08MLkt_fj" />
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-black text-lg">陳威利</h3>
+                    <p class="text-xs font-bold text-gray-500">275 張卡片</p>
+                </div>
+                <div class="text-4xl font-black italic pr-2">10</div>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="neo-card bg-white p-5">
+                <h4 class="text-xs font-black text-gray-500 mb-1">全球卡片排名</h4>
+                <div class="flex items-baseline gap-1">
+                    <span class="text-2xl font-black">#42</span>
+                    <span class="text-[10px] font-bold text-green-600">↑ 2</span>
+                </div>
+            </div>
+            <div class="neo-card bg-white p-5">
+                <h4 class="text-xs font-black text-gray-500 mb-1">今日新增</h4>
+                <div class="flex items-baseline gap-1">
+                    <span class="text-2xl font-black">+12</span>
+                    <span class="text-[10px] font-bold text-gray-400">LV UP!</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+</body>
+
+</html>
