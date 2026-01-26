@@ -79,20 +79,20 @@
                     <span class="material-symbols-outlined text-black text-7xl">person</span>
                 </div>
                 <!-- 提示文字 -->
-                <div
+                <div id="user-level"
                     class="absolute -top-3 -right-6 bg-black text-white border-4 border-black px-4 py-1 font-black italic shadow-[4px_4px_0px_0px_rgba(255,214,0,1)]">
-                    Lv. 7
+                    Lv. -
                 </div>
             </div>
-            <h2 id="user-nickname" class="text-6xl font-black italic mt-6 tracking-tight">VibeCoding</h2>
+            <h2 id="user-nickname" class="text-6xl font-black italic mt-6 tracking-tight">Loading...</h2>
         </div>
         <div class="max-w-md mx-auto">
             <div class="flex justify-between items-end mb-1">
                 <span class="text-xs font-black italic uppercase tracking-wider">XP POINTS</span>
-                <span class="text-xs font-black italic">12,450 / 15,000</span>
+                <span id="user-xp-text" class="text-xs font-black italic">0 / 0</span>
             </div>
             <div class="h-6 w-full border-4 border-black bg-white">
-                <div class="h-full bg-black border-r-4 border-black" style="width: 75%"></div>
+                <div id="user-xp-bar" class="h-full bg-black border-r-4 border-black" style="width: 0%"></div>
             </div>
         </div>
     </section>
@@ -103,7 +103,7 @@
                 <span class="material-symbols-outlined text-black dark:text-white">style</span>
                 <span class="text-xl font-black italic">我的卡片數量</span>
             </div>
-            <div class="text-4xl font-black italic bg-primary px-3 border-l-4 border-black">110</div>
+            <div id="user-card-count" class="text-4xl font-black italic bg-primary px-3 border-l-4 border-black">0</div>
         </div>
         <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 space-y-4 neo-brutalism-card">
             <div class="flex items-center gap-3">
@@ -202,26 +202,26 @@
         });
 
         function updateProfilePageUI(userData) {
-            // 更新等級徽章
-            const levelBadge = document.querySelector('.absolute.-top-3.-right-6');
+            // 更新等級
+            const levelBadge = document.getElementById('user-level');
             if (levelBadge) {
-                levelBadge.textContent = `Lv. ${userData.current_level}`;
+                levelBadge.textContent = 'Lv. ' + userData.current_level;
             }
 
             // 更新 XP 文字
-            const xpText = document.querySelector('.flex.justify-between.items-end.mb-1 span:last-child');
+            const xpText = document.getElementById('user-xp-text');
             if (xpText) {
                 xpText.textContent = `${userData.current_xp.toLocaleString()} / ${userData.next_level_xp.toLocaleString()}`;
             }
 
             // 更新 XP 進度條
-            const xpBar = document.querySelector('.h-full.bg-black.border-r-4.border-black');
+            const xpBar = document.getElementById('user-xp-bar');
             if (xpBar) {
                 xpBar.style.width = `${userData.levelProgressPercentage}%`;
             }
 
             // 更新卡片數量
-            const cardCount = document.querySelector('.text-4xl.font-black.italic.bg-primary');
+            const cardCount = document.getElementById('user-card-count');
             if (cardCount) {
                 cardCount.textContent = userData.total_cards_created;
             }
