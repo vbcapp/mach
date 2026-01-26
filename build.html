@@ -56,15 +56,14 @@
     </style>
 </head>
 
-<body class="font-display bg-background-light h-screen overflow-hidden flex flex-col justify-end">
-    <div class="fixed inset-0 bg-black/30 z-0 p-6 flex justify-between items-start">
+<body class="font-display bg-background-light min-h-screen flex flex-col">
+    <div class="flex-1 bg-black/30 p-6 flex justify-between items-start">
         <div class="w-12 h-12 rounded-full bg-white/20"></div>
         <div class="w-12 h-12 rounded-full bg-primary/60 flex items-center justify-center">
             <span class="material-symbols-outlined text-black/40">search</span>
         </div>
     </div>
-    <div
-        class="relative z-10 w-full bg-white modal-top-radius border-t-[3px] border-x-[3px] border-black overflow-hidden flex flex-col">
+    <div class="w-full bg-white modal-top-radius border-t-[3px] border-x-[3px] border-black flex flex-col">
         <div class="bg-primary pt-6 pb-6 border-b-[3px] border-black px-6">
             <div class="flex justify-center mb-4">
                 <div class="w-12 h-1.5 bg-white/60 rounded-full"></div>
@@ -77,21 +76,18 @@
                 </a>
             </div>
         </div>
-        <div class="px-6 pt-8 pb-6 space-y-8 bg-white">
+        <div class="px-6 pt-6 pb-6 space-y-6 bg-white">
             <div class="space-y-4">
                 <label class="block text-lg font-black text-slate-800">
                     輸入你想學習的程式設計專有名詞
                 </label>
                 <div class="relative">
                     <input
-                        class="w-full h-16 px-4 text-xl font-bold border-[3px] border-[#2B66FF] focus:ring-0 focus:outline-none bg-white text-black"
-                        type="text" value="Closure" />
-                    <div class="absolute right-4 top-1/2 -translate-y-1/2">
-                        <span class="material-symbols-outlined text-[#2B66FF] text-3xl">keyboard</span>
-                    </div>
+                        class="w-full h-16 px-4 text-base font-bold border-[3px] border-[#2B66FF] focus:ring-0 focus:outline-none bg-white text-black placeholder:text-gray-400 placeholder:font-normal"
+                        type="text" placeholder="請輸入專有名詞，例如：API、DOM... " />
                 </div>
             </div>
-            <div class="space-y-4 pb-2">
+            <div class="space-y-3 pb-4">
 
                 <button class="w-full py-5 text-xl font-black neo-border-thick bg-primary neo-shadow text-black">
                     確認生成
@@ -100,118 +96,6 @@
                     class="w-full py-5 text-xl font-black neo-border-thick bg-white text-black block text-center cursor-pointer">
                     取消
                 </a>
-            </div>
-        </div>
-        <div class="bg-[#D1D3D9] p-1.5 w-full">
-            <div class="flex gap-1.5 mb-2 px-0.5">
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    Q</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    W</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    E</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    R</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    T</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    Y</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    U</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    I</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    O</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    P</div>
-            </div>
-            <div class="flex gap-1.5 mb-2 px-4">
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    A</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    S</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    D</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    F</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    G</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    H</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    J</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    K</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    L</div>
-            </div>
-            <div class="flex gap-1.5 mb-2 px-0.5">
-                <div
-                    class="w-[42px] h-11 bg-[#ABB0BB] rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center">
-                    <span class="material-symbols-outlined text-2xl">expand_less</span>
-                </div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    Z</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    X</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    C</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    V</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    B</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    N</div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-xl">
-                    M</div>
-                <div
-                    class="w-[42px] h-11 bg-[#ABB0BB] rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center">
-                    <span class="material-symbols-outlined text-xl">backspace</span>
-                </div>
-            </div>
-            <div class="flex gap-1.5 px-0.5 mb-8">
-                <div
-                    class="w-[88px] h-11 bg-[#ABB0BB] rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-lg">
-                    123</div>
-                <div
-                    class="w-[42px] h-11 bg-[#ABB0BB] rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center">
-                    <span class="material-symbols-outlined text-2xl">sentiment_satisfied_alt</span>
-                </div>
-                <div
-                    class="flex-1 h-11 bg-white rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-lg">
-                    space</div>
-                <div
-                    class="w-[88px] h-11 bg-[#ABB0BB] rounded-md shadow-[0_1px_0_rgba(0,0,0,0.3)] flex items-center justify-center text-lg">
-                    return</div>
-            </div>
-            <div class="flex justify-center pb-2">
-                <div class="w-32 h-1.5 bg-black rounded-full"></div>
             </div>
         </div>
     </div>
