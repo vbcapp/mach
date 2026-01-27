@@ -85,10 +85,10 @@
 <body class="text-black dark:text-white min-h-screen flex flex-col overflow-x-hidden">
     <header class="pt-8 px-6 pb-4 flex flex-col shrink-0">
         <div class="flex items-center w-full mb-6 relative">
-            <a href="index.html"
+            <button id="back-btn" onclick="handleBack()"
                 class="w-11 h-11 flex items-center justify-center bg-white dark:bg-zinc-800 neo-border rounded-full shadow-neo active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all z-10 shrink-0">
-                <span class="material-symbols-outlined text-2xl font-bold">home</span>
-            </a>
+                <span class="material-symbols-outlined text-2xl font-bold">arrow_back</span>
+            </button>
             <div class="absolute inset-x-0 flex justify-center pointer-events-none">
                 <div
                     class="bg-primary text-black px-4 py-1.5 neo-border flex items-center gap-1.5 rounded-full shadow-neo-yellow font-black text-sm uppercase tracking-tight pointer-events-auto">
@@ -193,14 +193,24 @@
             // 生成結果圖示
             const listContainer = document.getElementById('results-list');
             listContainer.innerHTML = results.map((isCorrect, index) => `
-                <div class="aspect-square neo-border rounded-xl flex flex-col items-center justify-center gap-1 ${isCorrect ? 'bg-correct-green border-correct-border' : 'bg-incorrect-red border-incorrect-border'}">
+                <button onclick="window.location.href='test.html?mode=review&index=${index}'" 
+                    class="aspect-square neo-border rounded-xl flex flex-col items-center justify-center gap-1 ${isCorrect ? 'bg-correct-green border-correct-border' : 'bg-incorrect-red border-incorrect-border'} active:scale-95 transition-transform">
                     <span class="text-xs font-black opacity-50">Q${index + 1}</span>
                     <span class="material-symbols-outlined text-2xl font-black ${isCorrect ? 'text-green-600' : 'text-red-500'}">
                         ${isCorrect ? 'check' : 'close'}
                     </span>
-                </div>
+                </button>
             `).join('');
         });
+
+        function handleBack() {
+            const returnUrl = sessionStorage.getItem('quizReturnUrl');
+            if (returnUrl) {
+                window.location.href = returnUrl;
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
     </script>
 </body>
 

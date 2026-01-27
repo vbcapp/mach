@@ -192,7 +192,7 @@
 
     <script>
         // 題目資料
-        const quizQuestions = [
+        let quizQuestions = [
             {
                 question: "為什麼開發者要使用 API？",
                 options: [
@@ -229,7 +229,8 @@
         let currentQuestionIndex = 0;
         let userAnswers = new Array(quizQuestions.length).fill(null);
         let autoNextTimeout = null;
-        let isExplanationExpanded = false; // 記錄解析展開狀態
+        // 從 localStorage 讀取解析展開狀態，若無則預設為 false
+        let isExplanationExpanded = localStorage.getItem('isExplanationExpanded') === 'true';
 
         // DOM 元素
         const questionText = document.getElementById('question-text');
@@ -245,7 +246,24 @@
 
         // 初始化
         function init() {
-            randomizeQuiz();
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            const reviewIndex = urlParams.get('index');
+
+            if (mode === 'review') {
+                if (!loadReviewState()) {
+                    // 若讀取失敗 (例如無資料)，則退回一般模式
+                    localStorage.removeItem('quizReviewState');
+                    randomizeQuiz();
+                } else if (reviewIndex !== null) {
+                    currentQuestionIndex = parseInt(reviewIndex, 10);
+                }
+            } else {
+                // 清除舊的 review state，確保是全新的開始
+                localStorage.removeItem('quizReviewState');
+                randomizeQuiz();
+            }
+
             renderQuestion();
             prevBtn.addEventListener('click', handlePrevClick);
             nextBtn.addEventListener('click', handleNextClick);
@@ -254,17 +272,11 @@
             const summaryEl = explanationDetails.querySelector('summary');
             if (summaryEl) {
                 summaryEl.addEventListener('click', (e) => {
-                    // 這裡的邏輯是：點擊發生 -> 瀏覽器 toggle open 屬性
-                    // 所以我們想要記錄的是「點擊後」的狀態
-                    // 如果目前是 open，點了會變 close -> isExplanationExpanded = false
-                    // 如果目前是 close，點了會變 open -> isExplanationExpanded = true
-                    // 因此 isExplanationExpanded = !explanationDetails.open
-
-                    // 為了保險，使用 setTimeout 確保獲取的是切換後的屬性，或者直接使用反轉邏輯
-                    // 使用反轉邏輯比較即時且不容易受非同步更新影響
-                    isExplanationExpanded = !explanationDetails.open;
-
-                    // 注意：這裡不使用 isInternalUpdate，因為這個點擊事件只會由使用者觸發
+                    // 手動點擊切換狀態，延遲記錄最終狀態
+                    setTimeout(() => {
+                        isExplanationExpanded = explanationDetails.open;
+                        localStorage.setItem('isExplanationExpanded', isExplanationExpanded);
+                    }, 0);
                 });
             }
         }
@@ -454,16 +466,42 @@
             const resultsBoolean = userAnswers.map(ans => ans ? ans.isCorrect : false);
             const isPerfect = resultsBoolean.every(r => r === true);
             const correctCount = resultsBoolean.filter(r => r === true).length;
+            const timestamp = new Date().toISOString();
 
+            // 儲存簡單結果供結果頁顯示
             localStorage.setItem('quizResults', JSON.stringify({
                 results: resultsBoolean,
                 isPerfect: isPerfect,
                 correctCount: correctCount,
                 totalQuestions: quizQuestions.length,
-                timestamp: new Date().toISOString()
+                timestamp: timestamp
+            }));
+
+            // 儲存完整狀態供回顧使用 (包含隨機後的題目順序和使用者答案)
+            localStorage.setItem('quizReviewState', JSON.stringify({
+                questions: quizQuestions,
+                answers: userAnswers,
+                timestamp: timestamp
             }));
 
             window.location.href = 'result.html';
+        }
+
+        function loadReviewState() {
+            try {
+                const savedState = localStorage.getItem('quizReviewState');
+                if (savedState) {
+                    const data = JSON.parse(savedState);
+                    if (data.questions && data.answers) {
+                        quizQuestions = data.questions;
+                        userAnswers = data.answers;
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading review state:', e);
+            }
+            return false;
         }
 
         // 頁面載入時初始化

@@ -311,7 +311,10 @@
             if (editLink) editLink.href = `edit.html?id=${card.id}`;
 
             const testLink = document.getElementById('test-link');
-            if (testLink) testLink.href = `test.html?id=${card.id}`;
+            if (testLink) {
+                testLink.href = `test.html?id=${card.id}`;
+                testLink.onclick = () => sessionStorage.setItem('quizReturnUrl', window.location.href);
+            }
 
             const collapseBtn = document.getElementById('collapse-btn');
             if (collapseBtn) collapseBtn.onclick = () => window.location.href = `card.html?id=${card.id}`;

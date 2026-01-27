@@ -238,7 +238,10 @@
             if (revealLink) revealLink.href = `cardi.html?id=${card.id}`;
 
             const testLink = document.getElementById('test-link');
-            if (testLink) testLink.href = `test.html?id=${card.id}`;
+            if (testLink) {
+                testLink.href = `test.html?id=${card.id}`;
+                testLink.onclick = () => sessionStorage.setItem('quizReturnUrl', window.location.href);
+            }
         }
     </script>
 
