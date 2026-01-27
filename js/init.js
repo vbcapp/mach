@@ -4,6 +4,8 @@
  */
 
 let currentUser = null;
+let allCards = []; // 儲存所有卡片用於篩選
+let currentFilter = 'all'; // 目前篩選條件 ('all', 'unfamiliar', 'lv1'...)
 
 /**
  * 初始化應用
@@ -154,13 +156,65 @@ async function loadUserCards() {
         const result = await apiService.getCards({ userId: currentUser.id });
 
         if (result.success) {
-            renderCards(result.data.cards, container);
+            allCards = result.data.cards || [];
+            initFilterButtons();
+            applyFilter(currentFilter);
         } else {
             console.error('載入卡片失敗:', result.error);
         }
     } catch (error) {
         console.error('載入卡片錯誤:', error);
     }
+}
+
+/**
+ * 初始化篩選按鈕事件
+ */
+function initFilterButtons() {
+    const filterContainer = document.getElementById('filter-buttons');
+    if (!filterContainer) return;
+
+    filterContainer.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const filter = this.getAttribute('data-filter');
+            applyFilter(filter);
+
+            // 更新按鈕樣式
+            filterContainer.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove('bg-primary', 'font-black', 'active');
+                b.classList.add('bg-white', 'dark:bg-zinc-800', 'font-bold');
+            });
+            this.classList.remove('bg-white', 'dark:bg-zinc-800', 'font-bold');
+            this.classList.add('bg-primary', 'font-black', 'active');
+        });
+    });
+}
+
+/**
+ * 套用篩選條件
+ */
+function applyFilter(filter) {
+    currentFilter = filter;
+    const container = document.getElementById('cards-container');
+    if (!container) return;
+
+    let filteredCards = allCards;
+
+    if (filter === 'unfamiliar') {
+        filteredCards = allCards.filter(card => card.level === 0);
+    } else if (filter === 'lv1') {
+        filteredCards = allCards.filter(card => card.level === 1);
+    } else if (filter === 'lv2') {
+        filteredCards = allCards.filter(card => card.level === 2);
+    } else if (filter === 'lv3') {
+        filteredCards = allCards.filter(card => card.level === 3);
+    } else if (filter === 'lv4') {
+        filteredCards = allCards.filter(card => card.level === 4);
+    } else if (filter === 'lv5') {
+        filteredCards = allCards.filter(card => card.level === 5);
+    }
+
+    renderCards(filteredCards, container);
 }
 
 // 卡片快取存儲 (key: card ID, value: card data)
