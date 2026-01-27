@@ -120,7 +120,7 @@
 
 <body class="text-black dark:text-white min-h-screen flex flex-col overflow-x-hidden">
     <header class="pt-6 px-6 pb-2 flex flex-col shrink-0">
-        <div class="flex items-center w-full mb-6 relative">
+        <div class="flex items-center w-full mb-4 relative">
             <button onclick="window.history.back()"
                 class="w-11 h-11 flex items-center justify-center bg-white dark:bg-zinc-800 neo-border rounded-full shadow-neo active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all z-10 shrink-0">
                 <span class="material-symbols-outlined text-2xl font-bold">chevron_left</span>
@@ -143,7 +143,7 @@
 
     <main class="flex-grow overflow-y-auto px-6 py-4">
         <!-- 題目卡 -->
-        <div class="bg-white dark:bg-zinc-900 neo-border rounded-2xl shadow-neo overflow-hidden mb-6">
+        <div class="bg-white dark:bg-zinc-900 neo-border rounded-2xl shadow-neo overflow-hidden mb-4">
             <div class="h-4 bg-primary border-b-[3px] border-black"></div>
             <div class="p-6">
                 <h3 id="question-text" class="text-2xl font-black text-center leading-tight">
@@ -153,17 +153,17 @@
         </div>
 
         <!-- 選項區 -->
-        <div id="options-container" class="space-y-4">
+        <div id="options-container" class="space-y-3">
             <!-- 選項由 JavaScript 動態生成 -->
         </div>
 
         <!-- 解析區 (使用 details 標籤) -->
         <details id="explanation-details"
-            class="group mt-6 bg-note-yellow dark:bg-zinc-800 border-[3px] border-dashed border-zinc-400 dark:border-zinc-600 rounded-2xl overflow-hidden transition-all hidden">
-            <summary class="flex items-center justify-between p-4 cursor-pointer list-none select-none">
+            class="group mt-4 bg-note-yellow dark:bg-zinc-800 border-[3px] border-dashed border-zinc-400 dark:border-zinc-600 rounded-2xl overflow-hidden transition-all hidden">
+            <summary class="flex items-center justify-between p-3 cursor-pointer list-none select-none">
                 <div class="flex items-center gap-2">
-                    <span class="text-lg">💡</span>
-                    <span class="font-black text-lg text-zinc-800 dark:text-zinc-100">解析：</span>
+                    <span class="text-base">💡</span>
+                    <span class="font-black text-base text-zinc-800 dark:text-zinc-100">解析：</span>
                 </div>
                 <span
                     class="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
@@ -245,6 +245,7 @@
 
         // 初始化
         function init() {
+            randomizeQuiz();
             renderQuestion();
             prevBtn.addEventListener('click', handlePrevClick);
             nextBtn.addEventListener('click', handleNextClick);
@@ -268,6 +269,30 @@
             }
         }
 
+        // 隨機打亂題目與選項
+        function randomizeQuiz() {
+            // 1. 打亂題目順序
+            shuffleArray(quizQuestions);
+
+            // 2. 打亂每個題目的選項，並更新正確答案索引
+            quizQuestions.forEach(q => {
+                const correctOptionText = q.options[q.correctAnswer - 1]; // 先暫存正確答案的文字
+                shuffleArray(q.options); // 打亂選項
+                q.correctAnswer = q.options.indexOf(correctOptionText) + 1; // 重新找出正確答案的新位置 (1-based)
+            });
+
+            // 重置使用者答案，確保長度正確 (雖然長度沒變，但習慣上重置一下)
+            userAnswers = new Array(quizQuestions.length).fill(null);
+        }
+
+        // Fisher-Yates 洗牌演算法
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
         // 渲染題目
         function renderQuestion() {
             const question = quizQuestions[currentQuestionIndex];
@@ -284,7 +309,7 @@
             // 渲染選項
             optionsContainer.innerHTML = question.options.map((option, index) => {
                 const btnIndex = index + 1;
-                let btnClass = "option-btn w-full text-left bg-white dark:bg-zinc-800/50 neo-border p-4 rounded-2xl shadow-neo relative";
+                let btnClass = "option-btn w-full text-left bg-white dark:bg-zinc-800/50 neo-border p-3.5 rounded-2xl shadow-neo relative";
                 let btnContent = `<p class="font-bold text-lg leading-snug">${String.fromCharCode(65 + index)}. ${option}</p>`;
                 let isDisabled = false;
 
