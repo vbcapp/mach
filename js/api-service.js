@@ -209,10 +209,21 @@ class ApiService {
 
             if (error) throw error;
 
+            // 計算使用者的卡片數量
+            const { count: cardCount, error: countError } = await this.supabase
+                .from('flashcards')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', userId);
+
+            if (countError) {
+                console.error('計算卡片數量失敗:', countError);
+            }
+
             return {
                 success: true,
                 data: {
                     ...data,
+                    total_cards: cardCount || 0,
                     levelProgressPercentage: (data.current_xp / data.next_level_xp * 100).toFixed(1)
                 }
             };

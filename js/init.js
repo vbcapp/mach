@@ -91,7 +91,38 @@ function updateUserUI(userData) {
         nextLevelXpEl.textContent = userData.next_level_xp || 100;
     }
 
+    // 更新卡片數量
+    updateCardCountUI(userData.total_cards || 0);
+
     console.log('使用者 UI 已更新:', userData);
+}
+
+/**
+ * 更新卡片數量 UI（包含 CARD/CARDS 單複數）
+ */
+function updateCardCountUI(count) {
+    const cardCountEl = document.getElementById('user-card-count');
+    if (cardCountEl) {
+        cardCountEl.textContent = count;
+    }
+
+    const cardLabelEl = document.getElementById('card-label');
+    if (cardLabelEl) {
+        cardLabelEl.textContent = count <= 1 ? 'CARD' : 'CARDS';
+    }
+}
+
+/**
+ * 調整卡片數量（用於刪除後即時更新）
+ */
+function adjustCardCount(delta) {
+    const cached = sessionStorage.getItem('userData');
+    if (cached) {
+        const userData = JSON.parse(cached);
+        userData.total_cards = Math.max(0, (userData.total_cards || 0) + delta);
+        sessionStorage.setItem('userData', JSON.stringify(userData));
+        updateCardCountUI(userData.total_cards);
+    }
 }
 
 /**
@@ -250,6 +281,7 @@ function bindCardActions(cards) {
             if (result.success) {
                 sessionStorage.removeItem(`card_${cardId}`);
                 delete cardsCache[cardId];
+                adjustCardCount(-1); // 即時更新卡片數量
                 await loadUserCards(); // 重新載入卡片
             } else {
                 alert('刪除失敗: ' + result.error.message);

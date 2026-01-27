@@ -192,8 +192,24 @@
     <script src="js/init.js"></script>
 
     <script>
+        // 從 sessionStorage 載入使用者資料（立即顯示）
+        function loadFromCache() {
+            const cached = sessionStorage.getItem('userData');
+            if (cached) {
+                const userData = JSON.parse(cached);
+                updateProfilePageUI(userData);
+                if (userData.username) {
+                    document.getElementById('user-nickname').textContent = userData.username;
+                }
+                return true;
+            }
+            return false;
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. 先從 LocalStorage 讀取 (最快)
+            // 1. 先從快取載入（最快）
+            loadFromCache();
+
             const nickname = localStorage.getItem('userNickname');
             if (nickname) {
                 document.getElementById('user-nickname').textContent = nickname;
@@ -211,8 +227,10 @@
                     // 同步更新 LocalStorage，確保下次載入也是最新的
                     localStorage.setItem('userNickname', profileResult.data.username);
 
+                    // 快取到 sessionStorage
+                    sessionStorage.setItem('userData', JSON.stringify(profileResult.data));
+
                     // 更新其他 UI (Level, XP 等)
-                    // 注意：init.js 已經會做這部分，這裡是確保 profile.html 特有的元素也能更新
                     updateProfilePageUI(profileResult.data);
                 }
             }
@@ -222,25 +240,27 @@
             // 更新等級
             const levelBadge = document.getElementById('user-level');
             if (levelBadge) {
-                levelBadge.textContent = 'Lv. ' + userData.current_level;
+                levelBadge.textContent = 'Lv. ' + (userData.current_level || 1);
             }
 
             // 更新 XP 文字
             const xpText = document.getElementById('user-xp-text');
             if (xpText) {
-                xpText.textContent = `${userData.current_xp.toLocaleString()} / ${userData.next_level_xp.toLocaleString()}`;
+                const currentXp = userData.current_xp || 0;
+                const nextLevelXp = userData.next_level_xp || 100;
+                xpText.textContent = `${currentXp.toLocaleString()} / ${nextLevelXp.toLocaleString()}`;
             }
 
             // 更新 XP 進度條
             const xpBar = document.getElementById('user-xp-bar');
             if (xpBar) {
-                xpBar.style.width = `${userData.levelProgressPercentage}%`;
+                xpBar.style.width = `${userData.levelProgressPercentage || 0}%`;
             }
 
             // 更新卡片數量
             const cardCount = document.getElementById('user-card-count');
             if (cardCount) {
-                cardCount.textContent = userData.total_cards_created;
+                cardCount.textContent = userData.total_cards || 0;
             }
         }
     </script>
