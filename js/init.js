@@ -64,39 +64,75 @@ async function loadUserData() {
 /**
  * 更新使用者 UI (等級、XP 等)
  */
+/**
+ * 更新使用者 UI (等級、XP 等)
+ */
 function updateUserUI(userData) {
     // 快取使用者資料到 sessionStorage
     sessionStorage.setItem('userData', JSON.stringify(userData));
 
+    // 使用 LevelSystem 計算顯示狀態
+    // 注意：後端回傳的是資料庫存儲值，這裡再計算一次以確保 UI 與邏輯一致
+    // 也能即時處理「卡等級」的視覺效果
+    let levelState;
+    if (typeof LevelSystem !== 'undefined') {
+        const currentXP = userData.current_xp || 0;
+        const perfectCards = userData.perfect_card_count || 0;
+        levelState = LevelSystem.calculateState(currentXP, perfectCards);
+    } else {
+        console.warn('LevelSystem not loaded, falling back to simple display');
+        // Fallback
+        levelState = {
+            actualLevel: userData.current_level || 1,
+            progressInLevel: 0,
+            xpForNextLevel: 100,
+            isCapped: false,
+            displayProgress: 0
+        };
+    }
+
     // 更新等級
     const levelEl = document.getElementById('user-level');
     if (levelEl) {
-        levelEl.textContent = `Lv. ${userData.current_level || 1}`;
+        levelEl.textContent = `Lv. ${levelState.actualLevel}`;
     }
 
-    // 更新 XP 文字
+    // 更新 XP 文字: 顯示 "當前等級進度 / 升級所需"
     const xpTextEl = document.getElementById('user-xp-text');
     if (xpTextEl) {
-        xpTextEl.textContent = `${userData.current_xp || 0}/${userData.next_level_xp || 100}`;
+        if (levelState.isCapped) {
+            xpTextEl.textContent = `MAX (Need Perfect Card)`;
+        } else {
+            xpTextEl.textContent = `${levelState.progressInLevel}/${levelState.xpForNextLevel}`;
+        }
     }
 
     // 更新 XP 進度條
     const xpBarEl = document.getElementById('user-xp-bar');
     if (xpBarEl) {
-        const percentage = ((userData.current_xp || 0) / (userData.next_level_xp || 100)) * 100;
-        xpBarEl.style.width = `${Math.min(percentage, 100)}%`;
+        // 設定寬度
+        xpBarEl.style.width = `${Math.min(levelState.displayProgress, 100)}%`;
+
+        // 處理金色閃爍 (Capped State)
+        if (levelState.isCapped) {
+            xpBarEl.classList.add('capped-gold-shimmer');
+            xpBarEl.classList.remove('bg-primary'); // 移除原本顏色，改用金光
+        } else {
+            xpBarEl.classList.remove('capped-gold-shimmer');
+            xpBarEl.classList.add('bg-primary'); // 恢復原本顏色
+        }
     }
 
-    // 更新下一等級需要的 XP
+    // 更新下一等級需要的 XP (保留原本 DOM，雖然後面邏輯可能不直接用它)
     const nextLevelXpEl = document.getElementById('user-next-level-xp');
     if (nextLevelXpEl) {
-        nextLevelXpEl.textContent = userData.next_level_xp || 100;
+        nextLevelXpEl.textContent = levelState.xpForNextLevel;
     }
 
     // 更新卡片數量
     updateCardCountUI(userData.total_cards || 0);
 
-    console.log('使用者 UI 已更新:', userData);
+    console.log('使用者 UI 已更新:', levelState);
 }
 
 /**

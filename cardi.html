@@ -71,7 +71,36 @@
         body {
             min-height: max(884px, 100dvh);
         }
+
+        .capped-gold-shimmer {
+            position: relative;
+            overflow: hidden;
+            background-color: #ffd400 !important;
+            /* Force gold connection */
+        }
+
+        .capped-gold-shimmer::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.6),
+                    transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            100% {
+                left: 200%;
+            }
+        }
     </style>
+    <!-- Add LevelSystem Script -->
+    <script src="js/level-system.js"></script>
 </head>
 
 <body
@@ -217,13 +246,45 @@
             const cached = sessionStorage.getItem('userData');
             if (cached) {
                 const userData = JSON.parse(cached);
+
+                // 使用 LevelSystem 計算顯示狀態
+                let levelState;
+                if (typeof LevelSystem !== 'undefined') {
+                    const currentXP = userData.current_xp || 0;
+                    const perfectCards = userData.perfect_card_count || 0;
+                    levelState = LevelSystem.calculateState(currentXP, perfectCards);
+                } else {
+                    console.warn('LevelSystem not loaded, falling back to simple display');
+                    levelState = {
+                        actualLevel: userData.current_level || 1,
+                        progressInLevel: 0,
+                        xpForNextLevel: 100,
+                        isCapped: false,
+                        displayProgress: 0
+                    };
+                }
+
                 const xpText = document.getElementById('header-xp-text');
-                if (xpText) xpText.textContent = `${userData.current_xp || 0} / ${userData.next_level_xp || 100}`;
+                if (xpText) {
+                    if (levelState.isCapped) {
+                        xpText.textContent = `MAX`;
+                    } else {
+                        xpText.textContent = `${levelState.progressInLevel}/${levelState.xpForNextLevel}`;
+                    }
+                }
 
                 const xpBar = document.getElementById('header-xp-bar');
                 if (xpBar) {
-                    const percentage = ((userData.current_xp || 0) / (userData.next_level_xp || 100)) * 100;
-                    xpBar.style.width = `${Math.min(percentage, 100)}%`;
+                    xpBar.style.width = `${Math.min(levelState.displayProgress, 100)}%`;
+
+                    // 處理金色閃爍 (Capped State)
+                    if (levelState.isCapped) {
+                        xpBar.classList.add('capped-gold-shimmer');
+                        xpBar.classList.remove('bg-primary');
+                    } else {
+                        xpBar.classList.remove('capped-gold-shimmer');
+                        xpBar.classList.add('bg-primary');
+                    }
                 }
             }
         }

@@ -64,12 +64,40 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        .capped-gold-shimmer {
+            position: relative;
+            overflow: hidden;
+            background-color: #ffd400 !important; /* Force gold connection */
+        }
+        .capped-gold-shimmer::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.6),
+                transparent
+            );
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            100% {
+                left: 200%;
+            }
+        }
     </style>
     <style>
         body {
             min-height: max(884px, 100dvh);
         }
     </style>
+    </style>
+    <!-- Add LevelSystem Script -->
+    <script src="js/level-system.js"></script>
 </head>
 
 <body
@@ -199,7 +227,18 @@
         document.addEventListener('DOMContentLoaded', async function () {
             await apiService.initialize();
             await loadDailyCard();
+            loadUserFromCache();
         });
+
+        // 從快取載入使用者資料
+        function loadUserFromCache() {
+            const cached = sessionStorage.getItem('userData');
+            if (cached) {
+                const userData = JSON.parse(cached);
+                updateHeaderUI(userData);
+            }
+        }
+
 
         // 載入每日一卡
         async function loadDailyCard() {
@@ -296,8 +335,59 @@
                 currentDailyCard.add_count++;
                 const addCountEl = document.getElementById('add-count');
                 if (addCountEl) addCountEl.textContent = `${currentDailyCard.add_count} 人已收藏`;
+
+                // 更新用戶 XP (如果是最新的 API 版本會回傳 newUserData)
+                if (result.newUserData) {
+                    // 更新快取
+                    sessionStorage.setItem('userData', JSON.stringify(result.newUserData));
+
+                    // 立即更新 Header UI
+                    // 這裡我們可以重複使用 loadUserFromCache 的邏輯，但為了確保準確，我們直接寫更新邏輯
+                    // 或者我們應該升級 loadUserFromCache 來使用 LevelSystem
+                    updateHeaderUI(result.newUserData);
+                }
             } else {
                 alert('添加失敗: ' + result.error.message);
+            }
+        }
+
+        function updateHeaderUI(userData) {
+            let levelState;
+            if (typeof LevelSystem !== 'undefined') {
+                const currentXP = userData.current_xp || 0;
+                const perfectCards = userData.perfect_card_count || 0;
+                levelState = LevelSystem.calculateState(currentXP, perfectCards);
+            } else {
+                levelState = {
+                    actualLevel: userData.current_level || 1,
+                    progressInLevel: 0,
+                    xpForNextLevel: 100,
+                    isCapped: false,
+                    displayProgress: 0
+                };
+            }
+
+            const xpText = document.getElementById('header-xp-text');
+            if (xpText) {
+                if (levelState.isCapped) {
+                    xpText.textContent = `MAX`;
+                } else {
+                    xpText.textContent = `${levelState.progressInLevel}/${levelState.xpForNextLevel}`;
+                }
+            }
+
+            const xpBar = document.getElementById('header-xp-bar');
+            if (xpBar) {
+                xpBar.style.width = `${Math.min(levelState.displayProgress, 100)}%`;
+
+                // 處理金色閃爍 (Capped State) (需要 CSS，稍後確認是否有加)
+                if (levelState.isCapped) {
+                    xpBar.classList.add('capped-gold-shimmer');
+                    xpBar.classList.remove('bg-primary');
+                } else {
+                    xpBar.classList.remove('capped-gold-shimmer');
+                    xpBar.classList.add('bg-primary');
+                }
             }
         }
 

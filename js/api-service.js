@@ -224,7 +224,7 @@ class ApiService {
                 data: {
                     ...data,
                     total_cards: cardCount || 0,
-                    levelProgressPercentage: (data.current_xp / data.next_level_xp * 100).toFixed(1)
+                    // levelProgressPercentage is calculated by LevelSystem on client side
                 }
             };
         } catch (error) {
@@ -255,44 +255,54 @@ class ApiService {
     }
 
     /**
-     * 增加使用者 XP 並處理升級
+     * 更新使用者進度 (XP 與 滿分卡)
+     * 使用 LevelSystem 計算等級
      */
-    async addUserXp(userId, xpToAdd) {
+    async updateUserProgress(userId, { xpToAdd = 0, perfectCardsToAdd = 0 }) {
         try {
+            // 1. 取得當前數據
             const userResult = await this.getUserProfile(userId);
             if (!userResult.success) return userResult;
 
             const user = userResult.data;
-            let newXp = user.current_xp + xpToAdd;
-            let newLevel = user.current_level;
-            let leveledUp = false;
 
-            while (newXp >= user.next_level_xp) {
-                newXp -= user.next_level_xp;
-                newLevel++;
-                leveledUp = true;
+            // 2. 計算新數值
+            const currentTotalXP = user.current_xp || 0; // 資料庫存的是累積總 XP
+            const currentPerfectCards = user.perfect_card_count || 0;
+
+            const newTotalXP = currentTotalXP + xpToAdd;
+            const newPerfectCards = currentPerfectCards + perfectCardsToAdd;
+
+            // 3. 使用 LevelSystem 計算等級狀態
+            // 注意：LevelSystem.js 必須在 index.html 中被載入
+            if (typeof LevelSystem === 'undefined') {
+                console.error('LevelSystem is not defined');
+                return { success: false, error: 'LevelSystem missing' };
             }
 
-            const newNextLevelXp = calculateNextLevelXp(newLevel);
+            const levelState = LevelSystem.calculateState(newTotalXP, newPerfectCards);
 
-            const updateResult = await this.updateUser(userId, {
-                current_level: newLevel,
-                current_xp: newXp,
-                next_level_xp: newNextLevelXp
-            });
+            // 4. 更新資料庫
+            const updates = {
+                current_xp: newTotalXP,
+                perfect_card_count: newPerfectCards,
+                current_level: levelState.actualLevel,
+                current_level_xp: levelState.currentLevelXP // 使用修正後的數值 (卡等時會是滿額)
+            };
+
+            const updateResult = await this.updateUser(userId, updates);
 
             if (!updateResult.success) return updateResult;
 
             return {
                 success: true,
                 data: {
-                    leveledUp,
-                    newLevel,
-                    newXp,
-                    newNextLevelXp,
-                    user: updateResult.data
+                    user: updateResult.data,
+                    levelState: levelState,
+                    leveledUp: levelState.actualLevel > user.current_level
                 }
             };
+
         } catch (error) {
             return this._handleError(error);
         }
@@ -385,12 +395,13 @@ class ApiService {
             }
 
             // 4. 給使用者 XP
-            await this.addUserXp(userId, XP_REWARDS.CREATE_CARD);
+            const progressResult = await this.updateUserProgress(userId, { xpToAdd: XP_REWARDS.CREATE_CARD });
 
             return {
                 success: true,
                 data: createdCard,
-                xpEarned: XP_REWARDS.CREATE_CARD
+                xpEarned: XP_REWARDS.CREATE_CARD,
+                newUserData: progressResult.success ? progressResult.data.user : null
             };
         } catch (error) {
             return this._handleError(error);

@@ -65,8 +65,34 @@
         }
         
 
+        .capped-gold-shimmer {
+            position: relative;
+            overflow: hidden;
+            background-color: #ffd400 !important; /* Force gold connection */
+        }
+        .capped-gold-shimmer::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.6),
+                transparent
+            );
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            100% {
+                left: 200%;
+            }
+        }
     </style>
-</head>
+    <!-- Add LevelSystem Script -->
+    <script src="js/level-system.js"></script>
 
 <body class="bg-zinc-100 dark:bg-background-dark text-[#1a1a1a] dark:text-white overflow-hidden">
     <div class="relative flex h-screen w-full flex-col max-w-[430px] mx-auto border-x-2 border-black/5">
@@ -104,9 +130,8 @@
                     <div class="w-full h-2 border border-zinc-600 bg-zinc-900 overflow-hidden">
                         <div id="user-xp-bar" class="h-full bg-primary" style="width: 0%;"></div>
                     </div>
-                    <div class="text-[10px] font-bold text-white tracking-widest uppercase opacity-80">NEXT LEVEL: <span
-                            id="user-next-level-xp">-</span>
-                        XP</div>
+                    <div class="text-[10px] font-bold text-white tracking-widest uppercase opacity-80">升級資格：滿分卡 1 / 1
+                    </div>
                 </div>
             </div>
 
