@@ -738,6 +738,52 @@ class ApiService {
         }
     }
 
+    /**
+     * 直接更新卡片進度（用於手動設定熟悉度，例如愛心功能）
+     */
+    async updateCardProgress(cardId, userId, updates) {
+        try {
+            // 先檢查是否已有進度
+            const existing = await this._getCardProgress(userId, cardId);
+            const now = new Date().toISOString();
+
+            if (!existing.data) {
+                // 如果沒有進度，則建立新進度
+                const { data, error } = await this.supabase
+                    .from('user_card_progress')
+                    .insert({
+                        user_id: userId,
+                        card_id: cardId,
+                        ...updates,
+                        created_at: now,
+                        updated_at: now
+                    })
+                    .select()
+                    .single();
+
+                if (error) throw error;
+                return { success: true, data };
+            } else {
+                // 如果已有進度，則更新
+                const { data, error } = await this.supabase
+                    .from('user_card_progress')
+                    .update({
+                        ...updates,
+                        updated_at: now
+                    })
+                    .eq('user_id', userId)
+                    .eq('card_id', cardId)
+                    .select()
+                    .single();
+
+                if (error) throw error;
+                return { success: true, data };
+            }
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
     // ==================== 錯誤處理 ====================
 
     _handleError(error, defaultCode = ERROR_CODES.INTERNAL_ERROR) {

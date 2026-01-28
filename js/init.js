@@ -201,7 +201,7 @@ function applyFilter(filter) {
     let filteredCards = allCards;
 
     if (filter === 'unfamiliar') {
-        filteredCards = allCards.filter(card => card.level === 0);
+        filteredCards = allCards.filter(card => card.progress && card.progress.mastery_level === 0);
     } else if (filter === 'lv1') {
         filteredCards = allCards.filter(card => card.level === 1);
     } else if (filter === 'lv2') {
@@ -276,9 +276,12 @@ function renderCardItem(card) {
         ? card.description.substring(0, 40) + (card.description.length > 40 ? '...' : '')
         : '';
 
+    const isHearted = card.progress && card.progress.mastery_level === 0;
+    const heartFill = isHearted ? '#EF4444' : '#F5F5F5'; // #EF4444 is Red
+
     return `
         <a href="card.html?id=${card.id}"
-            class="bg-white dark:bg-zinc-900 neo-border-thick neo-shadow p-3 flex flex-col min-h-[140px] relative transition-transform active:scale-[0.98]">
+            class="bg-white dark:bg-zinc-900 neo-border-thick neo-shadow p-3 flex flex-col h-[180px] relative transition-transform active:scale-[0.98]">
             <div class="mb-2">
                 <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.category || 'General'}</span>
             </div>
@@ -286,11 +289,20 @@ function renderCardItem(card) {
                 <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1">${card.english_term}</h3>
                 <p class="text-[10px] leading-tight opacity-70 line-clamp-2">${card.chinese_translation}。${description}</p>
             </div>
-            <div class="flex justify-end gap-2 mt-2">
-                <span data-card-id="${card.id}" data-action="edit"
-                    class="material-symbols-outlined text-base cursor-pointer hover:text-primary">edit_square</span>
-                <span data-card-id="${card.id}" data-action="delete"
-                    class="material-symbols-outlined text-base cursor-pointer text-red-500">delete</span>
+            <div class="flex justify-between items-end gap-2 mt-2">
+                <button data-card-id="${card.id}" data-action="heart" data-hearted="${isHearted}" 
+                    class="heart-btn hover:scale-110 active:scale-95 transition-transform z-10 p-1 -ml-1 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl ${isHearted ? 'text-[#EF4444]' : 'text-black'}" 
+                          style="font-variation-settings: 'FILL' ${isHearted ? 1 : 0}, 'wght' 700;">
+                        favorite
+                    </span>
+                </button>
+                <div class="flex gap-2">
+                    <span data-card-id="${card.id}" data-action="edit"
+                        class="material-symbols-outlined text-base cursor-pointer hover:text-primary z-10">edit_square</span>
+                    <span data-card-id="${card.id}" data-action="delete"
+                        class="material-symbols-outlined text-base cursor-pointer text-red-500 z-10">delete</span>
+                </div>
             </div>
         </a>
     `;
@@ -303,10 +315,70 @@ function bindCardActions(cards) {
     // 卡片連結 - 點擊時快取資料
     document.querySelectorAll('#cards-container a[href^="card.html"]').forEach(link => {
         link.addEventListener('click', function (e) {
+            // 如果點擊的是按鈕，不跳轉
+            if (e.target.closest('button') || e.target.closest('[data-action]')) {
+                e.preventDefault();
+                return;
+            }
+
             const href = this.getAttribute('href');
             const cardId = new URLSearchParams(href.split('?')[1]).get('id');
             const card = cards?.find(c => c.id === cardId);
             if (card) cacheCard(card);
+        });
+    });
+
+    // 愛心按鈕
+    document.querySelectorAll('[data-action="heart"]').forEach(btn => {
+        btn.addEventListener('click', async function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const cardId = this.getAttribute('data-card-id');
+            const isHearted = this.getAttribute('data-hearted') === 'true';
+            // Clicked Heart (Red) -> Toggle OFF -> Level 1 (or other default)
+            // Clicked Empty -> Toggle ON -> Level 0
+            const newMasteryLevel = isHearted ? 1 : 0;
+
+            // 樂觀 UI 更新 (Optimistic UI Update)
+            const card = cards?.find(c => c.id === cardId);
+            const originalProgress = card.progress ? { ...(card.progress) } : null;
+
+            if (card) {
+                if (!card.progress) card.progress = { mastery_level: 1 }; // init if null
+                card.progress.mastery_level = newMasteryLevel;
+
+                // 注意：這裡只更新了記憶體中的 allCards，需要重新渲染或手動切換 class
+                // 為了簡單起見，我們重新渲染當前視圖
+                applyFilter(currentFilter);
+            }
+
+            // 發送 API 請求
+            if (!currentUser) {
+                console.error('無法獲取用戶 ID: currentUser 為 null');
+                return;
+            }
+            const userId = currentUser.id;
+
+            console.log(`正在更新卡片 ${cardId} mastery_level 為 ${newMasteryLevel}...`);
+            const result = await apiService.updateCardProgress(cardId, userId, { mastery_level: newMasteryLevel });
+
+            if (!result.success) {
+                console.error('更新愛心狀態失敗:', result.error);
+                //還原狀態
+                if (card) {
+                    if (originalProgress) {
+                        card.progress = originalProgress;
+                    } else {
+                        // If it was null default to 1 (un-hearted)
+                        card.progress.mastery_level = isHearted ? 0 : 1;
+                    }
+                    applyFilter(currentFilter);
+                }
+                alert('更新失敗: ' + (result.error.message || '未知錯誤'));
+            } else {
+                console.log('更新成功');
+            }
         });
     });
 
@@ -336,7 +408,12 @@ function bindCardActions(cards) {
                 sessionStorage.removeItem(`card_${cardId}`);
                 delete cardsCache[cardId];
                 adjustCardCount(-1); // 即時更新卡片數量
-                await loadUserCards(); // 重新載入卡片
+
+                // 從 allCards 移除
+                const idx = allCards.findIndex(c => c.id === cardId);
+                if (idx !== -1) allCards.splice(idx, 1);
+
+                applyFilter(currentFilter); // 重新渲染
             } else {
                 alert('刪除失敗: ' + result.error.message);
             }
@@ -372,4 +449,3 @@ function showLevelUpAnimation(newLevel) {
 document.addEventListener('DOMContentLoaded', async () => {
     await initializeApp();
 });
-
