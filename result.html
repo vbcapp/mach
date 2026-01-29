@@ -186,6 +186,23 @@
                     if (apiResult.success) {
                         xpEarned = apiResult.xpEarned;
                         bonuses = apiResult.bonuses || [];
+
+                        // 檢查是否升級
+                        if (apiResult.leveledUp) {
+                            console.log('🎉 Level Up detected!', apiResult.oldLevel, '->', apiResult.newLevel);
+                            // 儲存升級資訊
+                            sessionStorage.setItem('levelUpData', JSON.stringify({
+                                oldLevel: apiResult.oldLevel,
+                                newLevel: apiResult.newLevel
+                            }));
+                            sessionStorage.setItem('levelUpReturnUrl', 'result.html');
+                            // 清除 API 結果，避免返回時重複觸發
+                            sessionStorage.removeItem('quizApiResult');
+                            // 延遲跳轉，讓用戶先看到結果
+                            setTimeout(() => {
+                                window.location.href = 'upgrade.html';
+                            }, 1500);
+                        }
                     }
                 } catch (e) {
                     console.error('Error parsing API result', e);

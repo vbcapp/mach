@@ -219,11 +219,23 @@ class ApiService {
                 console.error('計算卡片數量失敗:', countError);
             }
 
+            // 動態計算滿分卡片數量（best_quiz_score >= 3 的卡片）
+            const { count: perfectCardCount, error: perfectError } = await this.supabase
+                .from('user_card_progress')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', userId)
+                .gte('best_quiz_score', 3);
+
+            if (perfectError) {
+                console.error('計算滿分卡片數量失敗:', perfectError);
+            }
+
             return {
                 success: true,
                 data: {
                     ...data,
                     total_cards: cardCount || 0,
+                    perfect_card_count: perfectCardCount || 0, // 使用動態計算的值
                     // levelProgressPercentage is calculated by LevelSystem on client side
                 }
             };
@@ -790,7 +802,11 @@ class ApiService {
                 bonuses: bonuses,
                 newUserData: userUpdateResult.data.user,
                 isPerfectFirstTime: isPerfectRun && perfectCardsToAdd > 0,
-                isMasterFirstTime: isMasterNow && !wasMasterBefore
+                isMasterFirstTime: isMasterNow && !wasMasterBefore,
+                // 升級資訊
+                leveledUp: userUpdateResult.data.leveledUp || false,
+                oldLevel: userUpdateResult.data.leveledUp ? (userUpdateResult.data.user.current_level - 1) : null,
+                newLevel: userUpdateResult.data.leveledUp ? userUpdateResult.data.user.current_level : null
             };
 
         } catch (error) {

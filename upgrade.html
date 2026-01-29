@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-Hant">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>等級提升！</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ffd400",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#23200f",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0px",
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        .neo-brutalism-card {
+            border: 4px solid #000;
+            box-shadow: 8px 8px 0px 0px #000;
+        }
+        .neo-brutalism-button {
+            border: 4px solid #000;
+            box-shadow: 4px 4px 0px 0px #000;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .neo-brutalism-button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px 0px #000;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+    <style>
+        /* 背景 Icon 流動動畫 */
+        @keyframes floatLeft {
+            0% {
+                transform: translateX(100vw);
+            }
+
+            100% {
+                transform: translateX(-100px);
+            }
+        }
+
+        @keyframes floatRight {
+            0% {
+                transform: translateX(-100px);
+            }
+
+            100% {
+                transform: translateX(100vw);
+            }
+        }
+
+        .floating-icon {
+            position: absolute;
+            opacity: 0.1;
+            font-size: 48px;
+            font-weight: bold;
+            font-family: 'Space Grotesk', monospace;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .float-left-1 {
+            animation: floatLeft 12s linear infinite;
+            top: 15%;
+        }
+
+        .float-left-2 {
+            animation: floatLeft 18s linear infinite;
+            top: 35%;
+            animation-delay: -5s;
+        }
+
+        .float-right-1 {
+            animation: floatRight 15s linear infinite;
+            top: 55%;
+        }
+
+        .float-right-2 {
+            animation: floatRight 20s linear infinite;
+            top: 75%;
+            animation-delay: -8s;
+        }
+
+        .float-left-3 {
+            animation: floatLeft 14s linear infinite;
+            top: 85%;
+            animation-delay: -3s;
+        }
+
+        /* 等級數字跳動動畫 */
+        @keyframes levelPop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.3);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .level-pop {
+            animation: levelPop 0.5s ease-out;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-black">
+    <div id="upgrade-modal" class="relative flex h-screen w-full flex-col overflow-hidden">
+        <!-- 上半部：黃色區域 -->
+        <div
+            class="flex flex-col items-center justify-center bg-primary h-[45%] w-full pt-14 pb-4 px-6 relative border-b-[6px] border-black overflow-hidden">
+            <!-- 流動背景 Icons -->
+            <div class="floating-icon float-left-1">&lt; /&gt;</div>
+            <div class="floating-icon float-left-2">{ }</div>
+            <div class="floating-icon float-right-1">>_</div>
+            <div class="floating-icon float-right-2">( )</div>
+            <div class="floating-icon float-left-3">/* */</div>
+
+            <!-- 裝飾 Icons（更淡） -->
+            <div class="absolute top-14 left-6 opacity-10">
+                <span class="material-symbols-outlined text-4xl">add</span>
+            </div>
+            <div class="absolute bottom-4 right-4 opacity-10">
+                <span class="material-symbols-outlined text-4xl">terminal</span>
+            </div>
+            <div class="absolute top-16 right-14 opacity-10">
+                <span class="material-symbols-outlined text-3xl">star</span>
+            </div>
+
+            <!-- 主要內容 -->
+            <div
+                class="flex items-center justify-center bg-white p-4 border-4 border-black shadow-[5px_5px_0px_0px_#000] mb-4 relative z-10">
+                <span class="material-symbols-outlined text-[56px]">terminal</span>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tighter uppercase mb-2 text-center relative z-10">恭喜升級！</h1>
+            <p class="text-base font-bold border-2 border-black bg-white px-3 py-1 relative z-10">
+                LEVEL <span id="old-level">--</span> <span class="mx-2">→</span> <span id="new-level"
+                    class="level-pop">--</span>
+            </p>
+        </div>
+
+        <!-- 下半部：白色區域 -->
+        <div class="flex-1 flex flex-col bg-white dark:bg-background-dark p-6 justify-between">
+            <div class="space-y-6">
+                <h3 class="text-xl font-bold uppercase tracking-tight flex items-center">
+                    <span class="material-symbols-outlined mr-2">flag</span>
+                    下一步目標
+                </h3>
+                <div class="neo-brutalism-card p-6 bg-white dark:bg-neutral-900">
+                    <p class="text-sm font-bold uppercase text-neutral-500 mb-4">
+                        解鎖等級 LV.<span id="next-level-target">--</span> 條件：
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="bg-primary border-2 border-black w-10 h-10 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined font-bold">bolt</span>
+                            </div>
+                            <span class="text-lg font-bold italic">
+                                還需 <span id="xp-needed" class="text-primary">--</span> XP
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="bg-primary border-2 border-black w-10 h-10 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined font-bold">workspace_premium</span>
+                            </div>
+                            <span class="text-lg font-bold italic">
+                                需達成 <span id="cards-needed" class="text-primary">--</span> 張滿分卡片
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center font-bold text-neutral-600 italic">
+                    「保持這股勁頭，繼續挑戰自己！」
+                </p>
+            </div>
+            <div class="mt-4">
+                <button id="continue-btn"
+                    class="w-full bg-primary py-5 text-xl font-bold uppercase tracking-widest neo-brutalism-button flex items-center justify-center gap-2">
+                    繼續學習
+                    <span class="material-symbols-outlined font-bold">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 頂部按鈕 -->
+        <div class="absolute top-0 left-0 w-full flex items-center justify-between p-3 pointer-events-none z-50">
+            <div id="close-btn"
+                class="p-1.5 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] pointer-events-auto cursor-pointer active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all">
+                <span class="material-symbols-outlined text-lg">close</span>
+            </div>
+            <div id="share-btn"
+                class="p-1.5 bg-white border-2 border-black shadow-[2px_2px_0px_0px_#000] pointer-events-auto cursor-pointer active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all">
+                <span class="material-symbols-outlined text-lg">share</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase SDK & API Service -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="js/api-service.js"></script>
+    <script src="js/level-system.js"></script>
+
+    <script>
+        // 從 URL 或 sessionStorage 獲取升級資訊
+        let oldLevel = 1;
+        let newLevel = 2;
+        let animationFrameId = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 從 sessionStorage 讀取升級資訊
+            const levelUpData = sessionStorage.getItem('levelUpData');
+            if (levelUpData) {
+                const data = JSON.parse(levelUpData);
+                oldLevel = data.oldLevel || 1;
+                newLevel = data.newLevel || 2;
+            } else {
+                // 從 URL 讀取（備用）
+                const urlParams = new URLSearchParams(window.location.search);
+                oldLevel = parseInt(urlParams.get('from') || '1', 10);
+                newLevel = parseInt(urlParams.get('to') || '2', 10);
+            }
+
+            // 更新畫面
+            document.getElementById('old-level').textContent = oldLevel;
+            document.getElementById('new-level').textContent = newLevel;
+            document.getElementById('next-level-target').textContent = newLevel + 1;
+
+            // 初始化 API 並載入用戶數據
+            await apiService.initialize();
+            await loadNextLevelRequirements();
+
+            // 觸發 Confetti 特效
+            triggerConfetti();
+        });
+
+        // 載入下一等級需求
+        async function loadNextLevelRequirements() {
+            try {
+                // 初始化 API 取得用戶資料
+                if (!apiService.currentUser) {
+                    throw new Error('No user logged in');
+                }
+
+                const userData = await apiService.getUserProfile(apiService.currentUser.id);
+                if (!userData.success) {
+                    throw new Error('Failed to get user data');
+                }
+
+                const user = userData.data;
+                const currentLevelXp = user.current_level_xp || 0; // 當前等級已累積的 XP
+
+                // 計算升到下一級需要的 XP（當前等級的升級門檻）
+                const nextLevel = newLevel + 1;
+                const xpNeededForNextLevel = LevelSystem.getLevelRequirement(newLevel);
+
+                // 還需要多少 XP = 升級門檻 - 當前等級已累積的 XP
+                // 如果溢出（current_level_xp >= 門檻），則為 0
+                const xpRemaining = Math.max(0, xpNeededForNextLevel - currentLevelXp);
+
+                const nextLevelCardsRequired = nextLevel; // 滿分卡片數 = 等級數
+
+                // 更新畫面
+                document.getElementById('xp-needed').textContent = xpRemaining.toLocaleString();
+                document.getElementById('cards-needed').textContent = nextLevelCardsRequired;
+
+            } catch (error) {
+                console.error('載入下一等級需求失敗:', error);
+                // 顯示預設值
+                document.getElementById('xp-needed').textContent = '???';
+                document.getElementById('cards-needed').textContent = '???';
+            }
+        }
+
+        // Confetti 特效
+        function triggerConfetti() {
+            const duration = 3000;
+            const end = Date.now() + duration;
+
+            const colors = ['#ffd400', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4'];
+
+            (function frame() {
+                // 左側噴發
+                confetti({
+                    particleCount: 3,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0, y: 0.6 },
+                    colors: colors
+                });
+
+                // 右側噴發
+                confetti({
+                    particleCount: 3,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1, y: 0.6 },
+                    colors: colors
+                });
+
+                if (Date.now() < end) {
+                    animationFrameId = requestAnimationFrame(frame);
+                }
+            }());
+        }
+
+        // 關閉彈窗
+        function closeModal() {
+            // 停止 Confetti 動畫
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            confetti.reset();
+
+            // 清除 sessionStorage
+            sessionStorage.removeItem('levelUpData');
+
+            // 返回上一頁或首頁
+            const returnUrl = sessionStorage.getItem('levelUpReturnUrl');
+            if (returnUrl) {
+                sessionStorage.removeItem('levelUpReturnUrl');
+                window.location.href = returnUrl;
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 分享功能
+        function shareResult() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '我升級了！',
+                    text: `🎉 我在 VibeCoding 升到了 Level ${newLevel}！`,
+                    url: window.location.origin
+                }).catch(console.error);
+            } else {
+                // 複製到剪貼簿
+                const text = `🎉 我在 VibeCoding 升到了 Level ${newLevel}！`;
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('已複製分享文字到剪貼簿！');
+                });
+            }
+        }
+
+        // 綁定事件
+        document.getElementById('continue-btn').addEventListener('click', closeModal);
+        document.getElementById('close-btn').addEventListener('click', closeModal);
+        document.getElementById('share-btn').addEventListener('click', shareResult);
+    </script>
+</body>
+
+</html>
