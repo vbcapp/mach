@@ -251,15 +251,44 @@
                 bonusContainer.className = 'mt-3 space-y-2';
 
                 bonuses.forEach((bonus, index) => {
+                    const badgeWrapper = document.createElement('div');
+                    badgeWrapper.className = 'flex flex-col items-center gap-1';
+
                     const badge = document.createElement('div');
                     badge.className = 'bg-yellow-100 text-yellow-800 border-2 border-yellow-400 px-3 py-1.5 rounded-xl font-bold text-sm inline-flex items-center gap-2 mx-1 shadow-sm opacity-0 transform translate-y-4 transition-all duration-500';
-                    // 根據獎勵類型顯示不同 icon
+
+                    // 根據獎勵類型顯示不同 icon 和說明
                     let icon = 'military_tech';
-                    if (bonus.name.includes('開拓者')) icon = 'flag';
-                    if (bonus.name.includes('大師')) icon = 'workspace_premium';
+                    let description = '';
+
+                    if (bonus.name.includes('開拓者')) {
+                        icon = 'flag';
+                        description = '🎉 首次滿分通關！';
+                    } else if (bonus.name.includes('大師勛章')) {
+                        icon = 'workspace_premium';
+                        description = '🏆 已精通此卡片所有題目！';
+                    } else if (bonus.name.includes('大師加成')) {
+                        icon = 'workspace_premium';
+                        description = '✨ 大師額外加成';
+                    }
 
                     badge.innerHTML = `<span class="material-symbols-outlined text-lg">${icon}</span> ${bonus.name} +${bonus.xp}XP`;
-                    bonusContainer.appendChild(badge);
+                    badgeWrapper.appendChild(badge);
+
+                    // 加上說明文字
+                    if (description) {
+                        const descText = document.createElement('p');
+                        descText.className = 'text-xs text-zinc-500 font-medium opacity-0 transition-opacity duration-500';
+                        descText.textContent = description;
+                        badgeWrapper.appendChild(descText);
+
+                        // 延遲顯示說明文字
+                        setTimeout(() => {
+                            descText.classList.remove('opacity-0');
+                        }, 800 + (index * 200));
+                    }
+
+                    bonusContainer.appendChild(badgeWrapper);
 
                     // 延遲顯示 Badge 動畫
                     setTimeout(() => {
