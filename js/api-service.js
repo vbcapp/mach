@@ -572,6 +572,58 @@ class ApiService {
     }
 
     /**
+     * 批量建立新卡片
+     * @param {array} cardsData - 卡片數據數組
+     * @returns {Promise<object>}
+     */
+    async createCards(cardsData) {
+        try {
+            const now = new Date().toISOString();
+            const newCards = cardsData.map(card => ({
+                ...card,
+                created_at: now,
+                updated_at: now
+            }));
+
+            const { data, error } = await this.supabase
+                .from('flashcards')
+                .insert(newCards)
+                .select();
+
+            if (error) throw error;
+
+            // 計算總 XP 並更新使用者進度
+            const totalXP = XP_REWARDS.CREATE_CARD * cardsData.length;
+            const userId = cardsData[0].user_id;
+
+            const progressResult = await this.updateUserProgress(userId, {
+                xpToAdd: totalXP
+            });
+
+            // 更新使用者的卡片建立數量
+            const userResult = await this.getUserProfile(userId);
+            if (userResult.success) {
+                await this.updateUser(userId, {
+                    total_cards_created: userResult.data.total_cards_created + cardsData.length
+                });
+            }
+
+            return {
+                success: true,
+                data: data,
+                cardsCreated: data.length,
+                xpEarned: totalXP,
+                newUserData: progressResult.success ? progressResult.data.user : null
+            };
+        } catch (error) {
+            if (error.code === '23505') {
+                return this._handleError(error, ERROR_CODES.DUPLICATE_CARD);
+            }
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 更新卡片
      */
     async updateCard(cardId, updates) {

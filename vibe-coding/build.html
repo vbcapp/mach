@@ -53,7 +53,33 @@
         body {
             min-height: max(884px, 100dvh);
         }
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(4px);
+        }
+        .loading-content {
+            background: white;
+            padding: 2rem;
+            border: 3px solid #000;
+            max-width: 320px;
+            text-align: center;
+        }
     </style>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- 專案配置與 API Service -->
+    <script src="../config.js"></script>
+    <script src="../js/level-system.js"></script>
+    <script src="../js/api-service.js"></script>
+    <script src="../js/ai-service.js"></script>
 </head>
 
 <body class="font-display bg-background-light h-screen overflow-hidden flex flex-col justify-end">
@@ -71,7 +97,7 @@
             </div>
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-black italic tracking-tight text-black">生成術語卡片</h1>
-                <a href="index.html"
+                <a href="../index.html"
                     class="w-10 h-10 neo-border-thick bg-white flex items-center justify-center cursor-pointer">
                     <span class="material-symbols-outlined text-black font-black">close</span>
                 </a>
@@ -84,19 +110,25 @@
                 </label>
                 <div class="relative">
                     <input
+                        id="term-input"
                         class="w-full h-16 px-4 text-xl font-bold border-[3px] border-[#2B66FF] focus:ring-0 focus:outline-none bg-white text-black"
-                        type="text" value="Closure" />
+                        type="text"
+                        placeholder="輸入專有名詞（可用逗號分隔多個）"
+                        value="" />
                     <div class="absolute right-4 top-1/2 -translate-y-1/2">
                         <span class="material-symbols-outlined text-[#2B66FF] text-3xl">keyboard</span>
                     </div>
                 </div>
+                <p class="text-sm text-gray-600 mt-2">
+                    提示：可以輸入多個專有名詞，用逗號或空格分隔，例如：API, Closure, Promise
+                </p>
             </div>
             <div class="space-y-4 pb-2">
 
-                <button class="w-full py-5 text-xl font-black neo-border-thick bg-primary neo-shadow text-black">
+                <button id="generate-btn" class="w-full py-5 text-xl font-black neo-border-thick bg-primary neo-shadow text-black">
                     確認生成
                 </button>
-                <a href="index.html"
+                <a href="../index.html"
                     class="w-full py-5 text-xl font-black neo-border-thick bg-white text-black block text-center cursor-pointer">
                     取消
                 </a>
@@ -215,6 +247,138 @@
             </div>
         </div>
     </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <div class="mb-4">
+                <span class="material-symbols-outlined text-5xl animate-spin">progress_activity</span>
+            </div>
+            <h3 class="text-xl font-black mb-2">正在生成卡片...</h3>
+            <p class="text-sm text-gray-600" id="loading-message">請稍候，AI 正在為您生成學習卡片</p>
+        </div>
+    </div>
+
+    <script>
+        let currentUserId = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('頁面載入完成，開始初始化...');
+
+            // 檢查登入狀態
+            const userNickname = localStorage.getItem('userNickname');
+            const userConsent = localStorage.getItem('userConsent');
+
+            if (!userNickname || !userConsent) {
+                alert('請先登入');
+                window.location.href = '../login.html';
+                return;
+            }
+
+            // 初始化 API Service
+            console.log('初始化 API Service...');
+            const initResult = await apiService.initialize();
+            if (!initResult.success) {
+                console.error('API Service 初始化失敗:', initResult.error);
+                alert('系統初始化失敗，請重新整理頁面');
+                return;
+            }
+
+            // 使用 localStorage 中的 user_device_id 作為 userId
+            let userUuid = localStorage.getItem('user_device_id');
+            if (!userUuid) {
+                userUuid = crypto.randomUUID();
+                localStorage.setItem('user_device_id', userUuid);
+            }
+
+            // 快速登入以獲取 userId
+            const loginResult = await apiService.quickLogin(userNickname);
+            if (loginResult.success) {
+                currentUserId = loginResult.user.id;
+                console.log('用戶 ID:', currentUserId);
+            } else {
+                console.error('登入失敗:', loginResult.error);
+                alert('登入失敗，請重新登入');
+                window.location.href = '../login.html';
+                return;
+            }
+
+            // 綁定生成按鈕事件
+            const generateBtn = document.getElementById('generate-btn');
+            const termInput = document.getElementById('term-input');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingMessage = document.getElementById('loading-message');
+
+            generateBtn.addEventListener('click', async function() {
+                const inputValue = termInput.value.trim();
+
+                if (!inputValue) {
+                    alert('請輸入至少一個專有名詞');
+                    return;
+                }
+
+                // 解析輸入的專有名詞（支援逗號和空格分隔）
+                const terms = inputValue
+                    .split(/[,，\s]+/)
+                    .map(term => term.trim())
+                    .filter(term => term.length > 0);
+
+                if (terms.length === 0) {
+                    alert('請輸入有效的專有名詞');
+                    return;
+                }
+
+                console.log('準備生成的專有名詞:', terms);
+
+                // 顯示 loading
+                loadingOverlay.classList.remove('hidden');
+                loadingMessage.textContent = `正在為 ${terms.length} 個專有名詞生成卡片...`;
+
+                try {
+                    // 1. 調用 AI Service 生成卡片數據
+                    console.log('步驟 1: 調用 OpenAI API...');
+                    loadingMessage.textContent = '正在調用 AI 生成內容...';
+                    const aiResult = await aiService.generateFlashcards(terms);
+
+                    if (!aiResult.success) {
+                        throw new Error(aiResult.error.message || '生成卡片失敗');
+                    }
+
+                    console.log('AI 生成成功:', aiResult.data);
+
+                    // 2. 轉換為 Supabase 格式
+                    console.log('步驟 2: 轉換數據格式...');
+                    loadingMessage.textContent = '正在處理生成的數據...';
+                    const flashcards = aiService.transformToFlashcardFormat(aiResult.data, currentUserId);
+                    console.log('轉換後的卡片數據:', flashcards);
+
+                    // 3. 批量插入到 Supabase
+                    console.log('步驟 3: 保存到資料庫...');
+                    loadingMessage.textContent = '正在保存卡片到資料庫...';
+                    const createResult = await apiService.createCards(flashcards);
+
+                    if (!createResult.success) {
+                        throw new Error(createResult.error.message || '保存卡片失敗');
+                    }
+
+                    console.log('卡片保存成功:', createResult);
+
+                    // 4. 顯示成功訊息
+                    loadingOverlay.classList.add('hidden');
+                    alert(`成功生成 ${createResult.cardsCreated} 張卡片！\n獲得 ${createResult.xpEarned} XP`);
+
+                    // 5. 跳轉回首頁
+                    window.location.href = '../index.html';
+
+                } catch (error) {
+                    console.error('生成卡片過程中發生錯誤:', error);
+                    loadingOverlay.classList.add('hidden');
+                    alert(`生成卡片失敗：${error.message}\n\n請檢查：\n1. 網路連線是否正常\n2. API Key 是否有效\n3. 輸入的專有名詞是否合理`);
+                }
+            });
+        });
+    </script>
 
 </body>
 
