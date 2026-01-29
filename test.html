@@ -249,6 +249,31 @@
 
         let isInternalUpdate = false;
 
+        // 從 localStorage 載入複習狀態
+        function loadReviewState() {
+            const savedState = localStorage.getItem('quizReviewState');
+            if (!savedState) return false;
+
+            try {
+                const state = JSON.parse(savedState);
+                // 注意：儲存時使用的是 questions 和 answers
+                if (state.questions && state.answers) {
+                    quizQuestions = state.questions;
+                    userAnswers = state.answers;
+                    return true;
+                }
+            } catch (e) {
+                console.error('載入複習狀態失敗:', e);
+            }
+            return false;
+        }
+
+        // 隨機化測驗（打亂題目和選項順序）
+        function randomizeQuiz() {
+            // 可在此添加隨機化邏輯
+            // 目前保持題目順序不變
+        }
+
         // 初始化
         async function init() {
             // 初始化 API Service

@@ -323,28 +323,28 @@ function renderCardItem(card) {
     const isHearted = card.progress && card.progress.mastery_level === 0;
     const heartFill = isHearted ? '#EF4444' : '#F5F5F5'; // #EF4444 is Red
 
-    // 計算 Quiz 進度徽章 - 基於最後一次測驗分數
-    const lastScore = card.progress?.last_quiz_score;
+    // 計算 Quiz 進度徽章 - 基於歷史最高分
+    const bestScore = card.progress?.best_quiz_score;
     let badgeClass = '';
     let badgeEmoji = '';
     let badgeBg = '';
 
-    if (lastScore === 0 || lastScore === 1) {
+    if (bestScore === 0 || bestScore === 1) {
         badgeClass = 'quiz-badge-novice';
         badgeEmoji = '📝';
         badgeBg = '#F97316'; // Orange
-    } else if (lastScore === 2) {
+    } else if (bestScore === 2) {
         badgeClass = 'quiz-badge-intermediate';
         badgeEmoji = '✓';
         badgeBg = '#3B82F6'; // Blue
-    } else if (lastScore === 3) {
+    } else if (bestScore >= 3) {
         badgeClass = 'quiz-badge-perfect';
         badgeEmoji = '⭐';
-        badgeBg = '#FACC15'; // Gold
+        badgeBg = '#FACC15'; // Gold (永遠顯示星星)
     }
 
     // 決定是否顯示徽章（只有做過測驗才顯示）
-    const showBadge = lastScore !== null && lastScore !== undefined;
+    const showBadge = bestScore !== null && bestScore !== undefined && bestScore > 0;
 
     return `
         <a href="card.html?id=${card.id}"

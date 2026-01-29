@@ -735,12 +735,17 @@ class ApiService {
             if (!userUpdateResult.success) throw userUpdateResult.error;
 
             // 6. 更新 Card Progress
+            // 計算最高分（只有更高分才更新）
+            const currentBest = progress.best_quiz_score || 0;
+            const newBestScore = Math.max(currentBest, correctCount);
+
             const { error: progressUpdateError } = await this.supabase
                 .from('user_card_progress')
                 .update({
                     is_perfect: progress.is_perfect,
                     answered_question_indices: mergedIndices,
                     last_quiz_score: correctCount, // 記錄最後一次測驗分數
+                    best_quiz_score: newBestScore, // 記錄歷史最高分
                     last_reviewed_at: new Date().toISOString(),
                     // 簡單遞增練習次數
                     times_reviewed: (progress.times_reviewed || 0) + 1,
