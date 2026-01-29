@@ -197,43 +197,22 @@
     <script src="js/api-service.js"></script>
 
     <script>
-        // 題目資料
-        let quizQuestions = [
+        // 題目資料 (將從資料庫載入)
+        let quizQuestions = [];
+
+        // 預設題目 (無法載入時使用)
+        const defaultQuizQuestions = [
             {
-                question: "為什麼開發者要使用 API？",
-                options: [
-                    "為了增加程式碼的行數",
-                    "為了讓電腦運行速度變慢",
-                    "為了重複使用現有的功能，節省開發時間"
-                ],
-                correctAnswer: 3,
-                explanation: "透過 API，開發者可以直接呼叫別人寫好的功能（如 Google Maps 或金流支付），不需要從零開始開發，大幅提升效率。"
-            },
-            {
-                question: "下列哪一個比喻最能精確描述 API 的功能？",
-                options: [
-                    "存儲資料的硬碟機",
-                    "負責傳遞請求與結果的服務生",
-                    "撰寫程式碼的編輯器"
-                ],
-                correctAnswer: 2,
-                explanation: "API 扮演中介者的角色，負責接收請求並回傳結果，就像服務生在客人與廚房之間傳遞訊息。"
-            },
-            {
-                question: "API 的全稱是什麼？",
-                options: [
-                    "Application Programming Interface",
-                    "Advanced Program Integration",
-                    "Automated Protocol Instruction"
-                ],
+                question: "題目載入失敗",
+                options: ["請返回重試", "請返回重試", "請返回重試"],
                 correctAnswer: 1,
-                explanation: "API 代表 Application Programming Interface，即應用程式介面，用於不同軟體組件間的溝通。"
+                explanation: "無法載入此卡片的測驗題目，請返回卡片頁面重新進入。"
             }
         ];
 
         // 狀態變數
         let currentQuestionIndex = 0;
-        let userAnswers = new Array(quizQuestions.length).fill(null);
+        let userAnswers = [];
         let autoNextTimeout = null;
         let isExplanationExpanded = localStorage.getItem('isExplanationExpanded') === 'true';
 
@@ -274,6 +253,41 @@
             // 目前保持題目順序不變
         }
 
+        // 從資料庫載入卡片的測驗題目
+        async function loadCardQuestions(cardId) {
+            try {
+                // 使用 apiService 的 supabase 實例直接查詢
+                const { data, error } = await apiService.supabase
+                    .from('flashcards')
+                    .select('quiz_questions, english_term')
+                    .eq('id', cardId)
+                    .single();
+
+                if (error) {
+                    console.error('載入卡片題目失敗:', error);
+                    quizQuestions = defaultQuizQuestions;
+                    return;
+                }
+
+                if (data && data.quiz_questions && Array.isArray(data.quiz_questions) && data.quiz_questions.length > 0) {
+                    // 資料庫中的 correctAnswer 是 0-indexed，轉換為 1-indexed
+                    quizQuestions = data.quiz_questions.map(q => ({
+                        question: q.question,
+                        options: q.options,
+                        correctAnswer: q.correctAnswer + 1, // 轉為 1-indexed
+                        explanation: q.explanation
+                    }));
+                    console.log(`成功載入 ${data.english_term} 的 ${quizQuestions.length} 題測驗題目`);
+                } else {
+                    console.warn('此卡片沒有測驗題目');
+                    quizQuestions = defaultQuizQuestions;
+                }
+            } catch (err) {
+                console.error('載入題目時發生錯誤:', err);
+                quizQuestions = defaultQuizQuestions;
+            }
+        }
+
         // 初始化
         async function init() {
             // 初始化 API Service
@@ -282,21 +296,42 @@
             const urlParams = new URLSearchParams(window.location.search);
             const mode = urlParams.get('mode');
             const reviewIndex = urlParams.get('index');
+            const cardId = urlParams.get('id');
 
+            // 復習模式：從 localStorage 載入
             if (mode === 'review') {
                 if (!loadReviewState()) {
                     localStorage.removeItem('quizReviewState');
-                    randomizeQuiz();
+                    // 復習模式失敗時，嘗試重新載入卡片題目
+                    if (cardId) {
+                        await loadCardQuestions(cardId);
+                    } else {
+                        quizQuestions = defaultQuizQuestions;
+                    }
                 } else if (reviewIndex !== null) {
                     currentQuestionIndex = parseInt(reviewIndex, 10);
                 }
             } else {
+                // 一般模式：從資料庫載入卡片題目
                 localStorage.removeItem('quizReviewState');
-                randomizeQuiz();
+
+                if (cardId) {
+                    // 儲存 cardId 供之後使用（結果頁、重測）
+                    sessionStorage.setItem('currentCardId', cardId);
+                    await loadCardQuestions(cardId);
+                } else {
+                    // 沒有 cardId，使用預設題目
+                    console.warn('無卡片 ID，無法載入題目');
+                    quizQuestions = defaultQuizQuestions;
+                }
             }
+
+            // 初始化 userAnswers 陣列
+            userAnswers = new Array(quizQuestions.length).fill(null);
 
             renderQuestion();
             prevBtn.addEventListener('click', handlePrevClick);
+            nextBtn.addEventListener('click', handleNextClick);
             nextBtn.addEventListener('click', handleNextClick);
 
             const summaryEl = explanationDetails.querySelector('summary');
