@@ -156,8 +156,10 @@
     <script>
         // 追蹤是否有待處理的升級
         let pendingLevelUp = null;
-        // 追蹤正在顯示的慶祝動畫數量
-        let activeCelebrations = 0;
+        // 動畫隊列：按順序顯示動畫（開拓者 → 大師勛章 → 等級提升）
+        let celebrationQueue = [];
+        // 是否正在顯示動畫
+        let isShowingCelebration = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             const resultData = localStorage.getItem('quizResults');
@@ -312,13 +314,14 @@
                         badge.classList.add('animate-bounce');
                     }, 500 + (index * 200));
 
-                    // 如果是【首次】特殊成就，觸發全螢幕慶祝（大師加成不觸發）
+                    // 如果是【首次】特殊成就，加入動畫隊列（大師加成不觸發）
                     const isFirstTimeAchievement =
                         bonus.name.includes('開拓者') ||
                         (bonus.name.includes('大師勛章') && bonus.isNew !== false);
 
                     if (isFirstTimeAchievement) {
-                        showCelebrationModal(bonus);
+                        // 加入隊列而不是直接顯示
+                        queueCelebration(bonus);
                     }
                 });
 
@@ -326,10 +329,8 @@
                 descEl.after(bonusContainer);
             }
 
-            // 如果沒有慶祝動畫，但有升級，直接處理升級
-            if (activeCelebrations === 0 && pendingLevelUp) {
-                triggerLevelUpTransition();
-            }
+            // 開始處理動畫隊列（包括最後的升級動畫）
+            processNextCelebration();
 
             // 執行數字跳動動畫
             animateValue("score-text", 0, xpEarned, 1500);
@@ -388,10 +389,38 @@
             }, 800);
         }
 
+        // 將慶祝動畫加入隊列（按順序：開拓者優先，大師勛章次之）
+        function queueCelebration(bonus) {
+            // 決定優先順序：開拓者 = 1, 大師勛章 = 2
+            let priority = 99;
+            if (bonus.name.includes('開拓者')) priority = 1;
+            else if (bonus.name.includes('大師勛章')) priority = 2;
+
+            celebrationQueue.push({ bonus, priority });
+            // 按優先順序排序
+            celebrationQueue.sort((a, b) => a.priority - b.priority);
+        }
+
+        // 處理隊列中的下一個動畫
+        function processNextCelebration() {
+            // 如果正在顯示動畫，等待
+            if (isShowingCelebration) return;
+
+            // 如果隊列中還有動畫，顯示下一個
+            if (celebrationQueue.length > 0) {
+                const next = celebrationQueue.shift();
+                showCelebrationModal(next.bonus);
+            }
+            // 如果隊列空了，檢查是否有待處理的升級
+            else if (pendingLevelUp) {
+                triggerLevelUpTransition();
+            }
+        }
+
         // 全螢幕慶祝 Modal
         function showCelebrationModal(bonus) {
-            // 增加活動中的慶祝動畫計數
-            activeCelebrations++;
+            // 標記正在顯示動畫
+            isShowingCelebration = true;
 
             // 創建 Modal 元素
             const modal = document.createElement('div');
@@ -448,12 +477,10 @@
                 modal.querySelector('div').classList.add('scale-50');
                 setTimeout(() => {
                     modal.remove();
-                    // 減少活動中的慶祝動畫計數
-                    activeCelebrations--;
-                    // 如果所有慶祝動畫都結束了，且有待處理的升級，觸發升級跳轉
-                    if (activeCelebrations === 0 && pendingLevelUp) {
-                        triggerLevelUpTransition();
-                    }
+                    // 標記動畫結束
+                    isShowingCelebration = false;
+                    // 處理下一個動畫
+                    processNextCelebration();
                 }, 300);
             };
             closeBtn.onclick = closeModal;

@@ -506,6 +506,31 @@ class ApiService {
     }
 
     /**
+     * 取得使用者所有卡片（無分頁，用於匯出）
+     */
+    async getAllUserCards(userId) {
+        try {
+            const { data, error } = await this.supabase
+                .from('flashcards')
+                .select('*, user_card_progress(*)')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            return {
+                success: true,
+                data: data.map(card => ({
+                    ...card,
+                    progress: card.user_card_progress?.[0] || null
+                }))
+            };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 取得單張卡片詳細資訊（含進度）
      */
     async getCardWithProgress(cardId, userId) {
@@ -689,12 +714,13 @@ class ApiService {
 
             if (!progress) {
                 // 如果沒有進度紀錄，創建新的（使用 upsert 避免重複 key 錯誤）
+                // mastery_level 預設為 1（正常狀態），0 才是紅心（不熟悉）狀態，需要用戶自己點擊
                 const { data: newProgress, error: createError } = await this.supabase
                     .from('user_card_progress')
                     .upsert({
                         user_id: userId,
                         card_id: cardId,
-                        mastery_level: 0,
+                        mastery_level: 1,  // 預設為正常狀態（無紅心），0 = 紅心（用戶手動標記不熟悉）
                         is_perfect: false,
                         answered_question_indices: []
                     }, {
@@ -917,12 +943,14 @@ class ApiService {
             const now = new Date().toISOString();
 
             if (!progressResult.data) {
+                // 新建進度記錄：mastery_level 預設為 1（正常狀態）
+                // 0 = 用戶手動標記的「不熟悉」狀態，系統不應自動設為 0
                 const { data, error } = await this.supabase
                     .from('user_card_progress')
                     .insert({
                         user_id: userId,
                         card_id: cardId,
-                        mastery_level: isCorrect ? 1 : 0,
+                        mastery_level: 1,  // 預設為正常狀態，不自動設為 0
                         times_reviewed: 1,
                         times_correct: isCorrect ? 1 : 0,
                         times_incorrect: isCorrect ? 0 : 1,
@@ -944,9 +972,12 @@ class ApiService {
                 const accuracyRate = newTimesCorrect / newTimesReviewed;
                 let newMasteryLevel = progress.mastery_level;
 
+                // 注意：mastery_level = 0 是用戶手動標記的「不熟悉」狀態
+                // 系統自動調整時，最低只能降到 1，不能自動設為 0
                 if (isCorrect && accuracyRate >= 0.9 && progress.mastery_level < 5) {
                     newMasteryLevel = progress.mastery_level + 1;
-                } else if (!isCorrect && accuracyRate < 0.5 && progress.mastery_level > 0) {
+                } else if (!isCorrect && accuracyRate < 0.5 && progress.mastery_level > 1) {
+                    // 最低降到 1，不降到 0（0 只能用戶手動設置）
                     newMasteryLevel = progress.mastery_level - 1;
                 }
 

@@ -145,14 +145,15 @@
                 <span class="text-xl font-black italic uppercase">資料備份</span>
             </div>
             <div class="grid grid-cols-2 gap-4">
-                <button
+                <button id="export-cards-btn"
                     class="w-full bg-primary border-4 border-black py-3 px-2 font-black italic flex items-center justify-center text-center leading-tight neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    匯出所有卡片 (JSON)
+                    匯出卡片資料 (JSON)
                 </button>
-                <button
+                <button id="import-cards-btn"
                     class="w-full bg-white border-4 border-black py-3 px-2 font-black italic flex items-center justify-center text-center leading-tight neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    匯入備份資料 (JSON)
+                    匯入所有卡片
                 </button>
+                <input type="file" id="import-file-input" accept=".json" class="hidden">
             </div>
         </div>
         <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 space-y-4 neo-brutalism-card">
@@ -263,6 +264,137 @@
                     // 更新其他 UI (Level, XP 等)
                     updateProfilePageUI(profileResult.data);
                 }
+            }
+
+            // 綁定匯出按鈕事件
+            const exportBtn = document.getElementById('export-cards-btn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', async () => {
+                    if (!apiService.currentUser) {
+                        alert('請先登入');
+                        return;
+                    }
+
+                    // 顯示 Loading
+                    const originalText = exportBtn.innerText;
+                    exportBtn.innerText = '匯出中...';
+                    exportBtn.disabled = true;
+
+                    try {
+                        const result = await apiService.getAllUserCards(apiService.currentUser.id);
+
+                        if (result.success) {
+                            const dataStr = JSON.stringify(result.data, null, 2);
+                            const blob = new Blob([dataStr], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `vibecoding_cards_backup_${new Date().toISOString().split('T')[0]}.json`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                        } else {
+                            alert('匯出失敗: ' + (result.error?.message || '未知錯誤'));
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        alert('匯出發生錯誤');
+                    } finally {
+                        exportBtn.innerText = originalText;
+                        exportBtn.disabled = false;
+                    }
+                });
+            }
+
+            // 綁定匯入按鈕與檔案選擇
+            const importBtn = document.getElementById('import-cards-btn');
+            const fileInput = document.getElementById('import-file-input');
+
+            if (importBtn && fileInput) {
+                importBtn.addEventListener('click', () => {
+                    if (!apiService.currentUser) {
+                        alert('請先登入');
+                        return;
+                    }
+                    fileInput.click();
+                });
+
+                fileInput.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    if (!file.name.endsWith('.json')) {
+                        alert('請選擇 JSON 檔案');
+                        return;
+                    }
+
+                    if (!confirm('匯入操作將會新增這些卡片到您的帳號中。確定要繼續嗎？')) {
+                        fileInput.value = ''; // 清除選擇
+                        return;
+                    }
+
+                    // 顯示 Loading
+                    const originalText = importBtn.innerText;
+                    importBtn.innerText = '匯入中...';
+                    importBtn.disabled = true;
+
+                    try {
+                        const text = await file.text();
+                        let cards = JSON.parse(text);
+
+                        if (!Array.isArray(cards)) {
+                            // 如果不是陣列，嘗試看看是否包在 data 屬性裡 (依據匯出格式 result.data)
+                            if (cards.data && Array.isArray(cards.data)) {
+                                cards = cards.data;
+                            } else {
+                                throw new Error('格式錯誤：JSON 內容應為卡片陣列');
+                            }
+                        }
+
+                        // 資料清理與準備
+                        const currentUserId = apiService.currentUser.id;
+                        const cardsToImport = cards.map(c => {
+                            // 移除不應該直接匯入的欄位，保留卡片內容
+                            // 注意：我們移除 ID，讓它們成為新卡片
+                            // 移除 progress，因為新卡片進度應重置
+                            const { id, user_id, created_at, updated_at, progress, user_card_progress, ...cardContent } = c;
+                            return {
+                                ...cardContent,
+                                user_id: currentUserId, // 確保歸屬到當前用戶
+                                is_public: false // 預設匯入為私人
+                            };
+                        });
+
+                        if (cardsToImport.length === 0) {
+                            alert('沒有可匯入的有效卡片資料');
+                            return;
+                        }
+
+                        // 批量建立
+                        // 由於瀏覽器端可能會有請求大小限制，如果是大量資料，可以考慮分批
+                        // 這裡簡單做，直接呼叫 update (createCards)
+                        // 注意：createCards 在 api-service.js 中已實作
+                        const result = await apiService.createCards(cardsToImport);
+
+                        if (result.success) {
+                            alert(`成功匯入 ${result.cardsCreated} 張卡片！\n獲得 ${result.xpEarned} XP！`);
+                            // 重新載入頁面以更新數據
+                            window.location.reload();
+                        } else {
+                            throw result.error;
+                        }
+
+                    } catch (err) {
+                        console.error(err);
+                        alert('匯入失敗: ' + (err.message || '未知錯誤'));
+                    } finally {
+                        importBtn.innerText = originalText;
+                        importBtn.disabled = false;
+                        fileInput.value = ''; // Reset input
+                    }
+                });
             }
         });
 

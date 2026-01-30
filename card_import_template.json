@@ -1,0 +1,63 @@
+[
+    {
+        "english_term": "API",
+        "chinese_translation": "應用程式介面",
+        "abbreviation": "API",
+        "category": "Computer Science",
+        "level": 1,
+        "description": "軟體之間溝通的橋樑，讓不同的程式可以交換資料或功能。",
+        "analogy": "就像是餐廳的服務生，你（使用者）看菜單點餐，服務生（API）把訂單送到廚房（系統），再把餐點端回來給你。",
+        "quiz_questions": [
+            {
+                "question": "API 的主要功能是什麼？",
+                "options": [
+                    "儲存大量的數據",
+                    "讓不同的軟體系統互相溝通",
+                    "設計網頁的介面"
+                ],
+                "correctAnswer": 1,
+                "explanation": "API (Application Programming Interface) 的核心作用就是扮演溝通橋樑，讓不同系統交換資訊。"
+            },
+            {
+                "question": "在餐廳的比喻中，API 扮演什麼角色？",
+                "options": [
+                    "廚師",
+                    "顧客",
+                    "服務生"
+                ],
+                "correctAnswer": 2,
+                "explanation": "服務生負責傳遞訊息（訂單）和結果（餐點），這正是 API 在客戶端和伺服器端之間的工作。"
+            },
+            {
+                "question": "下列哪個常見的應用使用了 API？",
+                "options": [
+                    "用 Google 帳號登入其他網站",
+                    "使用小畫家畫圖",
+                    "在電腦上建立一個資料夾"
+                ],
+                "correctAnswer": 0,
+                "explanation": "第三方登入（OAuth）是典型的 API 應用，網站透過 Google API 驗證你的身分。"
+            },
+            {
+                "question": "API 是哪三個單字的縮寫？",
+                "options": [
+                    "Automated Process Interface",
+                    "Application Programming Interface",
+                    "Advanced Program Integration"
+                ],
+                "correctAnswer": 1,
+                "explanation": "API 代表 Application Programming Interface。"
+            },
+            {
+                "question": "如果沒有 API，兩個獨立的軟體通常會如何？",
+                "options": [
+                    "會自動融合在一起",
+                    "無法直接交換資料或指令",
+                    "會變得運作更快"
+                ],
+                "correctAnswer": 1,
+                "explanation": "沒有定義好的介面 (API)，軟體之間就像語言不通，無法直接溝通。"
+            }
+        ]
+    }
+]

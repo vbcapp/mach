@@ -292,7 +292,7 @@
                 // 如果溢出（current_level_xp >= 門檻），則為 0
                 const xpRemaining = Math.max(0, xpNeededForNextLevel - currentLevelXp);
 
-                const nextLevelCardsRequired = nextLevel; // 滿分卡片數 = 等級數
+                const nextLevelCardsRequired = newLevel; // 升到下一級需要的滿分卡片數 = 當前等級
 
                 // 更新畫面
                 document.getElementById('xp-needed').textContent = xpRemaining.toLocaleString();
