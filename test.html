@@ -270,6 +270,11 @@
                 }
 
                 if (data && data.quiz_questions && Array.isArray(data.quiz_questions) && data.quiz_questions.length > 0) {
+                    // 儲存卡片名稱供 result.html 使用
+                    if (data.english_term) {
+                        sessionStorage.setItem('currentCardName', data.english_term);
+                    }
+
                     // 1. 為每個題目加上原始索引（用於大師勛章追蹤）
                     let allQuestions = data.quiz_questions.map((q, index) => ({
                         ...q,
