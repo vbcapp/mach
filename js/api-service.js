@@ -197,6 +197,188 @@ class ApiService {
     // ==================== 使用者相關 ====================
 
     /**
+     * 取得排行榜資料
+     */
+    async getLeaderboard(currentUserId) {
+        try {
+            // 1. 取得所有用戶 (Top 100)
+            const { data: users, error, count } = await this.supabase
+                .from('users')
+                .select('*', { count: 'exact' })
+                .order('current_xp', { ascending: false })
+                .limit(100);
+
+            if (error) throw error;
+
+            // 2. 處理用戶資料
+            const processedUsers = users.map(user => {
+                let levelState = {
+                    actualLevel: user.current_level || 1,
+                    isCapped: false
+                };
+
+                // 如果全域有 LevelSystem，用它算準確狀態
+                if (typeof LevelSystem !== 'undefined') {
+                    levelState = LevelSystem.calculateState(user.current_xp || 0, user.perfect_card_count || 0);
+                }
+
+                return {
+                    ...user,
+                    actualLevel: levelState.actualLevel,
+                    isCapped: levelState.isCapped,
+                    total_cards: user.total_cards_created || 0 // 對應前端需要的欄位
+                };
+            });
+
+            // 3. 找出當前用戶排名與資料
+            let currentUserRank = -1;
+            let currentUserData = null;
+
+            if (currentUserId) {
+                // 如果當前用戶在列表內
+                const index = processedUsers.findIndex(u => u.id === currentUserId);
+                if (index !== -1) {
+                    currentUserRank = index + 1;
+                    currentUserData = processedUsers[index];
+                } else {
+                    // 如果不在 Top 100，額外查詢
+                    const myProfile = await this.getUserProfile(currentUserId);
+                    if (myProfile.success) {
+                        // 重算 levelState
+                        let myLevelState = { actualLevel: myProfile.data.current_level || 1, isCapped: false };
+                        if (typeof LevelSystem !== 'undefined') {
+                            myLevelState = LevelSystem.calculateState(myProfile.data.current_xp || 0, myProfile.data.perfect_card_count || 0);
+                        }
+
+                        currentUserData = {
+                            ...myProfile.data,
+                            actualLevel: myLevelState.actualLevel,
+                            isCapped: myLevelState.isCapped
+                        };
+
+                        // 計算排名：有多少人 XP 比我高
+                        const { count: higherCount, error: rankError } = await this.supabase
+                            .from('users')
+                            .select('*', { count: 'exact', head: true })
+                            .gt('current_xp', currentUserData.current_xp || 0);
+
+                        if (!rankError) {
+                            currentUserRank = higherCount + 1;
+                        }
+                    }
+                }
+            }
+
+            return {
+                success: true,
+                data: processedUsers,
+                totalUsers: count,
+                currentUserRank,
+                currentUserData
+            };
+
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 取得卡片數量排行榜資料
+     */
+    async getCardLeaderboard(currentUserId) {
+        try {
+            // 1. 取得所有用戶 (Top 100)，依卡片數量排序
+            // 注意：這裡假設 users 表有 total_cards_created 欄位。如果不準確，可能需要 join flashcards count，但那樣效能較差。
+            // 我們先信任 users.total_cards_created (由 createCard/deleteCard 維護)
+            const { data: users, error, count } = await this.supabase
+                .from('users')
+                .select('*', { count: 'exact' })
+                .order('total_cards_created', { ascending: false })
+                .limit(100);
+
+            if (error) throw error;
+
+            // 2. 處理用戶資料
+            const processedUsers = users.map(user => {
+                let levelState = {
+                    actualLevel: user.current_level || 1
+                };
+
+                if (typeof LevelSystem !== 'undefined') {
+                    levelState = LevelSystem.calculateState(user.current_xp || 0, user.perfect_card_count || 0);
+                }
+
+                return {
+                    ...user,
+                    actualLevel: levelState.actualLevel,
+                    total_cards: user.total_cards_created || 0
+                };
+            });
+
+            // 3. 找出當前用戶排名與資料
+            let currentUserRank = -1;
+            let currentUserData = null;
+            let todayAddedCards = 0;
+
+            if (currentUserId) {
+                const index = processedUsers.findIndex(u => u.id === currentUserId);
+                if (index !== -1) {
+                    currentUserRank = index + 1;
+                    currentUserData = processedUsers[index];
+                } else {
+                    const myProfile = await this.getUserProfile(currentUserId);
+                    if (myProfile.success) {
+                        let myLevelState = { actualLevel: myProfile.data.current_level || 1 };
+                        if (typeof LevelSystem !== 'undefined') {
+                            myLevelState = LevelSystem.calculateState(myProfile.data.current_xp || 0, myProfile.data.perfect_card_count || 0);
+                        }
+
+                        currentUserData = {
+                            ...myProfile.data,
+                            actualLevel: myLevelState.actualLevel,
+                            total_cards: myProfile.data.total_cards_created || 0
+                        };
+
+                        // 計算排名
+                        const { count: higherCount, error: rankError } = await this.supabase
+                            .from('users')
+                            .select('*', { count: 'exact', head: true })
+                            .gt('total_cards_created', currentUserData.total_cards);
+
+                        if (!rankError) {
+                            currentUserRank = higherCount + 1;
+                        }
+                    }
+                }
+
+                // 4. 計算今日新增卡片數量
+                const today = new Date().toISOString().split('T')[0];
+                const { count: todayCount, error: todayError } = await this.supabase
+                    .from('flashcards')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', currentUserId)
+                    .gte('created_at', today);
+
+                if (!todayError) {
+                    todayAddedCards = todayCount;
+                }
+            }
+
+            return {
+                success: true,
+                data: processedUsers,
+                totalUsers: count,
+                currentUserRank,
+                currentUserData,
+                todayAddedCards
+            };
+
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 取得使用者資料
      */
     async getUserProfile(userId) {
