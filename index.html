@@ -160,13 +160,13 @@
                 </div>
                 <div class="flex gap-2">
                     <div class="relative flex-1">
-                        <input
+                        <input id="search-input"
                             class="w-full h-12 neo-border-thick px-10 bg-white dark:bg-zinc-800 focus:outline-none text-sm font-bold"
                             placeholder="搜尋術語..." type="text" />
                         <span
                             class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-xl">search</span>
                     </div>
-                    <button
+                    <button id="trigger-filter-btn"
                         class="w-12 h-12 neo-border-thick bg-white dark:bg-zinc-800 flex items-center justify-center neo-shadow-sm active:shadow-none active:translate-x-[1px] active:translate-y-[1px]">
                         <span class="material-symbols-outlined">tune</span>
                     </button>
@@ -229,35 +229,264 @@
         </nav>
     </div>
 
+    <!-- Filter Modal -->
+    <div id="filter-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="filter-backdrop"></div>
+        <div class="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-xl overflow-hidden neo-border-thick transition-transform transform translate-y-full"
+            id="filter-content">
+            <div class="p-4 border-b-2 border-black flex justify-between items-center bg-zinc-100 dark:bg-zinc-800">
+                <h3 class="font-black text-lg uppercase">篩選類別</h3>
+                <button id="close-filter" class="material-symbols-outlined font-bold">close</button>
+            </div>
+            <div class="p-4 max-h-[60vh] overflow-y-auto" id="category-list">
+                <!-- Categories will be injected here -->
+                <div class="text-center text-gray-400 py-4">載入分類中...</div>
+            </div>
+            <div class="p-4 border-t-2 border-black bg-zinc-100 dark:bg-zinc-800 flex gap-2">
+                <button id="clear-filter"
+                    class="flex-1 py-3 neo-border bg-white dark:bg-zinc-800 font-bold active:translate-y-[1px] active:shadow-none neo-shadow-sm">清除</button>
+                <button id="apply-filter"
+                    class="flex-1 py-3 neo-border bg-primary font-black active:translate-y-[1px] active:shadow-none neo-shadow-sm">確認篩選</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // 篩選按鈕點擊功能
-        document.addEventListener('DOMContentLoaded', function () {
-            const filterButtons = document.querySelectorAll('.filter-btn');
+        document.addEventListener('DOMContentLoaded', async function () {
+            // === 變數宣告 ===
+            const searchInput = document.getElementById('search-input');
+            const tuneButton = document.getElementById('trigger-filter-btn');
 
-            filterButtons.forEach(button => {
-                button.addEventListener('click', function () {
-                    // 移除所有按鈕的 active 狀態
-                    filterButtons.forEach(btn => {
-                        btn.classList.remove('active', 'bg-primary', 'font-black');
-                        btn.classList.add('bg-white', 'dark:bg-zinc-800', 'font-bold');
-                    });
+            // Modal Elements
+            const filterModal = document.getElementById('filter-modal');
+            const filterBackdrop = document.getElementById('filter-backdrop');
+            const filterContent = document.getElementById('filter-content');
+            const closeFilterBtn = document.getElementById('close-filter');
+            const categoryList = document.getElementById('category-list');
+            const applyFilterBtn = document.getElementById('apply-filter');
+            const clearFilterBtn = document.getElementById('clear-filter');
 
-                    // 為當前點擊的按鈕添加 active 狀態
-                    this.classList.add('active', 'bg-primary', 'font-black');
-                    this.classList.remove('bg-white', 'dark:bg-zinc-800', 'font-bold');
+            // 狀態
+            let selectedCategories = new Set();
+            let allCategories = [];
+            let currentSearchQuery = '';
 
-                    // 這裡可以添加篩選卡片的邏輯
-                    const filterValue = this.getAttribute('data-filter');
-                    console.log('選擇的篩選器:', filterValue);
-                    // 未來可以根據 filterValue 來篩選顯示的卡片
+            // === 工具函式：注音排序 ===
+            // 建立注音對照表 (簡化版，涵蓋常見首字)
+            const bopomofoMap = {
+                'ㄅ': 1, 'ㄆ': 2, 'ㄇ': 3, 'ㄈ': 4, 'ㄉ': 5, 'ㄊ': 6, 'ㄋ': 7, 'ㄌ': 8,
+                'ㄍ': 9, 'ㄎ': 10, 'ㄏ': 11, 'ㄐ': 12, 'ㄑ': 13, 'ㄒ': 14,
+                'ㄓ': 15, 'ㄔ': 16, 'ㄕ': 17, 'ㄖ': 18, 'ㄗ': 19, 'ㄘ': 20, 'ㄙ': 21,
+                'ㄧ': 22, 'ㄨ': 23, 'ㄩ': 24, 'ㄚ': 25, 'ㄛ': 26, 'ㄜ': 27, 'ㄝ': 28,
+                'ㄞ': 29, 'ㄟ': 30, 'ㄠ': 31, 'ㄡ': 32, 'ㄢ': 33, 'ㄣ': 34, 'ㄤ': 35, 'ㄥ': 36, 'ㄦ': 37
+            };
+
+            function getBopomofoScore(char) {
+                // 這裡是一個簡單的模擬，實際中文轉注音需要龐大字典。
+                // 由於瀏覽器支援 Intl.Collator，我們優先使用它。
+                return 0;
+            }
+
+            function sortCategories(categories) {
+                // 分離中文和英文/其他
+                const chineseRegex = /[\u4e00-\u9fa5]/;
+                const enCategories = [];
+                const zhCategories = [];
+                const otherCategories = [];
+
+                categories.forEach(cat => {
+                    if (!cat) return;
+                    // 判斷首字
+                    const firstChar = cat.charAt(0);
+                    if (chineseRegex.test(firstChar)) {
+                        zhCategories.push(cat);
+                    } else if (/[a-zA-Z]/.test(firstChar)) {
+                        enCategories.push(cat);
+                    } else {
+                        otherCategories.push(cat);
+                    }
                 });
+
+                // 英文：A-Z (不分大小寫)
+                enCategories.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+                // 中文：使用 Intl.Collator 進行注音排序 (zh-TW 通常預設筆劃或注音，但在現代瀏覽器 zh-Hant-TW-u-co-zhuyin 可強制注音)
+                const zhCollator = new Intl.Collator('zh-Hant-TW-u-co-zhuyin');
+                zhCategories.sort(zhCollator.compare);
+
+                // 其他：預設排序
+                otherCategories.sort();
+
+                // 合併：英文 -> 中文 -> 其他
+                return [...enCategories, ...zhCategories, ...otherCategories];
+            }
+
+            // === Modal 操作 ===
+            function openModal() {
+                filterModal.classList.remove('hidden');
+                // 動畫 (簡單處理)
+                setTimeout(() => {
+                    filterContent.classList.remove('translate-y-full');
+                }, 10);
+                loadCategories();
+            }
+
+            function closeModal() {
+                filterContent.classList.add('translate-y-full');
+                setTimeout(() => {
+                    filterModal.classList.add('hidden');
+                }, 300);
+            }
+
+            // === 載入與渲染分類 ===
+            async function loadCategories() {
+                const userId = apiService.currentUser?.id;
+                if (!userId) return;
+
+                // 避免重複載入閃爍，如果已有資料只重新渲染選取狀態
+                if (allCategories.length === 0) {
+                    const result = await apiService.getUniqueCategories(userId);
+                    if (result.success) {
+                        allCategories = sortCategories(result.data);
+                    } else {
+                        categoryList.innerHTML = '<div class="text-red-500 text-center">載入失敗</div>';
+                        return;
+                    }
+                }
+
+                renderCategoryList();
+            }
+
+            function renderCategoryList() {
+                categoryList.innerHTML = '';
+                if (allCategories.length === 0) {
+                    categoryList.innerHTML = '<div class="text-center text-gray-500">目前沒有分類</div>';
+                    return;
+                }
+
+                allCategories.forEach(cat => {
+                    const isSelected = selectedCategories.has(cat);
+                    const div = document.createElement('div');
+                    div.className = `flex items-center justify-between p-3 mb-2 rounded border-2 cursor-pointer transition-all ${isSelected ? 'border-primary bg-yellow-50' : 'border-gray-200 bg-white dark:bg-zinc-800 dark:border-zinc-700'}`;
+                    div.onclick = () => toggleCategory(cat);
+
+                    div.innerHTML = `
+                        <span class="font-bold text-sm ${isSelected ? 'text-black' : 'text-gray-600 dark:text-gray-300'}">${cat}</span>
+                        <div class="w-5 h-5 border-2 border-black flex items-center justify-center ${isSelected ? 'bg-primary' : 'bg-white'}">
+                            ${isSelected ? '<span class="material-symbols-outlined text-sm font-bold">check</span>' : ''}
+                        </div>
+                    `;
+                    categoryList.appendChild(div);
+                });
+            }
+
+            function toggleCategory(cat) {
+                if (selectedCategories.has(cat)) {
+                    selectedCategories.delete(cat);
+                } else {
+                    selectedCategories.add(cat);
+                }
+                renderCategoryList();
+            }
+
+            // === 搜尋與篩選邏輯 ===
+
+            async function applyFilter() {
+                const userId = apiService.currentUser?.id;
+                if (!userId) return;
+
+                const cardsContainer = document.getElementById('cards-container');
+                cardsContainer.innerHTML = `
+                    <div class="col-span-2 text-center py-8 text-gray-400">
+                        <span class="material-symbols-outlined animate-spin">progress_activity</span>
+                        <p class="text-xs mt-2">載入中...</p>
+                    </div>
+                `;
+
+                const options = {
+                    userId: userId,
+                    page: 1, // 篩選後重置為第一頁
+                    limit: 100, // 增加數量
+                    searchQuery: currentSearchQuery || null,
+                    category: selectedCategories.size > 0 ? Array.from(selectedCategories) : null
+                };
+
+                const result = await apiService.getCards(options);
+
+                if (result.success) {
+                    const container = document.getElementById('cards-container');
+
+                    if (result.data.cards.length === 0) {
+                        container.innerHTML = `
+                            <div class="col-span-2 flex flex-col items-center justify-center py-12 opacity-50">
+                                <span class="material-symbols-outlined text-4xl mb-2">inbox</span>
+                                <p class="text-sm font-bold">沒有找到卡片</p>
+                            </div>
+                        `;
+                    } else {
+                        // 使用 init.js 定義的 renderCardItem 以保持樣式一致
+                        if (typeof renderCardItem === 'function') {
+                            container.innerHTML = result.data.cards.map(card => renderCardItem(card)).join('');
+                        } else {
+                            console.error('renderCardItem not found');
+                            // Fallback if global function missing
+                            container.innerHTML = result.data.cards.map(c => `<div>${c.english_term}</div>`).join('');
+                        }
+
+                        // 重新綁定事件 (愛心、編輯、刪除)
+                        if (typeof bindCardActions === 'function') {
+                            bindCardActions(result.data.cards);
+                        }
+                    }
+
+                    // 更新上方計數 (init.js 裡的邏輯可能需要連動，這裡先簡單更新文字)
+                    const countEl = document.getElementById('user-card-count');
+                    if (countEl) countEl.textContent = result.data.pagination.totalItems;
+                } else {
+                    cardsContainer.innerHTML = '<div class="col-span-2 text-center text-red-500">載入失敗</div>';
+                }
+            }
+
+            // === Event Listeners ===
+            // 1. Filter Trigger (Tune Button)
+            if (tuneButton) {
+                tuneButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openModal();
+                });
+            }
+
+            // 2. Close / Backdrop
+            closeFilterBtn.onclick = closeModal;
+            filterBackdrop.onclick = closeModal;
+
+            // 3. Apply
+            applyFilterBtn.onclick = () => {
+                applyFilter();
+                closeModal();
+            };
+
+            // 4. Clear
+            clearFilterBtn.onclick = () => {
+                selectedCategories.clear();
+                renderCategoryList(); // 重新渲染 modal
+                applyFilter(); // 重新載入列表
+                // 不關閉 modal，方便使用者看結果? 或者關閉? 依照需求選好點擊正確或取消 -> 所以是需要 Confirm 才會生效
+                // 如果是 Clear，通常是清空選擇。
+            };
+
+            // 5. Search Input (Debounce)
+            let debounceTimer;
+            searchInput.addEventListener('input', (e) => {
+                currentSearchQuery = e.target.value.trim();
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    applyFilter(); // 搜尋也是一種篩選
+                }, 500);
             });
-        });
 
-        // 編輯按鈕點擊功能
-        document.addEventListener('DOMContentLoaded', function () {
+            // 編輯按鈕 (保留原本邏輯)
             const editButtons = document.querySelectorAll('[data-edit="true"]');
-
             editButtons.forEach(button => {
                 button.addEventListener('click', function (event) {
                     event.preventDefault();

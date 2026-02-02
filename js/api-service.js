@@ -740,7 +740,15 @@ class ApiService {
                 .order('created_at', { ascending: false });
 
             if (category) {
-                query = query.eq('category', category);
+                if (Array.isArray(category)) {
+                    // 多選篩選
+                    if (category.length > 0) {
+                        query = query.in('category', category);
+                    }
+                } else {
+                    // 單選篩選 (相容舊代碼)
+                    query = query.eq('category', category);
+                }
             }
 
             if (masteryLevel !== null) {
@@ -776,6 +784,33 @@ class ApiService {
                         itemsPerPage: limit
                     }
                 }
+            };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 取得使用者所有不重複的分類
+     */
+    async getUniqueCategories(userId) {
+        try {
+            const { data, error } = await this.supabase
+                .from('flashcards')
+                .select('category')
+                .eq('user_id', userId);
+
+            if (error) throw error;
+
+            // 取出不重複的分類
+            const uniqueCategories = [...new Set(data.map(item => item.category))];
+
+            // 簡單排序 (更複雜的排序交給前端)
+            uniqueCategories.sort();
+
+            return {
+                success: true,
+                data: uniqueCategories
             };
         } catch (error) {
             return this._handleError(error);
