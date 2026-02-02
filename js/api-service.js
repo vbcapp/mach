@@ -493,6 +493,73 @@ class ApiService {
     // ==================== 每日一卡相關 ====================
 
     /**
+     * 取得月份的每日一卡列表 (用於日曆)
+     */
+    async getMonthlyDailyCards(year, month) {
+        try {
+            // 計算該月份的起始與結束日期
+            const startDate = new Date(year, month - 1, 1);
+            const endDate = new Date(year, month, 0);
+
+            // 格式化為 YYYY-MM-DD
+            const startStr = startDate.toISOString().split('T')[0];
+            const endStr = endDate.toISOString().split('T')[0];
+
+            console.log(`查詢月份卡片: ${startStr} ~ ${endStr}`);
+
+            const { data, error } = await this.supabase
+                .from('daily_cards')
+                .select('id, publish_date, english_term, status')
+                .eq('status', 'published')
+                .gte('publish_date', startStr)
+                .lte('publish_date', endStr)
+                .order('publish_date', { ascending: true });
+
+            if (error) throw error;
+
+            return { success: true, data };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 根據 ID 取得每日一卡
+     */
+    async getDailyCardById(id) {
+        try {
+            const { data, error } = await this.supabase
+                .from('daily_cards')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 根據日期取得每日一卡 (重構：確保舊方法可用)
+     */
+    async getDailyCardByDate(date) {
+        try {
+            const { data, error } = await this.supabase
+                .from('daily_cards')
+                .select('*')
+                .eq('publish_date', date)
+                .maybeSingle();
+
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 取得今日的每日一卡
      */
     async getTodayDailyCard() {

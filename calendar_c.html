@@ -106,7 +106,7 @@
         class="w-full bg-background-light dark:bg-background-dark border-b-3 border-black dark:border-white/20 p-2 sm:p-4 shrink-0 z-50 flex flex-col items-center">
         <div class="w-full max-w-md">
             <div class="flex items-center justify-between relative h-10 sm:h-12">
-                <button onclick="window.location.href='index.html'"
+                <button onclick="window.location.href='calendar.html'"
                     class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center active:opacity-50 transition-opacity z-10 text-black dark:text-white">
                     <span class="material-symbols-outlined text-xl sm:text-2xl font-bold">arrow_back_ios_new</span>
                 </button>
@@ -204,16 +204,34 @@
         document.addEventListener('DOMContentLoaded', async function () {
             await apiService.initialize();
 
-            // 从 URL 获取日期参数，如果没有则使用今天
+            // 從 URL 获取 id (優先) 或 date
             const urlParams = new URLSearchParams(window.location.search);
+            const idParam = urlParams.get('id');
             const dateParam = urlParams.get('date');
-            currentDate = dateParam || new Date().toISOString().split('T')[0];
 
-            // 生成日期导航栏
-            generateDateNavigation(currentDate);
+            if (idParam) {
+                // 透過 ID 載入
+                const result = await apiService.getDailyCardById(idParam);
+                if (result.success && result.data) {
+                    currentDailyCard = result.data;
+                    currentDate = currentDailyCard.publish_date; // 設定上下文日期
 
-            // 加载指定日期的卡片
-            await loadDailyCard(currentDate);
+                    generateDateNavigation(currentDate);
+                    renderDailyCard(currentDailyCard);
+                    checkUserCollectionStatus();
+                } else {
+                    console.error('找不到指定 ID 的卡片');
+                    // Fallback to today logic if ID fails? Or just stay blank/error?
+                    // For now, let's fallback to today logic or just minimal handling
+                    currentDate = new Date().toISOString().split('T')[0];
+                    generateDateNavigation(currentDate);
+                }
+            } else {
+                // 原有這輯：透過日期載入
+                currentDate = dateParam || new Date().toISOString().split('T')[0];
+                generateDateNavigation(currentDate);
+                await loadDailyCard(currentDate);
+            }
             loadUserFromCache();
         });
 
@@ -246,9 +264,8 @@
                 const isActive = dateStr === currentDate;
 
                 const dateBox = document.createElement('div');
-                dateBox.className = `flex flex-col items-center justify-center min-w-[60px] h-14 border-3 border-black rounded-xl shadow-neo-sm shrink-0 active:scale-95 transition-transform cursor-pointer ${
-                    isActive ? 'bg-primary' : 'bg-white'
-                }`;
+                dateBox.className = `flex flex-col items-center justify-center min-w-[60px] h-14 border-3 border-black rounded-xl shadow-neo-sm shrink-0 active:scale-95 transition-transform cursor-pointer ${isActive ? 'bg-primary' : 'bg-white'
+                    }`;
                 dateBox.onclick = () => navigateToDate(dateStr);
 
                 dateBox.innerHTML = `
@@ -266,6 +283,19 @@
         }
 
 
+        // 檢查收藏狀態的 Helper
+        async function checkUserCollectionStatus() {
+            if (apiService.currentUser && currentDailyCard) {
+                const addedResult = await apiService.hasUserAddedDailyCard(
+                    currentDailyCard.id,
+                    apiService.currentUser.id
+                );
+                if (addedResult.success && addedResult.hasAdded) {
+                    updateAddButtonState(true);
+                }
+            }
+        }
+
         // 載入每日一卡（根据日期）
         async function loadDailyCard(date) {
             // 如果有指定日期，使用指定日期；否则使用今天
@@ -276,17 +306,7 @@
             if (result.success && result.data) {
                 currentDailyCard = result.data;
                 renderDailyCard(result.data);
-
-                // 檢查使用者是否已添加
-                if (apiService.currentUser) {
-                    const addedResult = await apiService.hasUserAddedDailyCard(
-                        currentDailyCard.id,
-                        apiService.currentUser.id
-                    );
-                    if (addedResult.success && addedResult.hasAdded) {
-                        updateAddButtonState(true);
-                    }
-                }
+                checkUserCollectionStatus();
             } else {
                 console.error('載入每日一卡失敗:', result.error);
             }
