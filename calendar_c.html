@@ -119,32 +119,8 @@
                 </button>
             </div>
             <div class="mt-4 w-full overflow-x-auto no-scrollbar pb-1">
-                <div class="flex justify-between items-center gap-3 min-w-max px-1">
-                    <div
-                        class="flex flex-col items-center justify-center min-w-[60px] h-14 border-3 border-black rounded-xl bg-white shadow-neo-sm shrink-0 active:scale-95 transition-transform">
-                        <span class="text-[10px] font-bold uppercase opacity-60">Jan</span>
-                        <span class="text-lg font-bold">13</span>
-                    </div>
-                    <div
-                        class="flex flex-col items-center justify-center min-w-[60px] h-14 border-3 border-black rounded-xl bg-primary shadow-neo-sm shrink-0 active:scale-95 transition-transform">
-                        <span class="text-[10px] font-bold uppercase">Jan</span>
-                        <span class="text-xl font-bold">14</span>
-                    </div>
-                    <div
-                        class="flex flex-col items-center justify-center min-w-[60px] h-14 border-3 border-black rounded-xl bg-white shadow-neo-sm shrink-0 active:scale-95 transition-transform">
-                        <span class="text-[10px] font-bold uppercase opacity-60">Jan</span>
-                        <span class="text-lg font-bold">15</span>
-                    </div>
-                    <div
-                        class="flex flex-col items-center justify-center min-w-[60px] h-14 border-3 border-black rounded-xl bg-white shadow-neo-sm shrink-0 active:scale-95 transition-transform">
-                        <span class="text-[10px] font-bold uppercase opacity-60">Jan</span>
-                        <span class="text-lg font-bold">16</span>
-                    </div>
-                    <div
-                        class="flex flex-col items-center justify-center min-w-[60px] h-14 border-3 border-black rounded-xl bg-white shadow-neo-sm shrink-0 active:scale-95 transition-transform">
-                        <span class="text-[10px] font-bold uppercase opacity-60">Jan</span>
-                        <span class="text-lg font-bold">17</span>
-                    </div>
+                <div id="date-navigation" class="flex justify-between items-center gap-3 min-w-max px-1">
+                    <!-- 动态生成日期格子 -->
                 </div>
             </div>
         </div>
@@ -222,11 +198,22 @@
     <script>
         // 每日一卡資料
         let currentDailyCard = null;
+        let currentDate = null;
 
         // 初始化
         document.addEventListener('DOMContentLoaded', async function () {
             await apiService.initialize();
-            await loadDailyCard();
+
+            // 从 URL 获取日期参数，如果没有则使用今天
+            const urlParams = new URLSearchParams(window.location.search);
+            const dateParam = urlParams.get('date');
+            currentDate = dateParam || new Date().toISOString().split('T')[0];
+
+            // 生成日期导航栏
+            generateDateNavigation(currentDate);
+
+            // 加载指定日期的卡片
+            await loadDailyCard(currentDate);
             loadUserFromCache();
         });
 
@@ -239,10 +226,52 @@
             }
         }
 
+        // 生成日期导航栏（显示当前日期前后各2天，共5天）
+        function generateDateNavigation(centerDate) {
+            const container = document.getElementById('date-navigation');
+            if (!container) return;
 
-        // 載入每日一卡
-        async function loadDailyCard() {
-            const result = await apiService.getTodayDailyCard();
+            container.innerHTML = '';
+            const center = new Date(centerDate);
+
+            // 生成前后各2天，共5天
+            for (let i = -2; i <= 2; i++) {
+                const date = new Date(center);
+                date.setDate(center.getDate() + i);
+
+                const dateStr = date.toISOString().split('T')[0];
+                const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+                const day = date.getDate();
+
+                const isActive = dateStr === currentDate;
+
+                const dateBox = document.createElement('div');
+                dateBox.className = `flex flex-col items-center justify-center min-w-[60px] h-14 border-3 border-black rounded-xl shadow-neo-sm shrink-0 active:scale-95 transition-transform cursor-pointer ${
+                    isActive ? 'bg-primary' : 'bg-white'
+                }`;
+                dateBox.onclick = () => navigateToDate(dateStr);
+
+                dateBox.innerHTML = `
+                    <span class="text-[10px] font-bold uppercase ${isActive ? '' : 'opacity-60'}">${month}</span>
+                    <span class="${isActive ? 'text-xl' : 'text-lg'} font-bold">${day}</span>
+                `;
+
+                container.appendChild(dateBox);
+            }
+        }
+
+        // 跳转到指定日期
+        function navigateToDate(date) {
+            window.location.href = `calendar_c.html?date=${date}`;
+        }
+
+
+        // 載入每日一卡（根据日期）
+        async function loadDailyCard(date) {
+            // 如果有指定日期，使用指定日期；否则使用今天
+            const result = date
+                ? await apiService.getDailyCardByDate(date)
+                : await apiService.getTodayDailyCard();
 
             if (result.success && result.data) {
                 currentDailyCard = result.data;

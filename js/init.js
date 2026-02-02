@@ -123,21 +123,6 @@ function updateUserUI(userData) {
         }
     }
 
-    // 處理等級卡片的 capped 狀態（發光 + 可點擊）
-    const levelCardEl = document.getElementById('level-card');
-    if (levelCardEl) {
-        if (levelState.isCapped) {
-            levelCardEl.classList.add('capped-glow');
-            levelCardEl.onclick = () => {
-                window.location.href = 'rule.html';
-            };
-        } else {
-            levelCardEl.classList.remove('capped-glow');
-            levelCardEl.onclick = null;
-            levelCardEl.style.cursor = 'default';
-        }
-    }
-
     // 更新升級資格：滿分卡顯示
     const perfectCardReqEl = document.getElementById('perfect-card-requirement');
     if (perfectCardReqEl) {

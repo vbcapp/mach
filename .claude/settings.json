@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(del DAILY_CARD_README.md daily_card.html daily_cards_test_data.sql date_selector.html)"
+    ]
+  }
+}

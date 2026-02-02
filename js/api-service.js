@@ -219,166 +219,16 @@ class ApiService {
                 console.error('計算卡片數量失敗:', countError);
             }
 
-            // 動態計算滿分卡片數量（best_quiz_score >= 3 的卡片）
-            const { count: perfectCardCount, error: perfectError } = await this.supabase
-                .from('user_card_progress')
-                .select('*', { count: 'exact', head: true })
-                .eq('user_id', userId)
-                .gte('best_quiz_score', 3);
-
-            if (perfectError) {
-                console.error('計算滿分卡片數量失敗:', perfectError);
-            }
-
             return {
                 success: true,
                 data: {
                     ...data,
                     total_cards: cardCount || 0,
-                    perfect_card_count: perfectCardCount || 0, // 使用動態計算的值
                     // levelProgressPercentage is calculated by LevelSystem on client side
                 }
             };
         } catch (error) {
             return this._handleError(error, ERROR_CODES.USER_NOT_FOUND);
-        }
-    }
-
-    /**
-     * 取得排行榜資料（含等級計算與排序）
-     * @param {string} currentUserId - 當前登入用戶的 ID
-     * @returns {Promise<object>} 包含排序後的用戶列表與當前用戶排名
-     */
-    async getLeaderboard(currentUserId) {
-        try {
-            // 1. 取得所有用戶的基本資料（total_cards 由資料庫觸發器維護）
-            const { data: users, error } = await this.supabase
-                .from('users')
-                .select('id, username, avatar_url, current_xp, current_level, total_cards, perfect_card_count');
-
-            if (error) throw error;
-
-            // 2. 計算是否被卡住 (isCapped) - 使用 LevelSystem
-            const usersWithLevel = users.map(user => {
-                const perfectCardCount = user.perfect_card_count || 0;
-                const currentLevel = user.current_level || 1;
-                const totalCards = user.total_cards || 0;
-
-                // 使用 LevelSystem 判斷是否被卡住
-                let isCapped = false;
-                if (typeof LevelSystem !== 'undefined') {
-                    const theoretical = LevelSystem.calculateTheoreticalLevel(user.current_xp || 0);
-                    const maxLevel = perfectCardCount + 1;
-                    isCapped = theoretical.level > maxLevel;
-                }
-
-                return {
-                    ...user,
-                    actualLevel: currentLevel,
-                    total_cards: totalCards,
-                    isCapped: isCapped
-                };
-            });
-
-            // 5. 排序：依實際等級降序，等級相同則比 XP
-            usersWithLevel.sort((a, b) => {
-                if (b.actualLevel !== a.actualLevel) {
-                    return b.actualLevel - a.actualLevel;
-                }
-                return (b.current_xp || 0) - (a.current_xp || 0);
-            });
-
-            // 6. 找出當前用戶的排名
-            let currentUserRank = -1;
-            let currentUserData = null;
-            if (currentUserId) {
-                const index = usersWithLevel.findIndex(u => u.id === currentUserId);
-                if (index !== -1) {
-                    currentUserRank = index + 1;
-                    currentUserData = usersWithLevel[index];
-                }
-            }
-
-            return {
-                success: true,
-                data: usersWithLevel,
-                totalUsers: usersWithLevel.length,
-                currentUserRank,
-                currentUserData
-            };
-        } catch (error) {
-            return this._handleError(error);
-        }
-    }
-
-    /**
-     * 取得卡片達人榜資料（依卡片數量排序）
-     * @param {string} currentUserId - 當前登入用戶的 ID
-     * @returns {Promise<object>} 包含排序後的用戶列表與當前用戶排名
-     */
-    async getCardLeaderboard(currentUserId) {
-        try {
-            // 1. 取得所有用戶的基本資料（total_cards 由資料庫觸發器維護）
-            const { data: users, error } = await this.supabase
-                .from('users')
-                .select('id, username, avatar_url, current_xp, current_level, total_cards');
-
-            if (error) throw error;
-
-            // 2. 取得當前用戶今日新增的卡片數量
-            let todayAddedCards = 0;
-            if (currentUserId) {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const todayISO = today.toISOString();
-
-                const { count, error: countError } = await this.supabase
-                    .from('flashcards')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('user_id', currentUserId)
-                    .gte('created_at', todayISO);
-
-                if (!countError) {
-                    todayAddedCards = count || 0;
-                }
-            }
-
-            // 3. 組裝資料
-            const usersWithCards = users.map(user => ({
-                ...user,
-                total_cards: user.total_cards || 0,
-                actualLevel: user.current_level || 1
-            }));
-
-            // 4. 排序：依卡片數量降序，數量相同則比 XP
-            usersWithCards.sort((a, b) => {
-                if (b.total_cards !== a.total_cards) {
-                    return b.total_cards - a.total_cards;
-                }
-                return (b.current_xp || 0) - (a.current_xp || 0);
-            });
-
-            // 5. 找出當前用戶的排名
-            let currentUserRank = -1;
-            let currentUserData = null;
-            if (currentUserId) {
-                const index = usersWithCards.findIndex(u => u.id === currentUserId);
-                if (index !== -1) {
-                    currentUserRank = index + 1;
-                    currentUserData = usersWithCards[index];
-                }
-            }
-
-            return {
-                success: true,
-                data: usersWithCards,
-                totalUsers: usersWithCards.length,
-                currentUserRank,
-                currentUserData,
-                todayAddedCards
-            };
-        } catch (error) {
-            return this._handleError(error);
         }
     }
 
@@ -644,31 +494,6 @@ class ApiService {
     }
 
     /**
-     * 取得使用者所有卡片（無分頁，用於匯出）
-     */
-    async getAllUserCards(userId) {
-        try {
-            const { data, error } = await this.supabase
-                .from('flashcards')
-                .select('*, user_card_progress(*)')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-
-            return {
-                success: true,
-                data: data.map(card => ({
-                    ...card,
-                    progress: card.user_card_progress?.[0] || null
-                }))
-            };
-        } catch (error) {
-            return this._handleError(error);
-        }
-    }
-
-    /**
      * 取得單張卡片詳細資訊（含進度）
      */
     async getCardWithProgress(cardId, userId) {
@@ -834,10 +659,10 @@ class ApiService {
             console.log('correctCount received:', correctCount);
             console.log('answeredIndices received:', answeredIndices);
 
-            // 1. 定義基礎 XP（高底薪模式）
+            // 1. 定義基礎 XP
             let xpToAdd = 0;
-            if (correctCount === 1) xpToAdd = 80;
-            else if (correctCount === 2) xpToAdd = 90;
+            if (correctCount === 1) xpToAdd = 20;
+            else if (correctCount === 2) xpToAdd = 50;
             else if (correctCount === 3) xpToAdd = 100;
 
             console.log('Base XP calculated:', xpToAdd);
@@ -851,19 +676,15 @@ class ApiService {
                 .maybeSingle();
 
             if (!progress) {
-                // 如果沒有進度紀錄，創建新的（使用 upsert 避免重複 key 錯誤）
-                // mastery_level 預設為 1（正常狀態），0 才是紅心（不熟悉）狀態，需要用戶自己點擊
+                // 如果沒有進度紀錄，創建新的
                 const { data: newProgress, error: createError } = await this.supabase
                     .from('user_card_progress')
-                    .upsert({
+                    .insert({
                         user_id: userId,
                         card_id: cardId,
-                        mastery_level: 1,  // 預設為正常狀態（無紅心），0 = 紅心（用戶手動標記不熟悉）
+                        mastery_level: 0,
                         is_perfect: false,
                         answered_question_indices: []
-                    }, {
-                        onConflict: 'user_id,card_id',
-                        ignoreDuplicates: false
                     })
                     .select()
                     .single();
@@ -899,19 +720,18 @@ class ApiService {
             }
 
             // 5. 判斷【大師勛章】- 答對所有題目（5題）後，每次測驗都額外 +15XP
-            // 條件：必須至少答對 1 題才給大師加成
             const totalQuestionCount = 5; // 題庫總題數
             const wasMasterBefore = progress.is_mastered || false;
             const isMasterNow = mergedIndices.length >= totalQuestionCount;
 
-            // 首次達成大師勛章（需要至少答對 1 題）
-            if (isMasterNow && !wasMasterBefore && correctCount >= 1) {
+            // 首次達成大師勛章
+            if (isMasterNow && !wasMasterBefore) {
                 xpToAdd += 15;
                 bonuses.push({ name: '【大師勛章】', xp: 15, isNew: true });
                 progress.is_mastered = true;
             }
-            // 已經是大師，每次測驗答對至少 1 題就加 15XP
-            else if (wasMasterBefore && correctCount >= 1) {
+            // 已經是大師，每次測驗都加 15XP
+            else if (wasMasterBefore) {
                 xpToAdd += 15;
                 bonuses.push({ name: '【大師加成】', xp: 15, isNew: false });
             }
@@ -969,11 +789,7 @@ class ApiService {
                 bonuses: bonuses,
                 newUserData: userUpdateResult.data.user,
                 isPerfectFirstTime: isPerfectRun && perfectCardsToAdd > 0,
-                isMasterFirstTime: isMasterNow && !wasMasterBefore,
-                // 升級資訊
-                leveledUp: userUpdateResult.data.leveledUp || false,
-                oldLevel: userUpdateResult.data.leveledUp ? (userUpdateResult.data.user.current_level - 1) : null,
-                newLevel: userUpdateResult.data.leveledUp ? userUpdateResult.data.user.current_level : null
+                isMasterFirstTime: isMasterNow && !isMasterBefore
             };
 
         } catch (error) {
@@ -1081,14 +897,12 @@ class ApiService {
             const now = new Date().toISOString();
 
             if (!progressResult.data) {
-                // 新建進度記錄：mastery_level 預設為 1（正常狀態）
-                // 0 = 用戶手動標記的「不熟悉」狀態，系統不應自動設為 0
                 const { data, error } = await this.supabase
                     .from('user_card_progress')
                     .insert({
                         user_id: userId,
                         card_id: cardId,
-                        mastery_level: 1,  // 預設為正常狀態，不自動設為 0
+                        mastery_level: isCorrect ? 1 : 0,
                         times_reviewed: 1,
                         times_correct: isCorrect ? 1 : 0,
                         times_incorrect: isCorrect ? 0 : 1,
@@ -1110,12 +924,9 @@ class ApiService {
                 const accuracyRate = newTimesCorrect / newTimesReviewed;
                 let newMasteryLevel = progress.mastery_level;
 
-                // 注意：mastery_level = 0 是用戶手動標記的「不熟悉」狀態
-                // 系統自動調整時，最低只能降到 1，不能自動設為 0
                 if (isCorrect && accuracyRate >= 0.9 && progress.mastery_level < 5) {
                     newMasteryLevel = progress.mastery_level + 1;
-                } else if (!isCorrect && accuracyRate < 0.5 && progress.mastery_level > 1) {
-                    // 最低降到 1，不降到 0（0 只能用戶手動設置）
+                } else if (!isCorrect && accuracyRate < 0.5 && progress.mastery_level > 0) {
                     newMasteryLevel = progress.mastery_level - 1;
                 }
 
