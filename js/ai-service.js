@@ -33,9 +33,9 @@ JSON 結構範例：
     "cardData": {
       "level": 數字，代表難度等級 (1-5),
       "category": "字串，該名詞的技術分類 (例如: JavaScript, CSS, React)",
-      "title": "字串，專有名詞的英文原文",
+      "title": "字串，專有名詞的英文全稱 (Full Name)。請務必將縮寫展開，例如輸入 'API'，這裡必須回傳 'Application Programming Interface'。若無全稱則填原名",
       "subtitle": "字串，專有名詞的繁體中文翻譯",
-      "abbreviation": "字串，該專有名詞的代號或縮寫，如果沒有則填入空字串",
+      "abbreviation": "字串，該專有名詞的代號或縮寫 (Abbreviation)。例如 'API'。如果該名詞本身就是全稱且沒有縮寫，請填入空字串",
       "content": "字串，用簡單易懂的方式解釋這個名詞",
       "analogy": "字串，用大白話做一個小學生都能聽懂的生活化比喻"
     },
