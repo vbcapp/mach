@@ -873,6 +873,49 @@ class ApiService {
     }
 
     /**
+     * 批量建立每日一卡 (管理員專用)
+     * @param {array} cardsData - 卡片數據數組
+     * @param {string} status - 狀態 ('published' or 'private')
+     */
+    async createDailyCards(cardsData, status = 'published') {
+        try {
+            const now = new Date().toISOString();
+
+            // 轉換資料格式：移除 user_id 等與 daily_cards 無關的欄位
+            const newCards = cardsData.map(card => {
+                // 解構出不需要的欄位，保留剩下的
+                // 注意：daily_cards 表格沒有 is_public 欄位，也需要移除
+                const { user_id, source_daily_card_id, id, created_at, updated_at, is_public, ...rest } = card;
+
+                return {
+                    ...rest,
+                    status: status, // 強制設定狀態
+                    created_at: now,
+                    updated_at: now,
+                    // 確保必填欄位存在 (如果 AI 生成的有缺，這裡可能要檢查)
+                    // daily_cards 需要: english_term, chinese_translation, category, description
+                };
+            });
+
+            const { data, error } = await this.supabase
+                .from('daily_cards')
+                .insert(newCards)
+                .select();
+
+            if (error) throw error;
+
+            return {
+                success: true,
+                data: data,
+                cardsCreated: data.length,
+                xpEarned: 0 // 管理員操作不計算 XP
+            };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 更新卡片
      */
     async updateCard(cardId, updates) {
