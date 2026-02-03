@@ -386,7 +386,8 @@
                         cellClass += 'opacity-80 ';
                     } else {
                         // 已發布且到了日期：顯示內容
-                        content += `<span class="text-[8px] font-black uppercase text-center w-full px-0.5 truncate mt-0.5">${card.english_term}</span>`;
+                        const displayName = card.abbreviation || card.english_term;
+                        content += `<span class="text-[8px] font-black uppercase text-center w-full px-0.5 truncate mt-0.5">${displayName}</span>`;
                         clickAction = `onclick="window.location.href='calendar_c.html?id=${card.id}'"`;
                         cellClass += 'cursor-pointer hover:bg-yellow-50 active:scale-95 transition-transform ';
                     }
@@ -402,18 +403,3 @@
         }
     </script>
 </body>
-
-<script>
-    document.addEventListener('DOMContentLoaded', async () => {
-        await apiService.initialize();
-
-        // 初始化日曆
-        const now = new Date();
-        renderCalendar(now.getFullYear(), now.getMonth() + 1);
-
-        // 綁定按鈕
-        document.getElementById('prev-month-btn').onclick = () => changeMonth(-1);
-        document.getElementById('next-month-btn').onclick = () => changeMonth(1);
-    });
-
-</script>

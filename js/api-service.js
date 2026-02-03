@@ -549,7 +549,7 @@ class ApiService {
 
             const { data, error } = await this.supabase
                 .from('daily_cards')
-                .select('id, publish_date, english_term, status')
+                .select('id, publish_date, english_term, abbreviation, status')
                 .eq('status', 'published')
                 .gte('publish_date', startStr)
                 .lte('publish_date', endStr)
