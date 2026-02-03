@@ -155,7 +155,9 @@
             </div>
             <div
                 class="flex-1 flex flex-col items-center justify-center text-center px-6 pb-8 sm:px-8 sm:pb-12 min-h-0">
-                <h2 id="card-title" class="text-5xl sm:text-7xl font-bold tracking-tighter leading-none break-all"></h2>
+                <h2 id="card-title"
+                    class="text-5xl sm:text-7xl font-bold tracking-tighter leading-none break-keep text-center"
+                    style="word-break: keep-all;"></h2>
             </div>
         </div>
     </main>
@@ -290,9 +292,9 @@
             const categoryEl = document.getElementById('card-category');
             if (categoryEl) categoryEl.textContent = card.category || 'GENERAL';
 
-            // 更新標題
+            // 更新標題 (優先顯示縮寫)
             const titleEl = document.getElementById('card-title');
-            if (titleEl) titleEl.textContent = card.english_term;
+            if (titleEl) titleEl.textContent = card.abbreviation || card.english_term;
 
             // 更新連結
             const revealLink = document.getElementById('reveal-link');

@@ -166,7 +166,9 @@
                 </div>
                 <div class="p-6 pb-2 pt-14 shrink-0">
                     <div class="flex flex-col items-center gap-1">
-                        <h2 id="card-title" class="text-7xl font-bold tracking-tighter text-center"></h2>
+                        <h2 id="card-title" class="font-bold tracking-tighter text-center leading-tight"
+                            style="font-size: clamp(1.2rem, 8vw, 2.2rem); hyphens: none; overflow-wrap: break-word;">
+                        </h2>
                         <span id="card-abbreviation" class="text-lg font-bold text-gray-500 mb-1"></span>
                         <span id="card-translation" class="text-xl font-bold italic mb-6"></span>
                         <button id="collapse-btn"
@@ -347,13 +349,30 @@
             const levelEl = document.getElementById('card-level');
             if (levelEl) levelEl.textContent = `Lv.${card.level || 1}`;
 
-            // 更新標題
+            // 更新標題 (若有縮寫則顯示縮寫，否則顯示全稱)
             const titleEl = document.getElementById('card-title');
-            if (titleEl) titleEl.textContent = card.english_term;
+            const mainTitle = card.abbreviation ? card.abbreviation : card.english_term;
+            if (titleEl) titleEl.textContent = mainTitle;
 
-            // 更新縮寫
+            // 更新副標題 (若上方顯示縮寫，這裡顯示全稱並加括號；若上方已是全稱，這裡留白)
             const abbrEl = document.getElementById('card-abbreviation');
-            if (abbrEl) abbrEl.textContent = card.abbreviation ? `(${card.abbreviation})` : '';
+            const subTitle = card.abbreviation ? `(${card.english_term})` : '';
+            if (abbrEl) {
+                abbrEl.textContent = subTitle;
+                // 強制套用排版樣式：置中、無連字號斷字、動態字級 (盡量不換行)
+                abbrEl.style.cssText = `
+                    text-align: center;
+                    hyphens: none;
+                    -webkit-hyphens: none;
+                    overflow-wrap: break-word;
+                    word-wrap: break-word;
+                    font-size: clamp(0.7rem, 3.2vw, 1.2rem);
+                    letter-spacing: -0.025em;
+                    line-height: 1.1;
+                    display: block;
+                    width: 100%;
+                `;
+            }
 
             // 更新翻譯
             const translationEl = document.getElementById('card-translation');

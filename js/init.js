@@ -374,7 +374,7 @@ function renderCardItem(card) {
                 ${publishedTag}
             </div>
             <div class="flex-1">
-                <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1">${card.english_term}</h3>
+                <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1 break-words hyphens-none ${(!card.abbreviation && card.english_term.length > 15) ? 'text-small' : ''}" style="word-break: break-word; -webkit-hyphens: none;">${card.abbreviation || card.english_term}</h3>
                 <p class="text-[10px] leading-tight opacity-70 line-clamp-2">${card.chinese_translation}。${description}</p>
             </div>
             <div class="flex justify-between items-end gap-2 mt-2">
