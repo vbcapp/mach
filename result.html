@@ -315,14 +315,23 @@
 
                     // 如果是【首次】特殊成就，加入動畫隊列（大師加成不觸發）
                     // 使用 flag 避免返回頁面時重複觸發
+                    // 如果是【首次】特殊成就，加入動畫隊列（大師加成不觸發）
+                    // 使用 flag 避免返回頁面時重複觸發
                     const bonusCelebrationProcessed = sessionStorage.getItem('bonusCelebrationProcessed');
                     const isFirstTimeAchievement =
                         bonus.name.includes('開拓者') ||
                         (bonus.name.includes('大師勛章') && bonus.isNew !== false);
 
-                    if (isFirstTimeAchievement && !bonusCelebrationProcessed) {
+                    console.log('Bonus Check:', { name: bonus.name, isFirstTimeAchievement, bonusCelebrationProcessed });
+
+                    // DEBUG: Temporarily ignore bonusCelebrationProcessed to verify animation rendering
+                    // if (isFirstTimeAchievement && !bonusCelebrationProcessed) {
+                    if (isFirstTimeAchievement) {
+                        console.log('Queueing celebration for:', bonus.name);
                         // 加入隊列而不是直接顯示
                         queueCelebration(bonus);
+                    } else {
+                        console.log('Skipping celebration queue for:', bonus.name);
                     }
                 });
 
@@ -336,6 +345,7 @@
             }
 
             // 開始處理動畫隊列（包括最後的升級動畫）
+            console.log('Processing next celebration...');
             processNextCelebration();
 
             // 執行數字跳動動畫
@@ -425,15 +435,17 @@
 
         // 全螢幕慶祝 Modal
         function showCelebrationModal(bonus) {
+            console.log('SHOWING CELEBRATION MODAL for:', bonus.name);
             // 標記正在顯示動畫
             isShowingCelebration = true;
 
             // 取得卡片名稱
             const cardName = sessionStorage.getItem('currentCardName') || '此卡片';
 
-            // 創建 Modal 元素
+            // 創建 Modal 元素 (Force Z-Index via style)
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-300';
+            modal.className = 'fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 transition-opacity duration-300';
+            modal.style.zIndex = '9999';
 
             let icon = 'military_tech';
             let colorClass = 'text-yellow-400';

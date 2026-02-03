@@ -642,6 +642,10 @@
                 console.warn('請確認已登入並有 cardId！');
             }
 
+            // Ensure flags are cleared for result page to process them fresh
+            sessionStorage.removeItem('levelUpProcessed');
+            sessionStorage.removeItem('bonusCelebrationProcessed');
+
             console.log('Redirecting to result.html...');
             window.location.href = 'result.html';
         }

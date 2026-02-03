@@ -242,6 +242,11 @@
 
         // 初始化
         document.addEventListener('DOMContentLoaded', async () => {
+            // 優先觸發特效 (避免 API 延遲導致卡住)
+            if (typeof triggerConfetti === 'function') {
+                triggerConfetti();
+            }
+
             // 從 sessionStorage 讀取升級資訊
             const levelUpData = sessionStorage.getItem('levelUpData');
             if (levelUpData) {
@@ -261,11 +266,12 @@
             document.getElementById('next-level-target').textContent = newLevel + 1;
 
             // 初始化 API 並載入用戶數據
-            await apiService.initialize();
-            await loadNextLevelRequirements();
-
-            // 觸發 Confetti 特效
-            triggerConfetti();
+            try {
+                await apiService.initialize();
+                await loadNextLevelRequirements();
+            } catch (err) {
+                console.warn('Data load failed, but animation should run:', err);
+            }
         });
 
         // 載入下一等級需求

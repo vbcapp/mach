@@ -1293,7 +1293,7 @@ class ApiService {
                 })
                 .eq('id', progress.id);
 
-            if (progressUpdateError) console.error('更新 Card Progress 失敗:', progressUpdateError);
+            if (progressUpdateError) console.error('Error updating progress:', progressUpdateError);
 
             // 7. 寫入 Test Record
             const { error: recordError } = await this.supabase
