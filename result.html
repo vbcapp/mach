@@ -597,9 +597,25 @@
         const testBtn = document.getElementById('test-anim-btn');
         if (testBtn) {
             testBtn.addEventListener('click', () => {
+                console.log('DEBUG: Simulating Full Flow (Pioneer -> Level Up)');
+
+                // 1. 設定待處理的升級
+                pendingLevelUp = { oldLevel: 6, newLevel: 7 };
+
+                // 2. 加入開拓者獎勵到隊列
                 const fakeBonus = { name: "【開拓者獎勵】", xp: 50 };
-                showCelebrationModal(fakeBonus);
-                createConfetti();
+                queueCelebration(fakeBonus);
+
+                // 3. 開始處理
+                processNextCelebration();
+            });
+
+            // Right click (or long press) to test Level Up
+            testBtn.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                console.warn('DEBUG: Forcing Level Up Transition');
+                pendingLevelUp = { oldLevel: 6, newLevel: 7 };
+                triggerLevelUpTransition();
             });
         }
     </script>
