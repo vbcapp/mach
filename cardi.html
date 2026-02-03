@@ -315,7 +315,63 @@
             // 初始化 API 並載入最新資料
             await apiService.initialize();
             await loadCard(cardId);
+
+            // 初始化滑動切換
+            initSwipe(cardId);
         });
+
+        // [Swipe Navigation]
+        function initSwipe(currentId) {
+            const currentIdsJson = sessionStorage.getItem('currentCardIds');
+            if (!currentIdsJson) return;
+
+            try {
+                const currentIds = JSON.parse(currentIdsJson);
+                // 嘗試轉型別比對 (ID 可能是數字或字串)
+                let index = currentIds.indexOf(currentId);
+                if (index === -1) index = currentIds.indexOf(Number(currentId));
+                if (index === -1) index = currentIds.indexOf(String(currentId));
+
+                if (index === -1) return;
+
+                let touchStartX = 0;
+                let touchEndX = 0;
+                const minSwipeDistance = 50;
+
+                document.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+
+                document.addEventListener('touchend', (e) => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleGesture();
+                }, { passive: true });
+
+                function handleGesture() {
+                    const diffX = touchEndX - touchStartX;
+
+                    if (Math.abs(diffX) > minSwipeDistance) {
+                        if (diffX < 0) {
+                            // Swipe Left -> Next Card
+                            if (index < currentIds.length - 1) {
+                                const nextId = currentIds[index + 1];
+                                window.location.href = `cardi.html?id=${nextId}`;
+                            } else {
+                                // Last card hint?
+                            }
+                        } else {
+                            // Swipe Right -> Prev Card
+                            if (index > 0) {
+                                const prevId = currentIds[index - 1];
+                                window.location.href = `cardi.html?id=${prevId}`;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Swipe init error:', e);
+            }
+        }
 
         async function loadCard(cardId) {
             const userId = apiService.currentUser?.id;

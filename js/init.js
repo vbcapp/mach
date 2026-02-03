@@ -25,6 +25,18 @@ async function initializeApp() {
         if (apiService.currentUser) {
             currentUser = apiService.currentUser;
             console.log('使用者已登入:', currentUser.email, 'ID:', currentUser.id);
+
+            // [Silent Sync] 檢查並初始化母版卡片
+            // 為了讓新用戶不僅擁有卡片，還能馬上看到，這裡使用 await (雖會稍微增加首次讀取時間)
+            try {
+                const initResult = await apiService.copyMasterCardsToUser(currentUser.id, ADMIN_UID);
+                if (initResult && initResult.count > 0) {
+                    console.log(`已為新用戶初始化 ${initResult.count} 張母版卡片`);
+                }
+            } catch (err) {
+                console.error('初始化母版卡片失敗 (非致命錯誤):', err);
+            }
+
             await loadUserData();
             await loadUserCards();
         } else {
@@ -200,7 +212,7 @@ async function loadUserCards() {
     }
 
     try {
-        const result = await apiService.getCards({ userId: currentUser.id });
+        const result = await apiService.getCards({ userId: currentUser.id, limit: 1000 });
 
         if (result.success) {
             allCards = result.data.cards || [];
@@ -311,6 +323,9 @@ function renderCards(cards, container) {
     }
 
     container.innerHTML = cards.map(card => renderCardItem(card)).join('');
+
+    // [Navigation] 儲存當前顯示的卡片 ID 列表，供詳情頁滑動切換使用
+    sessionStorage.setItem('currentCardIds', JSON.stringify(cards.map(c => c.id)));
 
     // 快取所有卡片
     cards.forEach(card => cacheCard(card));

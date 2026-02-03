@@ -16,20 +16,24 @@ class AIService {
      * @returns {string} - 完整的 prompt
      */
     generatePrompt(termList) {
-        const terms = termList.join('、');
+        // Ensure termList is an array
+        const list = Array.isArray(termList) ? termList : [termList];
+        const terms = list.join('、');
         return `你現在是一位 AI應用規劃師 iPAS 證照輔導老師兼程式教學專家，請根據我提供的專有名詞列表，幫我生成一份 JSON 格式的學習卡片資料。
 
 你的回覆必須是純粹的 JSON 格式，不要包含任何解釋性文字或程式碼區塊標記。
 
-**重要：JSON 結構必須是一個物件，以專有名詞的英文原文作為最外層的 key。**
+**重要：請回傳一個 JSON 陣列 (Array)，包含所有請求的名詞資料。**
 
-每個專有名詞的結構必須包含兩個部分：
-1. "cardData": 包含卡片顯示資訊的物件
-2. "quizQuestions": 包含 5 個測驗題目的陣列（系統會從中隨機抽取 3 題進行測驗）
+每個物件必須包含：
+1. "term": 請求的專有名詞
+2. "cardData": 包含卡片顯示資訊的物件
+3. "quizQuestions": 包含 5 個測驗題目的陣列
 
 JSON 結構範例：
-{
-  "API": {
+[
+  {
+    "term": "API",
     "cardData": {
       "level": 數字，代表難度等級 (1-5),
       "category": "字串，該名詞的技術分類 (例如: JavaScript, CSS, React)",
@@ -44,45 +48,41 @@ JSON 結構範例：
         "question": "題目敘述",
         "options": ["選項A", "選項B", "選項C"],
         "correctAnswer": 0,
-        "explanation": "詳細的答案解析"
+        "explanation": "清楚說明為何正確、其他選項為何錯"
       },
       {
         "question": "第二題題目",
         "options": ["選項A", "選項B", "選項C"],
         "correctAnswer": 1,
-        "explanation": "詳細的答案解析"
+        "explanation": "清楚說明為何正確、其他選項為何錯"
       },
       {
         "question": "第三題題目",
         "options": ["選項A", "選項B", "選項C"],
         "correctAnswer": 2,
-        "explanation": "詳細的答案解析"
+        "explanation": "清楚說明為何正確、其他選項為何錯"
       },
       {
         "question": "第四題題目",
         "options": ["選項A", "選項B", "選項C"],
         "correctAnswer": 1,
-        "explanation": "詳細的答案解析"
+        "explanation": "清楚說明為何正確、其他選項為何錯"
       },
       {
         "question": "第五題題目",
         "options": ["選項A", "選項B", "選項C"],
         "correctAnswer": 0,
-        "explanation": "詳細的答案解析"
+        "explanation": "清楚說明為何正確、其他選項為何錯"
       }
     ]
-  },
-  "DOM": {
-    "cardData": { ... },
-    "quizQuestions": [ ... ]
   }
-}
+]
 
 每個測驗題目必須包含：
 - question: 題目敘述
 - options: 3個選項的陣列
 - correctAnswer: 正確答案的索引 (0, 1, 或 2)
-- explanation: 詳細的答案解析
+- explanation: 清楚說明為何正確、其他選項為何錯
 
 **題目設計要求：**
 - 5 題測驗題目應涵蓋不同面向，包括：概念理解、應用情境、常見誤解、實務判斷、進階辨析
@@ -120,7 +120,7 @@ ${terms}`;
                         }
                     ],
                     temperature: 0.7,
-                    max_tokens: 4000
+                    max_tokens: 8000
                 })
             });
 
@@ -146,7 +146,15 @@ ${terms}`;
                     .replace(/```\n?/g, '')
                     .trim();
 
-                parsedData = JSON.parse(cleanContent);
+                // 嘗試提取 JSON (支援陣列 [] 或物件 {})
+                const jsonMatch = cleanContent.match(/(\[[\s\S]*\])|(\{[\s\S]*\})/);
+                let jsonStr = jsonMatch ? jsonMatch[0] : cleanContent;
+
+                // 移除 JSON 中的尾部逗號 (Trailing Commas)
+                // 例如: "key": "value", } -> "key": "value" }
+                jsonStr = jsonStr.replace(/,(\s*[\]}])/g, '$1');
+
+                parsedData = JSON.parse(jsonStr);
             } catch (parseError) {
                 console.error('JSON 解析錯誤:', parseError);
                 console.error('原始內容:', content);

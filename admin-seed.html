@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Seed Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="js/api-service.js"></script>
+</head>
+
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
+        <h1 class="text-2xl font-bold mb-4">Master Card Generator</h1>
+
+        <div class="mb-4">
+            <label class="block mb-2 font-bold">Admin User ID (UUID):</label>
+            <input type="text" id="admin-uid" class="w-full p-2 border rounded"
+                placeholder="Enter your Admin UUID here">
+            <p class="text-xs text-gray-500 mt-1">Check your Supabase Auth dashboard for your UUID.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-gray-50 p-4 rounded border">
+                <h3 class="font-bold mb-2">Progress</h3>
+                <div id="progress-text" class="text-sm mb-1">Waiting to start...</div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded border h-64 overflow-y-auto">
+                <h3 class="font-bold mb-2">Logs</h3>
+                <div id="logs" class="text-xs font-mono space-y-1"></div>
+            </div>
+        </div>
+
+        <button id="start-btn" onclick="startSeeding()"
+            class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+            Start Generation (80 Terms)
+        </button>
+    </div>
+
+    <!-- AI Service (Inline for simplicity to access methods, or load script) -->
+    <!-- We need ai-service.js but it might not be exposed globally if it's a module or class. 
+         Reviewing ai-service.js, it defines 'class AIService' and instantiates 'const aiService'. 
+         So we can just script src it. 
+    -->
+    <script src="js/ai-service.js"></script>
+
+    <script>
+        // 40 組，共 80 個術語
+        const termPairs = [
+            ["5V 特性", "結構化資料"], ["ETL", "資料湖"], ["資料清洗", "遺缺值填補"], ["獨熱編碼", "資料標準化"],
+            ["監督式學習", "非監督式學習"], ["半監督式學習", "強化學習 (RL)"], ["遷移學習", "聯邦學習"], ["鑑別式 AI", "生成式 AI"],
+            ["混淆矩陣", "準確率 (Accuracy)"], ["精確率 (Precision)", "召回率 (Recall)"], ["F1-score", "損失函數"], ["過擬合 (Overfitting)", "欠擬合 (Underfitting)"],
+            ["迴歸分析", "分類 (Classification)"], ["分群 (Clustering)", "關聯規則分析"], ["K-means", "DBSCAN"], ["決策樹", "隨機森林"],
+            ["支援向量機 (SVM)", "K-最近鄰 (KNN)"], ["人工神經網路 (ANN)", "卷積神經網路 (CNN)"], ["循環神經網路 (RNN)", "Transformer"], ["注意力機制", "大型語言模型 (LLM)"],
+            ["GAN", "擴散模型"], ["梯度下降", "超參數 (Hyperparameter)"], ["特徵 (Feature)", "標籤 (Label)"], ["訓練集", "測試集"],
+            ["降維", "異常偵測"], ["直方圖", "箱型圖"], ["散佈圖", "熱力圖"], ["斷詞 (Tokenization)", "停用詞"],
+            ["TF-IDF", "詞嵌入 (Word Embedding)"], ["命名實體識別 (NER)", "詞幹提取"], ["去識別化", "差分隱私"], ["資料增強", "偽標籤"],
+            ["雲端運算", "邊緣運算"], ["SaaS", "PaaS"], ["IaaS", "容器化 (Docker)"], ["微服務", "區塊鏈"],
+            ["智能合約", "Web3"], ["物聯網 (IoT)", "數位孿生"], ["AR/VR", "MR"], ["幻覺 (Hallucination)", "提示工程 (Prompt Engineering)"]
+        ];
+
+        function log(msg, type = 'info') {
+            const logs = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            if (type === 'error') div.className = 'text-red-600';
+            else if (type === 'success') div.className = 'text-green-600';
+            logs.insertBefore(div, logs.firstChild);
+        }
+
+        async function startSeeding() {
+            const adminUid = document.getElementById('admin-uid').value.trim() || '3a5bb55c-4ffc-4373-a9b5-f211b4b4d63b';
+            const btn = document.getElementById('start-btn');
+            btn.disabled = true;
+
+            log(`開始重新生成 40 組 iPAS 核心卡片...`);
+
+            // Initialize services
+            try {
+                await apiService.initialize();
+            } catch (e) {
+                log('Failed to init apiService: ' + e.message, 'error');
+                return;
+            }
+
+            for (let i = 0; i < termPairs.length; i++) {
+                const pair = termPairs[i];
+                updateProgress(i + 1, termPairs.length, `正在處理: ${pair.join(', ')}`);
+
+                try {
+                    // 1. AI 生成
+                    const result = await aiService.generateFlashcards(pair);
+                    if (!result.success) throw new Error(result.error.message);
+
+                    // 2. 格式轉換與資料庫寫入 (直接寫入 flashcards 表)
+                    // The result.data should be an array of card objects returned by AI
+                    // We need to map them carefully.
+                    // Assuming generateFlashcards returns { success: true, data: [ { cardData, quizQuestions ... } ] }
+
+                    const generatedItems = Array.isArray(result.data) ? result.data : [];
+
+                    const cardsToInsert = generatedItems.map(item => ({
+                        user_id: adminUid,
+                        english_term: item.cardData.title, // 存入帶括號的全稱
+                        chinese_translation: item.cardData.subtitle,
+                        abbreviation: item.cardData.abbreviation, // 這是 UI 的大標題
+                        category: item.cardData.category || 'iPAS 核心', // Use AI category or default
+                        description: item.cardData.content,
+                        analogy: item.cardData.analogy,
+                        level: item.cardData.level,
+                        quiz_questions: item.quizQuestions, // 直接存入 JSONB 欄位
+                        is_public: true,
+                        is_published: true,
+                        updated_at: new Date().toISOString()
+                    }));
+
+                    if (cardsToInsert.length > 0) {
+                        const { error } = await apiService.supabase.from('flashcards').insert(cardsToInsert);
+                        if (error) throw error;
+                        log(`✅ 第 ${i + 1} 組 (${pair.join('/')}) 成功存入 Supabase`, 'success');
+                    } else {
+                        log(`⚠️ 第 ${i + 1} 組生成資料為空`, 'error');
+                    }
+
+                } catch (err) {
+                    log(`❌ 第 ${i + 1} 組失敗: ${err.message}`, 'error');
+                }
+
+                // 稍微停頓避免 API 限流
+                await new Promise(r => setTimeout(r, 1500));
+            }
+
+            log('恭喜！所有 80 張母版卡片已生成並同步完成。', 'success');
+            btn.textContent = '生成完畢';
+            btn.disabled = false;
+        }
+
+        function updateProgress(current, total, msg) {
+            const percent = Math.round((current / total) * 100);
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('progress-text').textContent = `${current}/${total} - ${msg}`;
+        }
+    </script>
+</body>
+
+</html>

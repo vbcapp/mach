@@ -55,9 +55,8 @@ class ApiService {
             });
 
             if (signUpResult.error) {
-                // 如果是 "User already registered" (Supabase 通常回傳 400 或 422)，則嘗試登入
                 // 注意：Supabase 安全性設定有時會隱藏此錯誤，但我們嘗試登入即可
-                console.log('註冊回應:', signUpResult.error.message);
+                console.log('註冊回應錯誤:', signUpResult.error); // Log full error object
 
                 // 嘗試登入
                 console.log('嘗試登入...');
@@ -70,6 +69,8 @@ class ApiService {
 
                 // 登入成功，更新當前使用者
                 this.currentUser = signInResult.data.user;
+                // Ensure profile exists (fix for zombie users)
+                await this._createUserProfile(this.currentUser.id, nickname, email);
                 return { success: true, user: this.currentUser, isNewUser: false };
             }
 
@@ -98,6 +99,8 @@ class ApiService {
                 if (signInResult.data.session) {
                     console.log('登入成功！(使用者已存在)');
                     this.currentUser = signInResult.data.user;
+                    // Double check if profile exists, if not create it (recover from zombie state)
+                    await this._createUserProfile(this.currentUser.id, nickname, email);
                     return { success: true, user: this.currentUser, isNewUser: false };
                 }
 
@@ -789,7 +792,6 @@ class ApiService {
             return this._handleError(error);
         }
     }
-
     /**
      * 取得使用者所有不重複的分類
      */
@@ -803,9 +805,9 @@ class ApiService {
             if (error) throw error;
 
             // 取出不重複的分類
-            const uniqueCategories = [...new Set(data.map(item => item.category))];
+            const uniqueCategories = [...new Set(data.map(item => item.category).filter(Boolean))];
 
-            // 簡單排序 (更複雜的排序交給前端)
+            // 簡單排序
             uniqueCategories.sort();
 
             return {
@@ -814,6 +816,140 @@ class ApiService {
             };
         } catch (error) {
             return this._handleError(error);
+        }
+    }
+
+    /**
+     * 複製母版卡片給新用戶
+     */
+    async copyMasterCardsToUser(userId, adminUuid) {
+        try {
+            // 0. [Self-Healing] Ensure user profile exists before copying cards
+            // This fixes "Key is not present in table users" error for zombie users
+            const fallbackEmail = `${userId}@placeholder.com`;
+            const fallbackName = 'Learning User';
+            await this._createUserProfile(
+                userId,
+                this.currentUser?.user_metadata?.username || fallbackName,
+                this.currentUser?.email || fallbackEmail
+            );
+
+            // 1. 檢查用戶是否已有卡片
+            const { count, error: countError } = await this.supabase
+                .from('flashcards')
+                .select('id', { count: 'exact', head: true })
+                .eq('user_id', userId);
+
+            if (countError) throw countError;
+
+            // 若已有卡片，則不執行初始化
+            if (count > 0) return { success: true, message: 'User already has cards.' };
+
+            console.log('User has no cards. Starting initialization...');
+
+            // 2. 抓取母版卡片 (需提供管理員 UUID)
+            let query = this.supabase
+                .from('flashcards')
+                .select(`
+                    *,
+                    quiz_questions (*)
+                `)
+                .eq('is_public', true);
+
+            if (adminUuid) {
+                query = query.eq('user_id', adminUuid);
+            }
+
+            const { data: masterCards, error: nodesError } = await query;
+
+            if (nodesError) throw nodesError;
+            if (!masterCards || masterCards.length === 0) {
+                console.warn('No master cards found to copy.');
+                return { success: false, message: 'No master cards found.' };
+            }
+
+            console.log(`Found ${masterCards.length} master cards. Copying...`);
+
+            // 3. 準備批量插入的資料
+            const newCardsData = masterCards.map(card => ({
+                user_id: userId,
+                chinese_translation: card.chinese_translation,
+                english_term: card.english_term,
+                abbreviation: card.abbreviation,
+                category: card.category,
+                level: card.level,
+                description: card.description,
+                analogy: card.analogy,
+                description: card.description,
+                analogy: card.analogy,
+                is_public: false,
+                is_published: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            }));
+
+            // 執行批量插入卡片
+            const { data: insertedCards, error: insertError } = await this.supabase
+                .from('flashcards')
+                .insert(newCardsData)
+                .select();
+
+            if (insertError) throw insertError;
+
+            // 4. 重建測驗題目關聯
+            const cardMap = {};
+            insertedCards.forEach(c => cardMap[c.english_term] = c.id);
+
+            let allQuestions = [];
+            let progressRecords = [];
+
+            masterCards.forEach(masterCard => {
+                const newCardId = cardMap[masterCard.english_term];
+                if (newCardId) {
+                    if (masterCard.quiz_questions && masterCard.quiz_questions.length > 0) {
+                        masterCard.quiz_questions.forEach(q => {
+                            allQuestions.push({
+                                card_id: newCardId,
+                                question: q.question,
+                                options: q.options,
+                                correct_answer: q.correct_answer,
+                                explanation: q.explanation
+                            });
+                        });
+                    }
+
+                    progressRecords.push({
+                        user_id: userId,
+                        card_id: newCardId,
+                        box: 1,
+                        mastery_level: 1,
+                        next_review_at: new Date().toISOString(),
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    });
+                }
+            });
+
+            if (allQuestions.length > 0) {
+                const { error: qError } = await this.supabase
+                    .from('quiz_questions')
+                    .insert(allQuestions);
+                if (qError) console.error('Error copying questions:', qError);
+            }
+
+            if (progressRecords.length > 0) {
+                const { error: pError } = await this.supabase
+                    .from('user_card_progress')
+                    .upsert(progressRecords);
+                if (pError) console.error('Error creating progress:', pError);
+            }
+
+            console.log('Initialization complete.');
+            return { success: true, count: insertedCards.length };
+
+        } catch (error) {
+            console.error('Copy Master Cards Error:', error);
+            return { success: false, error };
         }
     }
 
@@ -1443,6 +1579,52 @@ class ApiService {
 
     // ==================== 錯誤處理 ====================
 
+    async _createUserProfile(userId, nickname, email) {
+        try {
+            console.log('Creating user profile for:', userId);
+
+            const attemptInsert = async (name) => {
+                return await this.supabase
+                    .from('users')
+                    .insert({
+                        id: userId,
+                        username: name,
+                        email: email,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    });
+            };
+
+            let { error } = await attemptInsert(nickname);
+
+            // Retry on username collision
+            if (error && error.code === '23505' && error.message.includes('users_username_key')) {
+                console.log('Username collision, retrying with random suffix...');
+                // Try up to 3 times
+                for (let i = 0; i < 3; i++) {
+                    const suffix = Math.floor(Math.random() * 10000);
+                    const newName = `${nickname}_${suffix}`;
+                    const retry = await attemptInsert(newName);
+                    error = retry.error;
+                    if (!error) break; // Success
+                    if (error.code !== '23505' || !error.message.includes('users_username_key')) break; // Other error
+                }
+            }
+
+            if (error) {
+                // Ignore PK duplication (means user already exists, which is good)
+                if (error.code === '23505' && !error.message.includes('users_username_key')) {
+                    return { success: true };
+                }
+                throw error;
+            }
+            return { success: true };
+        } catch (error) {
+            console.error('Create profile failed:', error);
+            return { success: false, error };
+        }
+    }
+
     _handleError(error, defaultCode = ERROR_CODES.INTERNAL_ERROR) {
         console.error('API Error:', error);
 
@@ -1473,3 +1655,4 @@ class ApiService {
 
 // 建立全域實例
 const apiService = new ApiService();
+window.apiService = apiService;
