@@ -68,8 +68,21 @@
                 text-shadow: 0 0 15px rgba(255, 165, 0, 0.8);
             }
         }
+        @keyframes black-shimmer {
+            0%, 100% {
+                color: black;
+                text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+            }
+            50% {
+                color: #4B5563; /* gray-600 */
+                text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+            }
+        }
         .capped-shimmer {
             animation: capped-gold-shimmer 1.5s ease-in-out infinite;
+        }
+        .black-shimmer {
+            animation: black-shimmer 1.5s ease-in-out infinite;
         }
     </style>
     <style>
@@ -298,17 +311,25 @@
             document.getElementById(`rank-${rank}-level`).textContent = user.actualLevel;
             document.getElementById(`rank-${rank}-cards`).textContent = `${user.total_cards || 0} 張卡片`;
 
-            // 如果是當前用戶，加上金色閃爍 (名字與內容)
+            // 如果是當前用戶，加上閃爍效果
             if (isCurrentUser) {
-                document.getElementById(`rank-${rank}-name`).classList.add('capped-shimmer');
-                document.getElementById(`rank-${rank}-cards`).classList.add('capped-shimmer');
-                // 移除原本 Level 的閃爍 (若有的話，或確保不加)
-                document.getElementById(`rank-${rank}-level`).classList.remove('capped-shimmer');
+                // 特殊處理：如果是第一名 (黃色背景)，改用黑色閃爍，否則用金色閃爍
+                const shimmerClass = (rank === 1) ? 'black-shimmer' : 'capped-shimmer';
+
+                document.getElementById(`rank-${rank}-name`).classList.add(shimmerClass);
+                document.getElementById(`rank-${rank}-cards`).classList.add(shimmerClass);
+                // 移除 Level 的閃爍
+                document.getElementById(`rank-${rank}-level`).classList.remove('capped-shimmer', 'black-shimmer');
                 // 卡片框高亮
                 document.getElementById(`rank-${rank}-card`).classList.add('ring-4', 'ring-primary');
+
+                // 移除另一個 class 以防萬一
+                const otherClass = (rank === 1) ? 'capped-shimmer' : 'black-shimmer';
+                document.getElementById(`rank-${rank}-name`).classList.remove(otherClass);
+                document.getElementById(`rank-${rank}-cards`).classList.remove(otherClass);
             } else {
-                document.getElementById(`rank-${rank}-name`).classList.remove('capped-shimmer');
-                document.getElementById(`rank-${rank}-cards`).classList.remove('capped-shimmer');
+                document.getElementById(`rank-${rank}-name`).classList.remove('capped-shimmer', 'black-shimmer');
+                document.getElementById(`rank-${rank}-cards`).classList.remove('capped-shimmer', 'black-shimmer');
                 document.getElementById(`rank-${rank}-card`).classList.remove('ring-4', 'ring-primary');
             }
         }
