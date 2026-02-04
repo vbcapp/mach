@@ -12,6 +12,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: "class",
@@ -108,11 +110,32 @@
             </button>
         </div>
         <div class="flex flex-col items-center mt-12 mb-12">
-            <div class="relative">
-                <div class="w-32 h-32 bg-white border-4 border-black flex items-center justify-center shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] cursor-pointer hover:scale-105 transition-transform"
-                    onclick="window.location.href='profilei.html'">
-                    <span class="material-symbols-outlined text-black text-7xl">person</span>
+            <div class="relative group">
+                <!-- Avatar Container: Click to Upload -->
+                <div class="w-32 h-32 bg-white border-4 border-black flex items-center justify-center shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] cursor-pointer hover:scale-105 transition-transform overflow-hidden relative"
+                    onclick="document.getElementById('avatar-input').click()">
+
+                    <!-- Default Icon (Hidden if image exists) -->
+                    <span id="avatar-icon" class="material-symbols-outlined text-black text-7xl">person</span>
+
+                    <!-- User Avatar Image (Hidden by default) -->
+                    <img id="avatar-image" src="" alt="Avatar" class="w-full h-full object-cover hidden">
+
+                    <!-- Camera Overlay (Visible on Hover/Always small) -->
+                    <div
+                        class="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span class="material-symbols-outlined text-white font-bold text-3xl">photo_camera</span>
+                    </div>
                 </div>
+
+                <!-- Camera Badge (Always visible) -->
+                <div
+                    class="absolute -bottom-2 -right-2 bg-white border-2 border-black p-1 rounded-full shadow-sm pointer-events-none z-10">
+                    <span class="material-symbols-outlined text-black text-sm font-bold block">photo_camera</span>
+                </div>
+
+                <!-- Hidden Input -->
+                <input type="file" id="avatar-input" accept="image/*" class="hidden">
                 <!-- 提示文字 -->
                 <div id="user-level"
                     class="absolute -top-3 -right-6 bg-black text-white border-4 border-black px-4 py-1 font-black italic shadow-[4px_4px_0px_0px_rgba(255,214,0,1)]">
@@ -214,6 +237,22 @@
         </button>
     </nav>
 
+    <!-- Crop Modal -->
+    <div id="crop-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white border-4 border-black w-full max-w-md p-4 space-y-4 shadow-[8px_8px_0px_0px_#FFD600]">
+            <h3 class="text-xl font-black italic">調整頭像</h3>
+            <div class="relative w-full h-64 bg-gray-100 border-2 border-black">
+                <img id="crop-image" src="" alt="To Crop" class="max-w-full block">
+            </div>
+            <div class="flex gap-2">
+                <button id="cancel-crop-btn"
+                    class="flex-1 bg-white border-2 border-black py-2 font-bold hover:bg-gray-100">取消</button>
+                <button id="confirm-crop-btn"
+                    class="flex-1 bg-primary border-2 border-black py-2 font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">確認更換</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ==================== Supabase 整合 ==================== -->
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -263,9 +302,135 @@
                     sessionStorage.setItem('userData', JSON.stringify(profileResult.data));
 
                     // 更新其他 UI (Level, XP 等)
-                    updateProfilePageUI(profileResult.data);
+                    updateProfilePageUI(profileResult.data); // 這會處理頭像
                 }
             }
+
+            // ==================== Avatar Upload Logic ====================
+            const avatarInput = document.getElementById('avatar-input');
+            const cropModal = document.getElementById('crop-modal');
+            const cropImage = document.getElementById('crop-image');
+            const cancelCropBtn = document.getElementById('cancel-crop-btn');
+            const confirmCropBtn = document.getElementById('confirm-crop-btn');
+            let cropper = null;
+
+            if (avatarInput) {
+                avatarInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        cropImage.src = event.target.result;
+                        cropModal.classList.remove('hidden');
+
+                        // Destroy previous cropper if exists
+                        if (cropper) {
+                            cropper.destroy();
+                        }
+
+                        // Initialize Cropper
+                        cropper = new Cropper(cropImage, {
+                            aspectRatio: 1, // 1:1 Square
+                            viewMode: 1,
+                            minCropBoxWidth: 50,
+                            minCropBoxHeight: 50,
+                            autoCropArea: 0.8
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                    // Reset input value so same file can be selected again
+                    avatarInput.value = '';
+                });
+            }
+
+            cancelCropBtn.addEventListener('click', () => {
+                cropModal.classList.add('hidden');
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+            });
+
+            confirmCropBtn.addEventListener('click', () => {
+                if (!cropper) return;
+
+                // Get cropped canvas
+                const canvas = cropper.getCroppedCanvas({
+                    width: 300,
+                    height: 300
+                });
+
+                if (!canvas) return;
+
+                // Show loading state on button
+                const originalText = confirmCropBtn.innerText;
+                confirmCropBtn.innerText = '上傳中...';
+                confirmCropBtn.disabled = true;
+
+                canvas.toBlob(async (blob) => {
+                    if (!blob) {
+                        alert('裁切失敗');
+                        confirmCropBtn.innerText = originalText;
+                        confirmCropBtn.disabled = false;
+                        return;
+                    }
+
+                    if (!apiService.currentUser) {
+                        alert('請先登入');
+                        return;
+                    }
+
+                    // Call API to upload
+                    const result = await apiService.uploadAvatar(apiService.currentUser.id, blob);
+
+                    if (result.success) {
+                        // Update UI immediately (using generated Blob URL or result URL)
+                        // const objectUrl = URL.createObjectURL(blob);
+                        // updateAvatarDisplay(objectUrl);
+
+                        // Result URL is better
+                        const newUrl = result.avatarUrl;
+                        // Avoid caching
+                        const displayUrl = newUrl + '?t=' + new Date().getTime();
+                        updateAvatarDisplay(displayUrl);
+
+                        // Close modal
+                        cropModal.classList.add('hidden');
+                        if (cropper) {
+                            cropper.destroy();
+                            cropper = null;
+                        }
+
+                        // Update cache
+                        const cached = JSON.parse(sessionStorage.getItem('userData') || '{}');
+                        cached.avatar_url = newUrl;
+                        sessionStorage.setItem('userData', JSON.stringify(cached));
+
+                    } else {
+                        alert('上傳失敗: ' + (result.error?.message || '未知錯誤'));
+                    }
+
+                    // Reset button
+                    confirmCropBtn.innerText = originalText;
+                    confirmCropBtn.disabled = false;
+
+                }, 'image/png');
+            });
+
+            function updateAvatarDisplay(url) {
+                const imgEl = document.getElementById('avatar-image');
+                const iconEl = document.getElementById('avatar-icon');
+                if (url) {
+                    imgEl.src = url;
+                    imgEl.classList.remove('hidden');
+                    iconEl.classList.add('hidden');
+                } else {
+                    imgEl.classList.add('hidden');
+                    iconEl.classList.remove('hidden');
+                }
+            }
+
 
             // 綁定匯出按鈕事件
             const exportBtn = document.getElementById('export-cards-btn');
@@ -454,6 +619,25 @@
             const cardCount = document.getElementById('user-card-count');
             if (cardCount) {
                 cardCount.textContent = userData.total_cards || 0;
+            }
+
+            // [New] 更新頭像
+            const imgEl = document.getElementById('avatar-image');
+            const iconEl = document.getElementById('avatar-icon');
+            if (imgEl && iconEl) {
+                if (userData.avatar_url) {
+                    // Start with basic URL
+                    let finalUrl = userData.avatar_url;
+                    // Simply append time if it doesn't have query params, just to be safe, though usually handled by upload logic
+                    // But re-rendering profile page might use cached URL.
+                    // Let's rely on standard src.
+                    imgEl.src = finalUrl;
+                    imgEl.classList.remove('hidden');
+                    iconEl.classList.add('hidden');
+                } else {
+                    imgEl.classList.add('hidden');
+                    iconEl.classList.remove('hidden');
+                }
             }
         }
     </script>

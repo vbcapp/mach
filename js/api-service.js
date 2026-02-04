@@ -792,6 +792,54 @@ class ApiService {
             return this._handleError(error);
         }
     }
+
+    /**
+     * 上傳並更新使用者頭像
+     * @param {string} userId
+     * @param {File | Blob} file
+     * @returns {Promise<object>} { success: true, avatarUrl: string }
+     */
+    async uploadAvatar(userId, file) {
+        try {
+            // 1. Upload file to Supabase Storage
+            // Path format: {userId}/avatar.png (always overwrite)
+            // Use timestamp to prevent browser caching issues
+            const timestamp = new Date().getTime();
+            const fileName = `${userId}/avatar_${timestamp}.png`;
+
+            // If using standard supabase storage:
+            const { data, error: uploadError } = await this.supabase
+                .storage
+                .from('avatars')
+                .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
+            if (uploadError) throw uploadError;
+
+            // 2. Get Public URL
+            const { data: { publicUrl } } = this.supabase
+                .storage
+                .from('avatars')
+                .getPublicUrl(fileName);
+
+            // 3. Update User Profile
+            const { error: updateError } = await this.supabase
+                .from('users')
+                .update({ avatar_url: publicUrl })
+                .eq('id', userId);
+
+            if (updateError) throw updateError;
+
+            return { success: true, avatarUrl: publicUrl };
+
+        } catch (error) {
+            console.error('Avatar Upload Error:', error);
+            return this._handleError(error);
+        }
+    }
+
     /**
      * 取得使用者所有不重複的分類
      */
