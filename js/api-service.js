@@ -1315,6 +1315,11 @@ class ApiService {
                 xpEarned: xpToAdd,
                 bonuses: bonuses,
                 newUserData: userUpdateResult.data.user,
+                // [Fix] Pass level up flags to result.html
+                leveledUp: userUpdateResult.data.leveledUp,
+                newLevel: userUpdateResult.data.levelState ? userUpdateResult.data.levelState.actualLevel : null,
+                oldLevel: user.current_level,
+
                 isPerfectFirstTime: isPerfectRun && perfectCardsToAdd > 0,
                 isMasterFirstTime: isMasterNow && !wasMasterBefore
             };
