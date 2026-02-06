@@ -8,7 +8,7 @@ let allCards = []; // 儲存所有卡片用於篩選
 let currentFilter = 'all'; // 目前篩選條件 ('all', 'unfamiliar', 'lv1'...)
 
 // [Security Check] 管理員 UID
-const ADMIN_UID = "3a5bb55c-4ffc-4373-a9b5-f211b4b4d63b";
+const ADMIN_UID = "17da7d22-17ad-4d40-a5d2-9c2ce9216cf0";
 
 /**
  * 初始化應用

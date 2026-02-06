@@ -177,23 +177,45 @@ class ApiService {
 
     /**
      * 建立使用者 Profile (內部使用)
+     * @param {string} userId - 用戶 ID
+     * @param {string} username - 用戶名稱
+     * @param {string} email - 電子郵件
+     * @param {string} [avatarUrl] - 頭像 URL (Google OAuth 會提供)
      */
-    async _createUserProfile(userId, username, email) {
+    async _createUserProfile(userId, username, email, avatarUrl = null) {
+        const profileData = {
+            id: userId,
+            username: username,
+            email: email,
+            current_level: 1,
+            current_xp: 0,
+        };
+
+        // 如果有頭像 URL，添加到資料中
+        if (avatarUrl) {
+            profileData.avatar_url = avatarUrl;
+        }
+
         const { error } = await this.supabase
             .from('users')
-            .insert({
-                id: userId,
-                username: username,
-                email: email,
-                current_level: 1,
-                current_xp: 0,
-                // 其他欄位用預設值
-            });
+            .upsert(profileData, { onConflict: 'id' }); // 使用 upsert 以支援更新現有資料
 
         if (error) {
-            // 如果重複鍵錯誤，表示 Profile 已存在，忽略即可
+            // 如果是用戶名重複錯誤，嘗試生成一個唯一的用戶名
+            if (error.code === '23505' && error.message.includes('username')) {
+                const uniqueUsername = `${username}_${Date.now().toString(36)}`;
+                profileData.username = uniqueUsername;
+                const { error: retryError } = await this.supabase
+                    .from('users')
+                    .upsert(profileData, { onConflict: 'id' });
+                if (retryError) {
+                    console.warn('_createUserProfile retry error:', retryError);
+                }
+                return;
+            }
+            // 其他重複錯誤 (如 ID 已存在) 可以忽略
             if (error.code === '23505') return;
-            throw error;
+            console.warn('_createUserProfile error:', error);
         }
     }
 
@@ -874,13 +896,17 @@ class ApiService {
         try {
             // 0. [Self-Healing] Ensure user profile exists before copying cards
             // This fixes "Key is not present in table users" error for zombie users
+            // Also handles Google OAuth users by extracting metadata
+            const userMeta = this.currentUser?.user_metadata || {};
             const fallbackEmail = `${userId}@placeholder.com`;
             const fallbackName = 'Learning User';
-            await this._createUserProfile(
-                userId,
-                this.currentUser?.user_metadata?.username || fallbackName,
-                this.currentUser?.email || fallbackEmail
-            );
+
+            // Google OAuth 會提供 full_name, avatar_url, email 等資訊
+            const username = userMeta.full_name || userMeta.name || userMeta.username || fallbackName;
+            const email = this.currentUser?.email || userMeta.email || fallbackEmail;
+            const avatarUrl = userMeta.avatar_url || userMeta.picture || null;
+
+            await this._createUserProfile(userId, username, email, avatarUrl);
 
             // 1. 檢查用戶是否已有卡片
             const { count, error: countError } = await this.supabase
