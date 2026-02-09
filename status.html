@@ -101,6 +101,7 @@
     <!-- 專案腳本 -->
     <script src="config.js"></script>
     <script src="js/api-service.js"></script>
+    <script src="js/modal-system.js"></script>
 
     <script>
         // 檢查 localStorage
@@ -234,13 +235,19 @@
 
         // 清除登入資料
         function clearLogin() {
-            if (confirm('確定要清除所有登入資料嗎？')) {
-                localStorage.removeItem('userNickname');
-                localStorage.removeItem('userConsent');
-                localStorage.removeItem('loginTime');
-                alert('✅ 登入資料已清除！');
-                checkStatus();
-            }
+            ModalSystem.confirm(
+                '清除登入資料',
+                '確定要清除所有登入資料嗎？',
+                () => {
+                    localStorage.removeItem('userNickname');
+                    localStorage.removeItem('userConsent');
+                    localStorage.removeItem('loginTime');
+                    ModalSystem.toast('✅ 登入資料已清除！', 'success');
+                    checkStatus();
+                },
+                null,
+                { confirmText: '清除', isDestructive: true }
+            );
         }
 
         // 頁面載入時執行

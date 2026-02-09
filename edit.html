@@ -163,6 +163,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <script src="js/api-service.js"></script>
+    <script src="js/modal-system.js"></script>
 
     <script>
         let currentCard = null;
@@ -180,8 +181,14 @@
             cardId = urlParams.get('id');
 
             if (!cardId) {
-                alert('找不到卡片 ID');
-                window.location.href = 'index.html';
+                if (typeof ModalSystem !== 'undefined') {
+                    ModalSystem.alert('錯誤', '找不到卡片 ID', () => {
+                        window.location.href = 'index.html';
+                    });
+                } else {
+                    alert('找不到卡片 ID');
+                    window.location.href = 'index.html';
+                }
                 return;
             }
 
@@ -201,8 +208,9 @@
             const userId = apiService.currentUser?.id;
 
             if (!userId) {
-                alert('請先登入');
-                window.location.href = 'login.html';
+                ModalSystem.alert('請先登入', '需要登入才能編輯卡片', () => {
+                    window.location.href = 'login.html';
+                });
                 return;
             }
 
@@ -215,8 +223,9 @@
                 fillForm(currentCard);
             } else if (!currentCard) {
                 // 只有在沒有快取資料時才顯示錯誤
-                alert('載入卡片失敗');
-                window.location.href = 'index.html';
+                ModalSystem.alert('錯誤', '載入卡片失敗', () => {
+                    window.location.href = 'index.html';
+                });
             }
         }
 
@@ -232,7 +241,7 @@
 
         async function saveCard() {
             if (!currentCard) {
-                alert('卡片資料尚未載入');
+                ModalSystem.alert('錯誤', '卡片資料尚未載入');
                 return;
             }
 
@@ -248,39 +257,47 @@
 
             // 驗證必填欄位
             if (!updates.english_term || !updates.chinese_translation || !updates.description) {
-                alert('請填寫英文原文、中文翻譯和內容說明');
+                ModalSystem.alert('欄位缺漏', '請填寫英文原文、中文翻譯和內容說明');
                 return;
             }
 
             const result = await apiService.updateCard(cardId, updates);
 
             if (result.success) {
-                alert('儲存成功！');
-                window.location.href = `cardi.html?id=${cardId}`;
+                ModalSystem.toast('儲存成功！', 'success');
+                setTimeout(() => {
+                    window.location.href = `cardi.html?id=${cardId}`;
+                }, 1000);
             } else {
-                alert('儲存失敗: ' + result.error.message);
+                ModalSystem.alert('儲存失敗', result.error.message);
             }
         }
 
         async function deleteCard() {
             if (!currentCard) {
-                alert('卡片資料尚未載入');
+                ModalSystem.alert('錯誤', '卡片資料尚未載入');
                 return;
             }
 
-            if (!confirm('確定要刪除這張卡片嗎？此操作無法復原。')) {
-                return;
-            }
+            ModalSystem.confirm(
+                '確認刪除',
+                '確定要刪除這張卡片嗎？此操作無法復原。',
+                async () => {
+                    const userId = apiService.currentUser?.id;
+                    const result = await apiService.deleteCard(cardId, userId);
 
-            const userId = apiService.currentUser?.id;
-            const result = await apiService.deleteCard(cardId, userId);
-
-            if (result.success) {
-                alert('卡片已刪除');
-                window.location.href = 'index.html';
-            } else {
-                alert('刪除失敗: ' + result.error.message);
-            }
+                    if (result.success) {
+                        ModalSystem.toast('卡片已刪除', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1000);
+                    } else {
+                        ModalSystem.alert('刪除失敗', result.error.message);
+                    }
+                },
+                null,
+                { confirmText: '刪除', isDestructive: true }
+            );
         }
     </script>
 

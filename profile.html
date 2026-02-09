@@ -217,7 +217,8 @@
                     <div id="error-questions-list" class="hidden space-y-3"></div>
                     <!-- Empty state -->
                     <div id="error-questions-empty" class="hidden text-center py-8">
-                        <span class="material-symbols-outlined text-6xl text-zinc-300 dark:text-zinc-600">check_circle</span>
+                        <span
+                            class="material-symbols-outlined text-6xl text-zinc-300 dark:text-zinc-600">check_circle</span>
                         <p class="mt-2 text-sm font-bold text-zinc-500 dark:text-zinc-400">目前沒有足夠的答題數據</p>
                     </div>
                 </div>
@@ -330,6 +331,7 @@
     <script src="config.js"></script>
     <script src="js/api-service.js"></script>
     <script src="js/init.js"></script>
+    <script src="js/modal-system.js"></script>
 
     <script>
         // 從 sessionStorage 載入使用者資料（立即顯示）
@@ -446,7 +448,7 @@
 
                 canvas.toBlob(async (blob) => {
                     if (!blob) {
-                        alert('裁切失敗');
+                        ModalSystem.alert('錯誤', '裁切失敗');
                         confirmCropBtn.innerText = originalText;
                         confirmCropBtn.disabled = false;
                         return;
@@ -484,7 +486,7 @@
                         sessionStorage.setItem('userData', JSON.stringify(cached));
 
                     } else {
-                        alert('上傳失敗: ' + (result.error?.message || '未知錯誤'));
+                        ModalSystem.alert('上傳失敗', result.error?.message || '未知錯誤');
                     }
 
                     // Reset button
@@ -513,7 +515,7 @@
             if (exportBtn) {
                 exportBtn.addEventListener('click', async () => {
                     if (!apiService.currentUser) {
-                        alert('請先登入');
+                        ModalSystem.alert('請先登入', '需要登入才能匯出資料');
                         return;
                     }
 
@@ -538,11 +540,11 @@
                             document.body.removeChild(a);
                             URL.revokeObjectURL(url);
                         } else {
-                            alert('匯出失敗: ' + (result.error?.message || '未知錯誤'));
+                            ModalSystem.alert('匯出失敗', result.error?.message || '未知錯誤');
                         }
                     } catch (e) {
                         console.error(e);
-                        alert('匯出發生錯誤');
+                        ModalSystem.alert('錯誤', '匯出發生錯誤');
                     } finally {
                         exportBtn.innerText = originalText;
                         exportBtn.disabled = false;
@@ -557,7 +559,7 @@
             if (importBtn && fileInput) {
                 importBtn.addEventListener('click', () => {
                     if (!apiService.currentUser) {
-                        alert('請先登入');
+                        ModalSystem.alert('請先登入', '需要登入才能匯入資料');
                         return;
                     }
                     fileInput.click();
@@ -568,73 +570,82 @@
                     if (!file) return;
 
                     if (!file.name.endsWith('.json')) {
-                        alert('請選擇 JSON 檔案');
+                        ModalSystem.alert('格式錯誤', '請選擇 JSON 檔案');
                         return;
                     }
 
-                    if (!confirm('匯入操作將會新增這些卡片到您的帳號中。確定要繼續嗎？')) {
-                        fileInput.value = ''; // 清除選擇
-                        return;
-                    }
+                    ModalSystem.confirm(
+                        '確認匯入',
+                        '匯入操作將會新增這些卡片到您的帳號中。確定要繼續嗎？',
+                        async () => {
+                            // Proceed with import inside this callback
+                            await processImport(file);
+                        },
+                        () => {
+                            fileInput.value = ''; // Clear on cancel
+                        }
+                    );
 
-                    // 顯示 Loading
-                    const originalText = importBtn.innerText;
-                    importBtn.innerText = '匯入中...';
-                    importBtn.disabled = true;
+                    async function processImport(file) {
+                        // 顯示 Loading
+                        const originalText = importBtn.innerText;
+                        importBtn.innerText = '匯入中...';
+                        importBtn.disabled = true;
 
-                    try {
-                        const text = await file.text();
-                        let cards = JSON.parse(text);
+                        try {
+                            const text = await file.text();
+                            let cards = JSON.parse(text);
 
-                        if (!Array.isArray(cards)) {
-                            // 如果不是陣列，嘗試看看是否包在 data 屬性裡 (依據匯出格式 result.data)
-                            if (cards.data && Array.isArray(cards.data)) {
-                                cards = cards.data;
-                            } else {
-                                throw new Error('格式錯誤：JSON 內容應為卡片陣列');
+                            if (!Array.isArray(cards)) {
+                                // 如果不是陣列，嘗試看看是否包在 data 屬性裡 (依據匯出格式 result.data)
+                                if (cards.data && Array.isArray(cards.data)) {
+                                    cards = cards.data;
+                                } else {
+                                    throw new Error('格式錯誤：JSON 內容應為卡片陣列');
+                                }
                             }
+
+                            // 資料清理與準備
+                            const currentUserId = apiService.currentUser.id;
+                            const cardsToImport = cards.map(c => {
+                                // 移除不應該直接匯入的欄位，保留卡片內容
+                                // 注意：我們移除 ID，讓它們成為新卡片
+                                // 移除 progress，因為新卡片進度應重置
+                                const { id, user_id, created_at, updated_at, progress, user_card_progress, ...cardContent } = c;
+                                return {
+                                    ...cardContent,
+                                    user_id: currentUserId, // 確保歸屬到當前用戶
+                                    is_public: false // 預設匯入為私人
+                                };
+                            });
+
+                            if (cardsToImport.length === 0) {
+                                ModalSystem.alert('無效資料', '沒有可匯入的有效卡片資料');
+                                return;
+                            }
+
+                            // 批量建立
+                            // 由於瀏覽器端可能會有請求大小限制，如果是大量資料，可以考慮分批
+                            // 這裡簡單做，直接呼叫 update (createCards)
+                            // 注意：createCards 在 api-service.js 中已實作
+                            const result = await apiService.createCards(cardsToImport);
+
+                            if (result.success) {
+                                ModalSystem.alert('匯入成功', `成功匯入 ${result.cardsCreated} 張卡片！\n獲得 ${result.xpEarned} XP！`, () => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                throw result.error;
+                            }
+
+                        } catch (err) {
+                            console.error(err);
+                            ModalSystem.alert('匯入失敗', err.message || '未知錯誤');
+                        } finally {
+                            importBtn.innerText = originalText;
+                            importBtn.disabled = false;
+                            fileInput.value = ''; // Reset input
                         }
-
-                        // 資料清理與準備
-                        const currentUserId = apiService.currentUser.id;
-                        const cardsToImport = cards.map(c => {
-                            // 移除不應該直接匯入的欄位，保留卡片內容
-                            // 注意：我們移除 ID，讓它們成為新卡片
-                            // 移除 progress，因為新卡片進度應重置
-                            const { id, user_id, created_at, updated_at, progress, user_card_progress, ...cardContent } = c;
-                            return {
-                                ...cardContent,
-                                user_id: currentUserId, // 確保歸屬到當前用戶
-                                is_public: false // 預設匯入為私人
-                            };
-                        });
-
-                        if (cardsToImport.length === 0) {
-                            alert('沒有可匯入的有效卡片資料');
-                            return;
-                        }
-
-                        // 批量建立
-                        // 由於瀏覽器端可能會有請求大小限制，如果是大量資料，可以考慮分批
-                        // 這裡簡單做，直接呼叫 update (createCards)
-                        // 注意：createCards 在 api-service.js 中已實作
-                        const result = await apiService.createCards(cardsToImport);
-
-                        if (result.success) {
-                            alert(`成功匯入 ${result.cardsCreated} 張卡片！\n獲得 ${result.xpEarned} XP！`);
-                            // 重新載入頁面以更新數據
-                            window.location.reload();
-                        } else {
-                            throw result.error;
-                        }
-
-                    } catch (err) {
-                        console.error(err);
-                        alert('匯入失敗: ' + (err.message || '未知錯誤'));
-                    } finally {
-                        importBtn.innerText = originalText;
-                        importBtn.disabled = false;
-                        fileInput.value = ''; // Reset input
                     }
                 });
             }

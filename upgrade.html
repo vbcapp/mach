@@ -233,6 +233,7 @@
     <script src="config.js"></script>
     <script src="js/api-service.js"></script>
     <script src="js/level-system.js"></script>
+    <script src="js/modal-system.js"></script>
 
     <script>
         // 從 URL 或 sessionStorage 獲取升級資訊
@@ -377,7 +378,7 @@
                 // 複製到剪貼簿
                 const text = `🎉 我在 VibeCoding 升到了 Level ${newLevel}！`;
                 navigator.clipboard.writeText(text).then(() => {
-                    alert('已複製分享文字到剪貼簿！');
+                    ModalSystem.toast('已複製分享文字到剪貼簿！', 'success');
                 });
             }
         }

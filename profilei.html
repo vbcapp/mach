@@ -184,6 +184,7 @@
     <script src="config.js"></script>
     <script src="js/api-service.js"></script>
     <script src="js/init.js"></script>
+    <script src="js/modal-system.js"></script>
 
     <script>
         let is2FAEnabled = false;
@@ -227,23 +228,23 @@
                     });
 
                     if (result.success) {
-                        alert('✅ 個人資料已更新！');
+                        ModalSystem.toast('個人資料已更新！', 'success');
                     } else {
                         console.warn('更新資料庫失敗:', result.error);
-                        alert('✅ 本地資料已更新！');
+                        ModalSystem.toast('本地資料已更新！', 'success');
                     }
                 } catch (error) {
                     console.error('更新失敗:', error);
-                    alert('✅ 本地資料已更新！');
+                    ModalSystem.toast('本地資料已更新！', 'success');
                 }
             } else {
-                alert('✅ 個人資料已更新！');
+                ModalSystem.toast('個人資料已更新！', 'success');
             }
         }
 
         // 修改密碼
         function changePassword() {
-            alert('🔐 修改密碼功能開發中...\n\n目前使用 localStorage 簡易登入，尚未啟用密碼功能');
+            ModalSystem.alert('功能開發中', '修改密碼功能即將推出，敬請期待！');
         }
 
         // 切換雙重驗證
@@ -253,65 +254,74 @@
 
             if (is2FAEnabled) {
                 toggle.style.left = 'calc(100% - 0.75rem - 2px)';
-                alert('✅ 雙重驗證已啟用（模擬）');
+                ModalSystem.toast('雙重驗證已啟用（模擬）', 'success');
             } else {
                 toggle.style.left = '2px';
-                alert('❌ 雙重驗證已停用');
+                ModalSystem.toast('雙重驗證已停用', 'info');
             }
         }
 
         // 管理訂閱
         function manageSubscription() {
-            alert('💳 訂閱管理功能開發中...\n\n將來可以在此升級/降級您的訂閱方案');
+            ModalSystem.alert('功能開發中', '訂閱管理功能即將推出，將來可以在此升級/降級您的訂閱方案。');
         }
 
         // 登出
         async function logout() {
-            if (confirm('確定要登出嗎？')) {
-                const btn = document.querySelector('button[onclick="logout()"]');
-                const originalText = btn ? btn.innerHTML : '登出';
-                if (btn) btn.innerHTML = '登出中...';
+            ModalSystem.confirm(
+                '確定要登出嗎？',
+                '登出後您將無法存取您的學習進度，直到下次登入。',
+                async () => {
+                    const btn = document.querySelector('button[onclick="logout()"]');
+                    if (btn) btn.innerHTML = '登出中...';
 
-                try {
-                    // 使用 apiService 的登出方法，它會正確清除 user_device_id 和 Supabase Session
-                    if (apiService) {
-                        await apiService.logout();
-                    } else {
-                        // Fallback if apiService not ready
-                        localStorage.clear();
-                        sessionStorage.clear();
+                    try {
+                        // 使用 apiService 的登出方法
+                        if (apiService) {
+                            await apiService.logout();
+                        } else {
+                            localStorage.clear();
+                            sessionStorage.clear();
+                        }
+
+                        ModalSystem.toast('已登出', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 500);
+                    } catch (e) {
+                        console.error('Logout failed:', e);
+                        window.location.href = 'login.html';
                     }
-
-                    alert('✅ 已登出');
-                    window.location.href = 'login.html';
-                } catch (e) {
-                    console.error('Logout failed:', e);
-                    alert('登出發生錯誤，但我們會嘗試轉跳');
-                    window.location.href = 'login.html';
-                }
-            }
+                },
+                null,
+                { confirmText: '登出', isDestructive: true }
+            );
         }
 
         // 刪除帳號
         function deleteAccount() {
-            const confirm1 = confirm('⚠️ 警告：刪除帳號後所有資料將無法恢復！\n\n確定要刪除帳號嗎？');
-
-            if (confirm1) {
-                const confirm2 = confirm('🚨 最後確認：真的要刪除帳號嗎？\n\n此操作無法復原！');
-
-                if (confirm2) {
-                    // 清除所有本地資料
-                    localStorage.clear();
-
-                    // TODO: 從資料庫刪除使用者資料
-                    if (apiService?.currentUser) {
-                        console.log('應該從資料庫刪除使用者:', apiService.currentUser.id);
-                    }
-
-                    alert('🗑️ 帳號已刪除\n\n感謝您使用 iPas AI應用規劃師考證班');
-                    window.location.href = 'login.html';
-                }
-            }
+            ModalSystem.confirm(
+                '警告：刪除帳號',
+                '刪除帳號後，您的所有學習進度、卡片和數據都將永久消失且無法恢復。確定要繼續嗎？',
+                () => {
+                    // Second confirmation for safety
+                    ModalSystem.confirm(
+                        '最後確認',
+                        '這項操作無法復原。真的要刪除嗎？',
+                        () => {
+                            localStorage.clear();
+                            // TODO: API Call to delete user
+                            ModalSystem.alert('帳號已刪除', '感謝您使用 iPas AI應用規劃師考證班。', () => {
+                                window.location.href = 'login.html';
+                            });
+                        },
+                        null,
+                        { confirmText: '永久刪除', isDestructive: true }
+                    );
+                },
+                null,
+                { confirmText: '刪除帳號', isDestructive: true }
+            );
         }
     </script>
 </body>

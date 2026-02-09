@@ -129,52 +129,56 @@
         <div class="centered-container">
             <div
                 class="w-full bg-white dark:bg-[#2a2a2a] border-3 border-black dark:border-white shadow-neo-lg dark:shadow-neo-lg-dark rounded-2xl flex flex-col relative overflow-hidden">
-                <div class="absolute top-4 left-4">
-                    <div class="bg-primary border-3 border-black px-2 py-0.5 rounded shadow-neo-sm">
-                        <span id="card-category" class="text-[10px] font-bold tracking-widest uppercase">BACKEND</span>
-                    </div>
+                <div id="card-loading"
+                    class="absolute inset-0 flex flex-col items-center justify-center bg-white dark:bg-[#2a2a2a] z-50">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    <span class="mt-4 text-sm font-bold text-gray-500">Loading...</span>
                 </div>
-                <div class="absolute top-4 right-4">
-                    <button id="add-btn" onclick="addToCollection()"
-                        class="bg-white dark:bg-black border-3 border-black dark:border-white w-8 h-8 rounded shadow-neo-sm flex items-center justify-center active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-colors">
-                        <span class="material-symbols-outlined text-xl font-black">add</span>
-                    </button>
-                </div>
-                <div class="p-6 pb-2 pt-14">
-                    <div class="flex flex-col items-center gap-1">
-                        <h2 id="card-title">API</h2>
-                        <span id="card-abbreviation" class="text-lg font-bold text-gray-500 mb-1">(API)</span>
-                        <span id="card-translation" class="text-xl font-bold italic mb-4">應用程式介面</span>
-                        <span id="add-count" class="text-xs text-gray-400 mb-2">0 人已收藏</span>
-                        <div
-                            class="bg-primary border-3 border-black px-6 py-2 rounded-lg shadow-neo-sm flex items-center justify-center gap-2">
-                            <span id="card-level" class="text-sm font-bold tracking-widest">Lv.2</span>
+                <div id="card-content" class="opacity-0 transition-opacity duration-300">
+                    <div class="absolute top-4 left-4">
+                        <div class="bg-primary border-3 border-black px-2 py-0.5 rounded shadow-neo-sm">
+                            <span id="card-category" class="text-[10px] font-bold tracking-widest uppercase">--</span>
                         </div>
                     </div>
-                </div>
-                <div class="px-6 py-6 flex flex-col gap-6">
-                    <div>
-                        <h3 class="text-sm font-bold mb-2 flex items-center gap-2">
-                            <span class="w-2 h-4 bg-primary border border-black inline-block"></span>
-                            內容說明
-                        </h3>
-                        <div id="card-description"
-                            class="max-h-[4.5em] overflow-y-auto leading-relaxed text-sm text-gray-800 dark:text-gray-200">
-                            API 是軟體與軟體之間溝通的橋樑，讓不同程式可以互相交換資料或使用彼此的功能，而不需要知道對方的內部程式碼怎麼寫。
+                    <div class="absolute top-4 right-4">
+                        <button id="add-btn" onclick="addToCollection()"
+                            class="bg-white dark:bg-black border-3 border-black dark:border-white w-8 h-8 rounded shadow-neo-sm flex items-center justify-center active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-colors">
+                            <span class="material-symbols-outlined text-xl font-black">add</span>
+                        </button>
+                    </div>
+                    <div class="p-6 pb-2 pt-14">
+                        <div class="flex flex-col items-center gap-1">
+                            <h2 id="card-title"></h2>
+                            <span id="card-abbreviation" class="text-lg font-bold text-gray-500 mb-1"></span>
+                            <span id="card-translation" class="text-xl font-bold italic mb-4"></span>
+                            <span id="add-count" class="text-xs text-gray-400 mb-2">-- 人已收藏</span>
+                            <div
+                                class="bg-primary border-3 border-black px-6 py-2 rounded-lg shadow-neo-sm flex items-center justify-center gap-2">
+                                <span id="card-level" class="text-sm font-bold tracking-widest">Lv.2</span>
+                            </div>
                         </div>
                     </div>
-                    <div>
-                        <h3 class="text-sm font-bold mb-2 flex items-center gap-2">
-                            <span class="w-2 h-4 bg-secondary border border-black inline-block"></span>
-                            生活化比喻
-                        </h3>
-                        <div
-                            class="bg-gray-50 dark:bg-black/20 border-3 border-black p-4 rounded-xl relative overflow-hidden">
-                            <div class="absolute top-0 left-0 w-1.5 h-full bg-primary"></div>
-                            <div id="card-analogy"
-                                class="max-h-[9em] overflow-y-auto leading-relaxed text-sm text-gray-700 dark:text-gray-300 italic">
-                                💡 API
-                                就像是餐廳的服務生。你（客戶端）看菜單點餐，服務生將你的需求傳達給廚房（伺服器），最後再把做好的菜送到你桌上。你不需要知道廚房怎麼開火，只需要透過服務生就能得到食物。
+                    <div class="px-6 py-6 flex flex-col gap-6">
+                        <div>
+                            <h3 class="text-sm font-bold mb-2 flex items-center gap-2">
+                                <span class="w-2 h-4 bg-primary border border-black inline-block"></span>
+                                內容說明
+                            </h3>
+                            <div id="card-description"
+                                class="max-h-[4.5em] overflow-y-auto leading-relaxed text-sm text-gray-800 dark:text-gray-200">
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold mb-2 flex items-center gap-2">
+                                <span class="w-2 h-4 bg-secondary border border-black inline-block"></span>
+                                生活化比喻
+                            </h3>
+                            <div
+                                class="bg-gray-50 dark:bg-black/20 border-3 border-black p-4 rounded-xl relative overflow-hidden">
+                                <div class="absolute top-0 left-0 w-1.5 h-full bg-primary"></div>
+                                <div id="card-analogy"
+                                    class="max-h-[9em] overflow-y-auto leading-relaxed text-sm text-gray-700 dark:text-gray-300 italic">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -194,6 +198,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <script src="js/api-service.js"></script>
+    <script src="js/modal-system.js"></script>
 
     <script>
         // 每日一卡資料
@@ -214,7 +219,22 @@
                 const result = await apiService.getDailyCardById(idParam);
                 if (result.success && result.data) {
                     currentDailyCard = result.data;
+                    currentDailyCard = result.data;
                     currentDate = currentDailyCard.publish_date; // 設定上下文日期
+
+                    // Future Date Guard for ID loading
+                    const today = new Date().toISOString().split('T')[0];
+                    if (currentDate > today) {
+                        if (typeof ModalSystem !== 'undefined') {
+                            ModalSystem.alert('無法查看', '無法查看未來日期的卡片', () => {
+                                window.location.href = `calendar_c.html?date=${today}`;
+                            });
+                        } else {
+                            alert('無法查看未來日期的卡片');
+                            window.location.href = `calendar_c.html?date=${today}`;
+                        }
+                        return;
+                    }
 
                     generateDateNavigation(currentDate);
                     renderDailyCard(currentDailyCard);
@@ -227,8 +247,24 @@
                     generateDateNavigation(currentDate);
                 }
             } else {
-                // 原有這輯：透過日期載入
-                currentDate = dateParam || new Date().toISOString().split('T')[0];
+                // 原有邏輯：透過日期載入
+                let targetDate = dateParam || new Date().toISOString().split('T')[0];
+
+                // Future Date Guard
+                const today = new Date().toISOString().split('T')[0];
+                if (targetDate > today) {
+                    if (typeof ModalSystem !== 'undefined') {
+                        ModalSystem.alert('無法查看', '無法查看未來日期的卡片', () => {
+                            window.location.href = `calendar_c.html?date=${today}`;
+                        });
+                    } else {
+                        alert('無法查看未來日期的卡片');
+                        window.location.href = `calendar_c.html?date=${today}`;
+                    }
+                    return;
+                }
+
+                currentDate = targetDate;
                 generateDateNavigation(currentDate);
                 await loadDailyCard(currentDate);
             }
@@ -375,18 +411,25 @@
             // 更新添加人數
             const addCountEl = document.getElementById('add-count');
             if (addCountEl) addCountEl.textContent = `${card.add_count} 人已收藏`;
+
+            // Remove loading state and show content
+            const loadingEl = document.getElementById('card-loading');
+            const contentEl = document.getElementById('card-content');
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (contentEl) contentEl.classList.remove('opacity-0');
         }
 
         // 添加卡片到收藏
         async function addToCollection() {
             if (!currentDailyCard) {
-                alert('卡片尚未載入');
+                ModalSystem.alert('錯誤', '卡片尚未載入');
                 return;
             }
 
             if (!apiService.currentUser) {
-                alert('請先登入');
-                window.location.href = 'login.html';
+                ModalSystem.alert('請先登入', '需要登入才能收藏卡片', () => {
+                    window.location.href = 'login.html';
+                });
                 return;
             }
 
@@ -397,7 +440,7 @@
             );
 
             if (checkResult.success && checkResult.hasAdded) {
-                alert('你已經收藏過這張卡片了！');
+                ModalSystem.toast('你已經收藏過這張卡片了！');
                 return;
             }
 
@@ -407,7 +450,7 @@
             );
 
             if (result.success) {
-                alert(`收藏成功！獲得 ${result.xpEarned} XP`);
+                ModalSystem.toast(`收藏成功！獲得 ${result.xpEarned} XP`, 'success');
                 updateAddButtonState(true);
 
                 // 更新顯示的添加人數
@@ -421,12 +464,10 @@
                     sessionStorage.setItem('userData', JSON.stringify(result.newUserData));
 
                     // 立即更新 Header UI
-                    // 這裡我們可以重複使用 loadUserFromCache 的邏輯，但為了確保準確，我們直接寫更新邏輯
-                    // 或者我們應該升級 loadUserFromCache 來使用 LevelSystem
                     updateHeaderUI(result.newUserData);
                 }
             } else {
-                alert('添加失敗: ' + result.error.message);
+                ModalSystem.alert('添加失敗', result.error.message);
             }
         }
 

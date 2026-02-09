@@ -180,6 +180,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <script src="js/api-service.js"></script>
+    <script src="js/modal-system.js"></script>
 
     <script>
         let currentCard = null;
@@ -247,8 +248,16 @@
             const cardId = urlParams.get('id');
 
             if (!cardId) {
-                alert('找不到卡片 ID');
-                window.location.href = 'index.html';
+                // If ModalSystem is not ready immediately, we might need to wait or just alert.
+                // But DOMContentLoaded is fired, scripts should be loaded.
+                if (typeof ModalSystem !== 'undefined') {
+                    ModalSystem.alert('錯誤', '找不到卡片 ID', () => {
+                        window.location.href = 'index.html';
+                    });
+                } else {
+                    alert('找不到卡片 ID');
+                    window.location.href = 'index.html';
+                }
                 return;
             }
 
@@ -324,8 +333,9 @@
             const userId = apiService.currentUser?.id;
 
             if (!userId) {
-                alert('請先登入');
-                window.location.href = 'login.html';
+                ModalSystem.alert('請先登入', '需要登入才能查看卡片', () => {
+                    window.location.href = 'login.html';
+                });
                 return;
             }
 
@@ -338,8 +348,9 @@
                 renderCard(currentCard);
             } else if (!currentCard) {
                 // 只有在沒有快取資料時才顯示錯誤
-                alert('載入卡片失敗');
-                window.location.href = 'index.html';
+                ModalSystem.alert('錯誤', '載入卡片失敗', () => {
+                    window.location.href = 'index.html';
+                });
             }
         }
 

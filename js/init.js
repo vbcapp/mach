@@ -510,27 +510,35 @@ function bindCardActions(cards) {
 
     // 刪除按鈕
     document.querySelectorAll('[data-action="delete"]').forEach(btn => {
-        btn.addEventListener('click', async function (e) {
+        btn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
             const cardId = this.getAttribute('data-card-id');
 
-            if (!confirm('確定要刪除這張卡片嗎？')) return;
+            ModalSystem.confirm(
+                '確認刪除',
+                '確定要刪除這張卡片嗎？此動作無法復原。',
+                async () => {
+                    const result = await apiService.deleteCard(cardId, currentUser.id);
+                    if (result.success) {
+                        sessionStorage.removeItem(`card_${cardId}`);
+                        delete cardsCache[cardId];
+                        adjustCardCount(-1); // 即時更新卡片數量
 
-            const result = await apiService.deleteCard(cardId, currentUser.id);
-            if (result.success) {
-                sessionStorage.removeItem(`card_${cardId}`);
-                delete cardsCache[cardId];
-                adjustCardCount(-1); // 即時更新卡片數量
+                        // 從 allCards 移除
+                        const idx = allCards.findIndex(c => c.id === cardId);
+                        if (idx !== -1) allCards.splice(idx, 1);
 
-                // 從 allCards 移除
-                const idx = allCards.findIndex(c => c.id === cardId);
-                if (idx !== -1) allCards.splice(idx, 1);
+                        applyFilter(currentFilter); // 重新渲染
 
-                applyFilter(currentFilter); // 重新渲染
-            } else {
-                alert('刪除失敗: ' + result.error.message);
-            }
+                        ModalSystem.toast('卡片已刪除', 'success');
+                    } else {
+                        ModalSystem.alert('刪除失敗', result.error.message);
+                    }
+                },
+                null,
+                { confirmText: '刪除', isDestructive: true }
+            );
         });
     });
 }
@@ -709,7 +717,11 @@ function showAdminActionMenu(cardEl) {
  */
 function showError(message) {
     console.error(message);
-    alert(message);
+    if (typeof ModalSystem !== 'undefined') {
+        ModalSystem.alert('錯誤', message);
+    } else {
+        alert(message);
+    }
 }
 
 /**
@@ -723,7 +735,11 @@ function showSuccess(message) {
  * 顯示升級動畫
  */
 function showLevelUpAnimation(newLevel) {
-    alert(`🎉 恭喜！升級到 Lv.${newLevel}！`);
+    if (typeof ModalSystem !== 'undefined') {
+        ModalSystem.alert('恭喜升級！', `🎉 恭喜！升級到 Lv.${newLevel}！繼續保持！`);
+    } else {
+        alert(`🎉 恭喜！升級到 Lv.${newLevel}！`);
+    }
     console.log('🎉 Level Up!', newLevel);
 }
 
