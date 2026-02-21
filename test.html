@@ -213,7 +213,7 @@
         <!-- 按鈕區 -->
         <div class="flex gap-4 mt-4 mb-8">
             <button id="prev-btn"
-                class="hidden flex-1 bg-white text-black neo-border rounded-2xl py-4 font-black text-xl shadow-neo active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all items-center justify-center gap-2">
+                class="hidden flex-1 bg-white text-black neo-border rounded-2xl py-4 font-black text-xl shadow-neo hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#374151] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all items-center justify-center gap-2">
                 <span class="material-symbols-outlined font-black">arrow_back</span>
                 <span>上一題</span>
             </button>
@@ -504,7 +504,7 @@
             updateButtons(hasAnswered);
         }
 
-        function handleOptionClick(selectedIndex) {
+        async function handleOptionClick(selectedIndex) {
             if (userAnswers[currentQuestionIndex]) return;
 
             const question = quizQuestions[currentQuestionIndex];
@@ -518,6 +518,31 @@
             }
 
             renderQuestion();
+
+            // 立即呼叫 API 儲存結果（不等待「下一題」按鈕）
+            const cardId = sessionStorage.getItem('currentCardId');
+            if (apiService.currentUser && cardId) {
+                const userAnswer = String.fromCharCode(64 + selectedIndex); // 1 -> A, 2 -> B, etc.
+                try {
+                    const apiResult = await apiService.submitAnswer({
+                        userId: apiService.currentUser.id,
+                        questionId: cardId,
+                        userAnswer: userAnswer,
+                        isCorrect: isCorrect
+                    });
+
+                    if (apiResult.success) {
+                        console.log('答題結果已儲存:', apiResult);
+                        if (apiResult.newUserData) {
+                            sessionStorage.setItem('userData', JSON.stringify(apiResult.newUserData));
+                        }
+                        // 儲存結果供 result.html 使用
+                        sessionStorage.setItem('quizApiResult', JSON.stringify(apiResult));
+                    }
+                } catch (err) {
+                    console.error('儲存答題結果失敗:', err);
+                }
+            }
 
             if (currentQuestionIndex < quizQuestions.length - 1) {
                 autoNextTimeout = setTimeout(() => {
@@ -546,9 +571,15 @@
         }
 
         function updateButtons(hasAnswered) {
-            // 固定隱藏上一題按鈕（只有1題）
-            prevBtn.classList.add('hidden');
-            prevBtn.classList.remove('flex');
+            // 檢查是否有上一張卡片
+            const hasPrevCard = checkHasPrevCard();
+            if (hasPrevCard) {
+                prevBtn.classList.remove('hidden');
+                prevBtn.classList.add('flex');
+            } else {
+                prevBtn.classList.add('hidden');
+                prevBtn.classList.remove('flex');
+            }
 
             nextBtn.disabled = !hasAnswered;
 
@@ -557,11 +588,60 @@
             nextBtn.querySelector('.material-symbols-outlined').textContent = 'arrow_forward';
         }
 
+        // 檢查是否有上一張卡片
+        function checkHasPrevCard() {
+            try {
+                const currentCardId = sessionStorage.getItem('currentCardId');
+                const currentIdsJson = sessionStorage.getItem('currentCardIds');
+
+                if (!currentCardId || !currentIdsJson) {
+                    return false;
+                }
+
+                const currentIds = JSON.parse(currentIdsJson);
+                const currentIndex = currentIds.findIndex(id =>
+                    String(id) === String(currentCardId)
+                );
+
+                return currentIndex > 0;
+            } catch (err) {
+                console.error('檢查上一張卡片時發生錯誤:', err);
+                return false;
+            }
+        }
+
+        // 取得上一張卡片 ID
+        function getPrevCardId() {
+            try {
+                const currentCardId = sessionStorage.getItem('currentCardId');
+                const currentIdsJson = sessionStorage.getItem('currentCardIds');
+
+                if (!currentCardId || !currentIdsJson) {
+                    return null;
+                }
+
+                const currentIds = JSON.parse(currentIdsJson);
+                const currentIndex = currentIds.findIndex(id =>
+                    String(id) === String(currentCardId)
+                );
+
+                if (currentIndex > 0) {
+                    return currentIds[currentIndex - 1];
+                }
+                return null;
+            } catch (err) {
+                console.error('取得上一張卡片時發生錯誤:', err);
+                return null;
+            }
+        }
+
         function handlePrevClick() {
             if (autoNextTimeout) clearTimeout(autoNextTimeout);
-            if (currentQuestionIndex > 0) {
-                currentQuestionIndex--;
-                renderQuestion();
+
+            // 跳轉到上一張卡片
+            const prevCardId = getPrevCardId();
+            if (prevCardId) {
+                window.location.href = `test.html?id=${prevCardId}`;
             }
         }
 
@@ -587,34 +667,12 @@
             }
         }
 
-        // 儲存當前題目的結果
+        // 儲存當前題目的結果（已在 handleOptionClick 中完成，此函式僅作為備援）
         async function saveCurrentQuestionResult() {
-            const resultsBoolean = userAnswers.map(ans => ans ? ans.isCorrect : false);
-            const correctCount = resultsBoolean.filter(r => r === true).length;
-            const cardId = sessionStorage.getItem('currentCardId');
-
-            if (apiService.currentUser && cardId) {
-                const answeredIndices = [];
-                if (resultsBoolean[0] && quizQuestions[0]) {
-                    answeredIndices.push(quizQuestions[0].originalIndex ?? 0);
-                }
-
-                try {
-                    const apiResult = await apiService.submitQuizResult(
-                        apiService.currentUser.id,
-                        cardId,
-                        correctCount,
-                        answeredIndices
-                    );
-
-                    if (apiResult.success && apiResult.newUserData) {
-                        // 更新用戶緩存
-                        sessionStorage.setItem('userData', JSON.stringify(apiResult.newUserData));
-                    }
-                } catch (err) {
-                    console.error('儲存結果時發生錯誤:', err);
-                }
-            }
+            // 結果已在點擊選項時儲存，這裡不需要重複呼叫
+            return sessionStorage.getItem('quizApiResult')
+                ? JSON.parse(sessionStorage.getItem('quizApiResult'))
+                : null;
         }
 
         // 取得下一張卡片 ID（從 sessionStorage 的卡片列表中按順序取得）
@@ -667,17 +725,16 @@
 
         // 儲存結果並跳轉
         async function saveResultsAndRedirect() {
-            const resultsBoolean = userAnswers.map(ans => ans ? ans.isCorrect : false);
-            const isPerfect = resultsBoolean.every(r => r === true);
-            const correctCount = resultsBoolean.filter(r => r === true).length;
+            const answer = userAnswers[0]; // 單題制
+            const isCorrect = answer ? answer.isCorrect : false;
             const timestamp = new Date().toISOString();
 
             // 準備基礎結果
             const resultData = {
-                results: resultsBoolean,
-                isPerfect: isPerfect,
-                correctCount: correctCount,
-                totalQuestions: quizQuestions.length,
+                results: [isCorrect],
+                isPerfect: isCorrect,
+                correctCount: isCorrect ? 1 : 0,
+                totalQuestions: 1,
                 timestamp: timestamp
             };
             localStorage.setItem('quizResults', JSON.stringify(resultData));
@@ -691,54 +748,10 @@
                 sessionStorage.setItem('currentCardId', cardId);
             }
 
-            if (apiService.currentUser && cardId) {
-                // 顯示簡單的 loading
-                const nextBtn = document.getElementById('next-btn');
-                if (nextBtn) nextBtn.textContent = '計算獎勵中...';
-
-                // 只有1題，如果答對就記錄原始索引
-                const answeredIndices = [];
-                if (resultsBoolean[0] && quizQuestions[0]) {
-                    answeredIndices.push(quizQuestions[0].originalIndex ?? 0);
-                }
-
-                console.log('=== Quiz Debug (Single Question) ===');
-                console.log('isCorrect:', resultsBoolean[0]);
-                console.log('correctCount:', correctCount);
-                console.log('answeredIndex (original):', answeredIndices);
-
-                try {
-                    const apiResult = await apiService.submitQuizResult(
-                        apiService.currentUser.id,
-                        cardId,
-                        correctCount,
-                        answeredIndices
-                    );
-
-                    console.log('=== API Result ===');
-                    console.log('apiResult:', apiResult);
-
-                    if (apiResult.success) {
-                        console.log('Quiz submitted successfully!');
-                        console.log('XP earned:', apiResult.xpEarned);
-                        console.log('Bonuses:', apiResult.bonuses);
-                        sessionStorage.setItem('quizApiResult', JSON.stringify(apiResult));
-
-                        // 更新用戶緩存，讓 result.html 顯示最新的 XP
-                        if (apiResult.newUserData) {
-                            sessionStorage.setItem('userData', JSON.stringify(apiResult.newUserData));
-                        }
-                    } else {
-                        console.error('Quiz submission failed:', apiResult.error);
-                        sessionStorage.setItem('quizApiResult', JSON.stringify(apiResult));
-                    }
-                } catch (err) {
-                    console.error('API call exception:', err);
-                }
-            } else {
-                console.warn('=== Skipping API call ===');
-                console.warn('currentUser:', apiService.currentUser);
-                console.warn('cardId:', cardId);
+            // API 已在 handleOptionClick 中呼叫，這裡只需確認結果已儲存
+            const existingResult = sessionStorage.getItem('quizApiResult');
+            if (existingResult) {
+                console.log('使用已儲存的 API 結果:', JSON.parse(existingResult));
             }
 
             // Ensure flags are cleared for result page to process them fresh

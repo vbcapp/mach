@@ -404,28 +404,32 @@ function renderCardItem(card) {
     const isHearted = card.progress && card.progress.mastery_level === 0;
     const heartFill = isHearted ? '#EF4444' : '#F5F5F5'; // #EF4444 is Red
 
-    // 計算 Quiz 進度徽章 - 基於歷史最高分
-    const bestScore = card.progress?.best_quiz_score;
+    // 計算 Quiz 進度徽章 - 基於答題進度
+    const progress = card.progress;
+    const isCorrect = progress?.is_correct;
+    const timesCorrect = progress?.times_correct || 0;
+
     let badgeClass = '';
     let badgeEmoji = '';
     let badgeBg = '';
 
-    if (bestScore === 0 || bestScore === 1) {
-        badgeClass = 'quiz-badge-novice';
-        badgeEmoji = '📝';
-        badgeBg = '#F97316'; // Orange
-    } else if (bestScore === 2) {
-        badgeClass = 'quiz-badge-intermediate';
+    // 顯示徽章邏輯：
+    // - 答對過 → 顯示藍色勾勾 ✓
+    // - 答錯過但未答對 → 顯示橙色標記 📝
+    if (isCorrect === true || timesCorrect > 0) {
+        // 曾經答對過 → 藍色勾勾
+        badgeClass = 'quiz-badge-correct';
         badgeEmoji = '✓';
         badgeBg = '#3B82F6'; // Blue
-    } else if (bestScore >= 3) {
-        badgeClass = 'quiz-badge-perfect';
-        badgeEmoji = '⭐';
-        badgeBg = '#FACC15'; // Gold (永遠顯示星星)
+    } else if (isCorrect === false) {
+        // 最近答錯且從未答對 → 橙色標記
+        badgeClass = 'quiz-badge-incorrect';
+        badgeEmoji = '📝';
+        badgeBg = '#F97316'; // Orange
     }
 
     // 決定是否顯示徽章（只有做過測驗才顯示）
-    const showBadge = bestScore !== null && bestScore !== undefined && bestScore > 0;
+    const showBadge = progress && isCorrect !== null && isCorrect !== undefined;
 
     // [Admin Logic] 已發布標記
     const isPublished = card.is_published;
