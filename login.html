@@ -92,46 +92,30 @@
     </header>
 
     <main class="w-full max-w-md space-y-4 pb-12">
-        <section>
+        <div class="flex justify-center gap-6 mb-6">
+            <button id="tab-register" onclick="switchMode('register')"
+                class="text-xl font-bold border-b-[3px] border-black pb-1 px-2 transition-colors">註冊帳號</button>
+            <button id="tab-login" onclick="switchMode('login')"
+                class="text-xl font-bold border-b-[3px] border-transparent text-zinc-400 pb-1 px-2 transition-colors">登入</button>
+        </div>
+
+        <section id="nickname-section">
             <input
-                class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl"
-                id="nickname" placeholder="請輸入你的姓名或暱稱：" type="text" />
+                class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
+                id="nickname" placeholder="請輸入你的姓名或暱稱（註冊必填）" type="text" />
         </section>
         <section>
             <input
-                class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl"
+                class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
                 id="email" placeholder="請輸入電子郵件" type="email" />
         </section>
         <section>
             <input
-                class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl"
+                class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
                 id="password" placeholder="請輸入密碼" type="password" />
         </section>
 
-        <!-- Separator -->
-        <div class="flex items-center gap-4 py-2">
-            <div class="flex-1 h-[3px] bg-black/20"></div>
-            <span class="text-black/50 font-bold text-sm">或</span>
-            <div class="flex-1 h-[3px] bg-black/20"></div>
-        </div>
 
-        <!-- Google Sign-In Button -->
-        <section>
-            <button onclick="handleGoogleSignIn()" id="google-btn"
-                class="w-full bg-white text-black border-[3px] border-black py-4 px-8 text-lg font-bold neo-shadow neo-shadow-active rounded-xl flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors">
-                <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path fill="#4285F4"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="#34A853"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="#FBBC05"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                    <path fill="#EA4335"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-                <span>使用 Google 帳號登入</span>
-            </button>
-        </section>
 
         <section class="bg-white dark:bg-zinc-900 border-[3px] border-black p-6 neo-shadow rounded-xl !mt-6">
             <div class="flex items-center justify-between mb-6" onclick="toggleDetails()">
@@ -191,9 +175,9 @@
         </section>
 
         <div class="pt-4 flex flex-col items-center">
-            <button onclick="handleStart()"
+            <button onclick="handleStart()" id="submit-btn"
                 class="w-full bg-primary text-black border-[3px] border-black py-4 px-8 text-xl font-bold uppercase neo-shadow neo-shadow-active rounded-xl flex items-center justify-center gap-2">
-                <span>開始使用</span>
+                <span id="submit-btn-text">註冊並開始使用</span>
                 <span class="material-symbols-outlined font-black">arrow_forward</span>
             </button>
             <p class="mt-6 text-xs text-zinc-500 dark:text-zinc-400 font-bold">
@@ -229,72 +213,29 @@
             arrow.classList.toggle('open');
         }
 
-        /**
-         * Google OAuth 登入
-         */
-        async function handleGoogleSignIn() {
-            const consent = document.getElementById('consent').checked;
-            const googleBtn = document.getElementById('google-btn');
+        let currentMode = 'register';
 
-            if (!consent) {
-                ModalSystem.alert('需同意條款', '請先勾選同意收集資料以繼續使用！');
-                return;
-            }
+        function switchMode(mode) {
+            currentMode = mode;
+            const tabReg = document.getElementById('tab-register');
+            const tabLog = document.getElementById('tab-login');
+            const nickSec = document.getElementById('nickname-section');
+            const btnText = document.getElementById('submit-btn-text');
 
-            // 更新按鈕狀態
-            googleBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> <span>連接 Google 中...</span>';
-            googleBtn.disabled = true;
-
-            try {
-                // 初始化 API
-                await apiService.initialize();
-
-                // 儲存同意狀態 (OAuth 回調後需要)
-                localStorage.setItem('userConsent', 'true');
-
-                const redirectUrl = window.location.origin + '/index.html';
-                console.log('正在嘗試 Google 登入...');
-                console.log('Redirect URL:', redirectUrl);
-
-                if (window.location.protocol === 'file:') {
-                    alert('Google 登入不支援直接開啟檔案 (file://)。請使用 Live Server (http://127.0.0.1:5500) 開啟網頁。');
-                    throw new Error('不支援 file:// 協定');
-                }
-
-                // 使用 Supabase OAuth 登入 Google
-                const { data, error } = await apiService.supabase.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: {
-                        redirectTo: redirectUrl,
-                        queryParams: {
-                            access_type: 'offline',
-                            prompt: 'consent'
-                        }
-                    }
-                });
-
-                if (error) {
-                    throw error;
-                }
-
-                // OAuth 會自動跳轉，不需要額外處理
-                console.log('Google OAuth 啟動成功，等待跳轉...');
-
-            } catch (error) {
-                console.error('Google 登入錯誤:', error);
-                ModalSystem.alert('登入失敗', 'Google 登入失敗：' + error.message);
-
-                // 恢復按鈕
-                googleBtn.innerHTML = `
-                    <svg class="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    <span>使用 Google 帳號登入</span>
-                `;
-                googleBtn.disabled = false;
+            if (mode === 'register') {
+                tabReg.classList.replace('border-transparent', 'border-black');
+                tabReg.classList.remove('text-zinc-400');
+                tabLog.classList.replace('border-black', 'border-transparent');
+                tabLog.classList.add('text-zinc-400');
+                nickSec.style.display = 'block';
+                btnText.textContent = '註冊並開始使用';
+            } else {
+                tabLog.classList.replace('border-transparent', 'border-black');
+                tabLog.classList.remove('text-zinc-400');
+                tabReg.classList.replace('border-black', 'border-transparent');
+                tabReg.classList.add('text-zinc-400');
+                nickSec.style.display = 'none';
+                btnText.textContent = '登入';
             }
         }
 
@@ -306,10 +247,15 @@
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
             const consent = document.getElementById('consent').checked;
-            const btn = document.querySelector('button[onclick="handleStart()"]');
+            const btn = document.getElementById('submit-btn');
 
-            if (!nickname) {
+            if (currentMode === 'register' && !nickname) {
                 ModalSystem.alert('缺漏資料', '請輸入你的姓名或暱稱！');
+                return;
+            }
+
+            if (currentMode === 'login' && (!email || !password)) {
+                ModalSystem.alert('缺漏資料', '請輸入電子郵件與密碼！');
                 return;
             }
 
@@ -319,70 +265,66 @@
             }
 
             // 更新按鈕狀態
-            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> <span>處理中...</span>';
+            const originalTextContent = document.getElementById('submit-btn-text').textContent;
+            document.getElementById('submit-btn-text').innerHTML = '處理中...';
             btn.disabled = true;
 
             try {
                 // 初始化 API
                 await apiService.initialize();
                 let result;
+                let finalNickname = nickname;
 
-                // 判斷使用哪種登入方式
-                if (email && password) {
-                    // [Security Check] 白名單檢查
-                    // 檢查 STUDENT_EMAILS 是否定義，且 Email 是否在白名單中
-                    if (typeof STUDENT_EMAILS !== 'undefined' && Array.isArray(STUDENT_EMAILS)) {
-                        console.log('Checking whitelist for:', email);
-                        const isWhitelisted = STUDENT_EMAILS.includes(email);
-                        console.log('Is whitelisted:', isWhitelisted);
-
-                        if (!isWhitelisted) {
-                            console.log('Access denied. Showing alert...');
-                            ModalSystem.alert('存取被拒', '抱歉，你不是本課程的學員，無法注冊或登入。若有問題，可聯係 ceceloveye@gmail.com');
-                            // 恢復按鈕
-                            btn.innerHTML = '<span>開始使用</span> <span class="material-symbols-outlined font-black">arrow_forward</span>';
-                            btn.disabled = false;
-                            return;
+                if (currentMode === 'register') {
+                    // 註冊模式
+                    if (email && password) {
+                        // 白名單檢查
+                        if (typeof STUDENT_EMAILS !== 'undefined' && Array.isArray(STUDENT_EMAILS)) {
+                            const isWhitelisted = STUDENT_EMAILS.includes(email);
+                            if (!isWhitelisted) {
+                                ModalSystem.alert('存取被拒', '抱歉，你不是本課程的學員，無法註冊或登入。');
+                                document.getElementById('submit-btn-text').innerHTML = originalTextContent;
+                                btn.disabled = false;
+                                return;
+                            }
                         }
+                        result = await apiService.authWithEmailPassword(email, password, nickname);
                     } else {
-                        console.warn('STUDENT_EMAILS is undefined or not an array');
+                        // 快速登入
+                        result = await apiService.quickLogin(nickname);
                     }
-
-                    // 使用 Email/密碼 登入/註冊
-                    console.log('使用 Email 登入/註冊:', email);
-                    result = await apiService.authWithEmailPassword(email, password, nickname);
                 } else {
-                    // 如果沒有輸入 Email/密碼，仍然使用快速登入 (匿名/自動產生)
-                    // 為了方便體驗，如果欄位留空則使用舊邏輯
-                    console.log('使用快速登入 (未提供 Email/密碼)');
-                    result = await apiService.quickLogin(nickname);
+                    // 登入模式
+                    result = await apiService.loginWithEmailPassword(email, password);
+                    if (result.success && result.nickname) {
+                        finalNickname = result.nickname;
+                    }
                 }
 
                 if (result.success) {
                     // 儲存本地狀態
-                    localStorage.setItem('userNickname', nickname);
+                    localStorage.setItem('userNickname', finalNickname);
                     localStorage.setItem('userConsent', 'true');
                     localStorage.setItem('loginTime', new Date().toISOString());
 
-                    console.log('登入成功:', result.user);
-
+                    console.log('登入/註冊成功:', result.user);
                     // 導向首頁
                     window.location.href = 'index.html';
                 } else {
-                    throw new Error(result.error.message || '登入失敗');
+                    throw new Error(result.error?.message || '操作失敗');
                 }
             } catch (error) {
-                console.error('登入錯誤:', error);
+                console.error('登入/註冊錯誤:', error);
 
-                // 更友善的錯誤訊息
                 let msg = error.message;
                 if (msg.includes('Password should be')) msg = '密碼長度至少需要 6 個字元';
                 if (msg.includes('Invalid email')) msg = 'Email 格式不正確';
+                if (msg.includes('Invalid login credentials')) msg = 'Email 或密碼錯誤';
 
-                ModalSystem.alert('登入失敗', msg);
+                ModalSystem.alert('操作失敗', msg);
 
                 // 恢復按鈕
-                btn.innerHTML = '<span>開始使用</span> <span class="material-symbols-outlined font-black">arrow_forward</span>';
+                document.getElementById('submit-btn-text').innerHTML = originalTextContent;
                 btn.disabled = false;
             }
         }

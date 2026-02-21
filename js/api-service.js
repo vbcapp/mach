@@ -121,6 +121,33 @@ class ApiService {
     }
 
     /**
+     * 使用 Email/密碼 登入
+     */
+    async loginWithEmailPassword(email, password) {
+        try {
+            const { data, error } = await this.supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) throw error;
+
+            this.currentUser = data.user;
+
+            // 取得使用者個人資料以獲得暱稱
+            let nickname = 'User';
+            const profile = await this.getUserProfile(this.currentUser.id);
+            if (profile.success && profile.data.username) {
+                nickname = profile.data.username;
+            }
+
+            return { success: true, user: this.currentUser, nickname };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 快速註冊/登入 (使用暱稱自動產生帳號)
      */
     async quickLogin(nickname) {
