@@ -432,9 +432,14 @@ function renderCardItem(card) {
                     <span class="text-lg">${badgeEmoji}</span>
                 </div>
             ` : ''}
-            <div class="mb-2 flex items-center">
-                <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.chapter || 'General'}</span>
-                ${publishedTag}
+            <div class="mb-2 flex items-center justify-between">
+                <div class="flex items-center">
+                    <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.question_no || '-'}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.chapter || 'General'}</span>
+                    ${publishedTag}
+                </div>
             </div>
             <div class="flex-1">
                 <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1 break-words hyphens-none ${(card.question && card.question.length > 15) ? 'text-small' : ''}" style="word-break: break-word; -webkit-hyphens: none;">${card.question || ''}</h3>
