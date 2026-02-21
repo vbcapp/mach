@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>美青勞資事務師 - 弱點分析</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#FFD600",
+                        "background-light": "#EEEEEE",
+                        "background-dark": "#111827",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0px",
+                    },
+                },
+            },
+        };
+    </script>
+    <style type="text/tailwindcss">
+        .neo-shadow { box-shadow: 4px 4px 0px 0px #000000; }
+        .neo-shadow-sm { box-shadow: 2px 2px 0px 0px #000000; }
+        .neo-border { border: 2px solid #000000; }
+        .neo-border-thick { border: 3px solid #000000; }
+        .neo-border-bottom { border-bottom: 3px solid #000000; }
+        .neo-brutalism-card {
+            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+            border: 4px solid black;
+        }
+        .neo-brutalism-button:active {
+            box-shadow: 0px 0px 0px 0px rgba(0,0,0,1);
+            transform: translate(2px, 2px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(243, 244, 246, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+    </style>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- 專案配置與 API Service -->
+    <script src="config.js"></script>
+    <script src="js/level-system.js"></script>
+    <script src="js/api-service.js"></script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-black dark:text-white min-h-screen pb-24">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="text-center">
+            <span class="material-symbols-outlined text-5xl animate-spin text-black">progress_activity</span>
+            <p class="mt-4 font-black">分析弱點中...</p>
+        </div>
+    </div>
+
+    <div class="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto border-x-2 border-black/5">
+        <header class="bg-primary pt-12 pb-6 px-6 border-b-8 border-black sticky top-0 z-40">
+            <div class="flex items-center gap-4 mb-2">
+                <h1 class="text-3xl font-black italic tracking-tighter uppercase uppercase">精準弱點打擊</h1>
+            </div>
+            <p class="text-xs font-bold mt-1 text-black/80">系統根據你的答題紀錄，挑出最容易出錯的關鍵題目。</p>
+        </header>
+
+        <main class="flex-grow p-4">
+            <div id="weakness-list" class="space-y-4 pb-20">
+                <!-- Data will be injected here -->
+            </div>
+
+            <div id="empty-state" class="hidden flex-col items-center justify-center py-20 px-4 text-center">
+                <span class="material-symbols-outlined text-6xl mb-4 text-gray-400">task_alt</span>
+                <h3 class="text-xl font-black italic mb-2">太棒了！</h3>
+                <p class="text-sm font-bold text-gray-500">目前沒有發現任何弱點，繼續保持！如果有答錯的題目，它們會出現在這裡。</p>
+            </div>
+        </main>
+
+        <nav
+            class="fixed bottom-0 w-full max-w-[430px] bg-white dark:bg-zinc-900 border-t-thick border-black flex justify-around items-center px-2 py-4 pb-8 z-50">
+            <button onclick="window.location.href='index.html'" class="flex flex-col items-center gap-1 group">
+                <div
+                    class="size-11 flex items-center justify-center neo-border neo-shadow-sm bg-white group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none transition-transform">
+                    <span class="material-symbols-outlined text-2xl font-bold">style</span>
+                </div>
+                <span class="text-[9px] font-black uppercase">單字卡</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 group cursor-default">
+                <div
+                    class="size-14 -mt-8 flex items-center justify-center neo-border-thick neo-shadow bg-primary group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none transition-transform">
+                    <span class="material-symbols-outlined text-3xl font-black">analytics</span>
+                </div>
+                <span class="text-[10px] font-black uppercase">弱點分析</span>
+            </button>
+            <button onclick="window.location.href='rank.html'" class="flex flex-col items-center gap-1 group">
+                <div
+                    class="size-11 flex items-center justify-center neo-border neo-shadow-sm bg-white group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none transition-transform">
+                    <span class="material-symbols-outlined text-2xl font-bold">trophy</span>
+                </div>
+                <span class="text-[9px] font-black uppercase">排行榜</span>
+            </button>
+            <button onclick="window.location.href='profile.html'" class="flex flex-col items-center gap-1 group">
+                <div
+                    class="size-11 flex items-center justify-center neo-border neo-shadow-sm bg-white group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none transition-transform">
+                    <span class="material-symbols-outlined text-2xl font-bold">person</span>
+                </div>
+                <span class="text-[9px] font-black uppercase">個人</span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const listContainer = document.getElementById('weakness-list');
+            const emptyState = document.getElementById('empty-state');
+            const loadingOverlay = document.getElementById('loading-overlay');
+
+            try {
+                await apiService.initialize();
+
+                if (!apiService.currentUser) {
+                    // Redirect to login or show message
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userId = apiService.currentUser.id;
+                const result = await apiService.getWeaknessList(userId, 30); // Get top 30 weakest
+
+                if (!result.success) {
+                    throw new Error(result.error?.message || 'Failed to fetch weakness data');
+                }
+
+                const weaknessData = result.data;
+
+                if (weaknessData.length === 0) {
+                    emptyState.classList.remove('hidden');
+                } else {
+                    renderWeaknessList(weaknessData, listContainer);
+                }
+
+            } catch (error) {
+                console.error("Error loading weakness data:", error);
+                listContainer.innerHTML = `<div class="bg-red-100 border-2 border-red-500 p-4 text-red-700 font-bold mb-4 neo-brutalism-card">載入失敗: ${error.message}</div>`;
+            } finally {
+                loadingOverlay.classList.add('hidden');
+            }
+        });
+
+        function renderWeaknessList(data, container) {
+            container.innerHTML = ''; // Clear existing
+
+            data.forEach((item, index) => {
+                // Determine color intensity based on error rate or index
+                // Top 3 get warning colors
+                let rankBadge = '';
+                let borderHighlight = '';
+
+                if (index === 0) {
+                    borderHighlight = 'border-[#FF3B30] bg-red-50';
+                    rankBadge = '<span class="absolute -top-3 -right-2 bg-[#FF3B30] text-white text-xs font-black px-2 py-1 border-2 border-black rotate-[15deg]">最需要搶救</span>';
+                } else if (index === 1 || index === 2) {
+                    borderHighlight = 'border-orange-500 bg-orange-50';
+                } else {
+                    borderHighlight = 'bg-white';
+                }
+
+                // Format error percentage
+                const errorPercentage = Math.round(item.error_rate * 100);
+
+                const questionData = item.question_data || {};
+
+                // Truncate question (first 35 chars roughly)
+                const truncateLen = window.innerWidth < 380 ? 25 : 35;
+                const questionText = questionData.question || '無題目內容';
+                const truncatedQ = questionText.length > truncateLen ? questionText.substring(0, truncateLen) + '...' : questionText;
+
+                const subject = questionData.subject || '未分類';
+                const chapter = questionData.chapter || '';
+                const tagText = chapter ? `${subject} - ${chapter}` : subject;
+
+                const listItem = document.createElement('div');
+                listItem.className = `neo-brutalism-card ${borderHighlight} p-4 relative cursor-pointer active:translate-y-1 active:translate-x-1 active:shadow-none transition-all`;
+                listItem.onclick = () => {
+                    window.location.href = `test.html?id=${item.question_id}`;
+                };
+
+                listItem.innerHTML = `
+                    ${rankBadge}
+                    <div class="flex justify-between items-start mb-2 gap-2">
+                        <div class="flex-1">
+                            <div class="inline-block bg-black text-white text-[10px] font-bold px-2 py-0.5 mb-1">${tagText}</div>
+                            <h3 class="text-sm font-black leading-tight">${truncatedQ}</h3>
+                        </div>
+                        <div class="flex flex-col items-end shrink-0 pl-2 border-l-2 border-dashed border-gray-300">
+                            <span class="text-[#FF3B30] font-black text-xl">${errorPercentage}%</span>
+                            <span class="text-[10px] font-bold text-gray-500 text-right uppercase">錯誤率</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-3 pt-2 neo-border-bottom border-t-2 border-gray-200" style="border-bottom: none">
+                        <div class="flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px] text-gray-500">cancel</span>
+                            <span class="text-xs font-bold text-gray-600">答錯 <span class="text-black font-black">${item.times_incorrect}</span> 次</span>
+                        </div>
+                        <div class="flex items-center gap-1 text-primary hover:underline">
+                            <span class="text-xs font-black">立即複習</span>
+                            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(listItem);
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -677,6 +677,87 @@ class ApiService {
     }
 
     /**
+     * 取得使用者的精準弱點打擊清單
+     * 條件：times_incorrect > 0
+     * 排序：error_rate (times_incorrect / times_reviewed) 降冪, times_incorrect 降冪
+     * @param {string} userId - 用戶 ID
+     * @param {number} limit - 取前幾名 (預設 20)
+     */
+    async getWeaknessList(userId, limit = 20) {
+        try {
+            if (!userId) {
+                return { success: false, error: 'User ID is required' };
+            }
+
+            // 1. 取得該用戶所有有答錯紀錄的進度
+            const { data: progressData, error: progressError } = await this.supabase
+                .from('user_question_progress')
+                .select('question_id, times_reviewed, times_correct, times_incorrect')
+                .eq('user_id', userId)
+                .gt('times_incorrect', 0); // 只抓有錯過的
+
+            if (progressError) throw progressError;
+
+            if (!progressData || progressData.length === 0) {
+                return { success: true, data: [] };
+            }
+
+            // 2. 為了取得題目內容，我們需要把這些 question_ids 拿去撈 questions 表
+            const questionIds = progressData.map(p => p.question_id);
+
+            // 如果超過一定數量 (例如 1000)，Supabase 的 .in() 可能會報錯或效能不佳。
+            // 但因為是弱點列表，通常錯題數量還在可接受範圍。為了保險，我們可以在這裡處理或者假設不超過。
+            // 由於 Supabase 沒有好用的 inner join RPC (如果不寫 stored procedure 的話)，
+            // 在前端先計算 error_rate 並排序，取前 Limit 名的 ID，再去撈 Questions 會更有效率。
+
+            // 3. 在前端計算錯率並排序
+            const calculatedProgress = progressData.map(p => {
+                // times_reviewed 有可能為 0 (理論上不可能，但防禦性設計)
+                const reviewed = p.times_reviewed > 0 ? p.times_reviewed : 1;
+                const errorRate = p.times_incorrect / reviewed;
+                return {
+                    ...p,
+                    error_rate: errorRate
+                };
+            });
+
+            // 排序邏輯：優先依錯率降冪，次要依錯次降冪
+            calculatedProgress.sort((a, b) => {
+                if (b.error_rate !== a.error_rate) {
+                    return b.error_rate - a.error_rate; // 錯率高的在前
+                }
+                return b.times_incorrect - a.times_incorrect; // 錯率一樣時，錯次多的在前 (分母大)
+            });
+
+            // 取 Top N
+            const topWeakness = calculatedProgress.slice(0, limit);
+            const topQuestionIds = topWeakness.map(p => p.question_id);
+
+            // 4. 撈取對應的題目詳細資料
+            const { data: questionsData, error: questionsError } = await this.supabase
+                .from('questions')
+                .select('id, question, subject, chapter')
+                .in('id', topQuestionIds);
+
+            if (questionsError) throw questionsError;
+
+            // 5. 合併資料
+            const result = topWeakness.map(progress => {
+                const q = questionsData.find(qd => qd.id === progress.question_id);
+                return {
+                    ...progress,
+                    question_data: q || null
+                };
+            }).filter(item => item.question_data !== null); // 過濾掉找不到題目的髒資料
+
+            return { success: true, data: result };
+
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 上傳並更新使用者頭像
      * @param {string} userId
      * @param {File | Blob} file
