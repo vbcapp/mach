@@ -487,7 +487,7 @@
                     page: 1, // 篩選後重置為第一頁
                     limit: 100, // 增加數量
                     searchQuery: currentSearchQuery || null,
-                    category: selectedCategories.size > 0 ? Array.from(selectedCategories) : null
+                    subject: selectedCategories.size > 0 ? Array.from(selectedCategories) : null
                 };
 
                 const result = await apiService.getQuestions(options);

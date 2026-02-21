@@ -717,6 +717,14 @@ class ApiService {
     }
 
     /**
+     * 取得所有不重複的類別（用於首頁篩選 Modal）
+     * 這是 getUniqueSubjects 的別名，供 index.html 的篩選 Modal 使用
+     */
+    async getUniqueCategories(userId) {
+        return this.getUniqueSubjects();
+    }
+
+    /**
      * 根據大科目，取得不重複的章節列表
      */
     async getUniqueChaptersBySubject(subject) {
