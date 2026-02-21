@@ -1298,7 +1298,7 @@ class ApiService {
             });
 
             // 計算錯誤率、過濾與排序
-            const minReviewsRequired = 5; // 門檻: 全站總作答次數 > 5 才列入統計
+            const minReviewsRequired = 1; // 門檻: 全站總作答次數 > 1 才列入統計
             const sortedQuestions = Object.values(questionStats)
                 .filter(q => q.total_reviewed > minReviewsRequired)
                 .map(q => {
