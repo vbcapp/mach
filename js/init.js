@@ -183,9 +183,6 @@ function updateUserUI(userData) {
         nextLevelXpEl.textContent = levelState.xpForNextLevel;
     }
 
-    // 更新卡片數量
-    updateCardCountUI(userData.total_cards || 0);
-
     // [NEW] 處理等級卡片點擊事件：當 XP 滿但滿分卡不足時，點擊跳轉到 rule.html
     const levelCardEl = document.getElementById('level-card');
     if (levelCardEl) {
@@ -212,31 +209,33 @@ function updateUserUI(userData) {
 }
 
 /**
- * 更新卡片數量 UI（包含 CARD/CARDS 單複數）
+ * 更新卡片數量 UI（顯示 答對題數 / 總問題數）
  */
-function updateCardCountUI(count) {
+function updateCardCountUI(totalCount, correctCount = 0) {
     const cardCountEl = document.getElementById('user-card-count');
     if (cardCountEl) {
-        cardCountEl.textContent = count;
+        cardCountEl.textContent = totalCount;
     }
 
-    const cardLabelEl = document.getElementById('card-label');
-    if (cardLabelEl) {
-        cardLabelEl.textContent = count <= 1 ? 'CARD' : 'CARDS';
+    const correctCountEl = document.getElementById('user-correct-count');
+    if (correctCountEl) {
+        correctCountEl.textContent = correctCount;
     }
 }
 
 /**
  * 調整卡片數量（用於刪除後即時更新）
+ * @param {number} totalDelta - 總題數變化量
+ * @param {number} correctDelta - 答對題數變化量（可選，預設為 0）
  */
-function adjustCardCount(delta) {
-    const cached = sessionStorage.getItem('userData');
-    if (cached) {
-        const userData = JSON.parse(cached);
-        userData.total_cards = Math.max(0, (userData.total_cards || 0) + delta);
-        sessionStorage.setItem('userData', JSON.stringify(userData));
-        updateCardCountUI(userData.total_cards);
-    }
+function adjustCardCount(totalDelta, correctDelta = 0) {
+    const cardCountEl = document.getElementById('user-card-count');
+    const correctCountEl = document.getElementById('user-correct-count');
+
+    let currentTotal = cardCountEl ? parseInt(cardCountEl.textContent) || 0 : 0;
+    let currentCorrect = correctCountEl ? parseInt(correctCountEl.textContent) || 0 : 0;
+
+    updateCardCountUI(Math.max(0, currentTotal + totalDelta), Math.max(0, currentCorrect + correctDelta));
 }
 
 /**
@@ -270,8 +269,14 @@ async function loadUserCards() {
         if (result.success) {
             allCards = result.data.questions || [];
 
-            // [Admin Logic] (Deprecated) 不再需要額外載入私密 Daily Cards，直接用 Flashcards
-            // if (currentUser.id === ADMIN_UID) { ... }
+            // 計算答對題數（progress.is_correct === true 或 times_correct > 0）
+            const correctCount = allCards.filter(card => {
+                const progress = card.progress;
+                return progress && (progress.is_correct === true || (progress.times_correct || 0) > 0);
+            }).length;
+
+            // 更新顯示：答對題數 / 總問題數
+            updateCardCountUI(allCards.length, correctCount);
 
             initFilterButtons();
             applyFilter(currentFilter);
@@ -465,20 +470,14 @@ function renderCardItem(card) {
                 <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1 break-words hyphens-none ${(card.question && card.question.length > 15) ? 'text-small' : ''}" style="word-break: break-word; -webkit-hyphens: none;">${card.question || ''}</h3>
                 <p class="text-[10px] leading-tight opacity-70 line-clamp-2">${description}</p>
             </div>
-            <div class="flex justify-between items-end gap-2 mt-2">
-                <button data-card-id="${card.id}" data-action="heart" data-hearted="${isHearted}" 
+            <div class="flex justify-start items-end gap-2 mt-2">
+                <button data-card-id="${card.id}" data-action="heart" data-hearted="${isHearted}"
                     class="heart-btn hover:scale-110 active:scale-95 transition-transform z-10 p-1 -ml-1 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-2xl ${isHearted ? 'text-[#EF4444]' : 'text-black'}" 
+                    <span class="material-symbols-outlined text-2xl ${isHearted ? 'text-[#EF4444]' : 'text-black'}"
                           style="font-variation-settings: 'FILL' ${isHearted ? 1 : 0}, 'wght' 700;">
                         favorite
                     </span>
                 </button>
-                <div class="flex gap-2">
-                    <span data-card-id="${card.id}" data-action="edit"
-                        class="material-symbols-outlined text-base cursor-pointer hover:text-primary z-10">edit_square</span>
-                    <span data-card-id="${card.id}" data-action="delete"
-                        class="material-symbols-outlined text-base cursor-pointer text-red-500 z-10">delete</span>
-                </div>
             </div>
         </a>
     `;
@@ -552,11 +551,19 @@ function bindCardActions(cards) {
                     if (result.success) {
                         sessionStorage.removeItem(`card_${cardId}`);
                         delete cardsCache[cardId];
-                        adjustCardCount(-1); // 即時更新卡片數量
 
-                        // 從 allCards 移除
+                        // 從 allCards 移除並檢查是否為答對的題目
                         const idx = allCards.findIndex(c => c.id === cardId);
-                        if (idx !== -1) allCards.splice(idx, 1);
+                        let correctDelta = 0;
+                        if (idx !== -1) {
+                            const deletedCard = allCards[idx];
+                            const progress = deletedCard.progress;
+                            if (progress && (progress.is_correct === true || (progress.times_correct || 0) > 0)) {
+                                correctDelta = -1;
+                            }
+                            allCards.splice(idx, 1);
+                        }
+                        adjustCardCount(-1, correctDelta); // 即時更新卡片數量
 
                         applyFilter(currentFilter); // 重新渲染
 
