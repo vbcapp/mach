@@ -285,19 +285,6 @@ function initFilterButtons() {
     const filterContainer = document.getElementById('filter-buttons');
     if (!filterContainer) return;
 
-    // 動態產生章節按鈕
-    const uniqueChapters = [...new Set(allCards.map(c => c.chapter).filter(Boolean))];
-    const collator = new Intl.Collator('zh-TW', { numeric: true, sensitivity: 'base' });
-    uniqueChapters.sort(collator.compare);
-
-    let buttonsHtml = `<button data-filter="all" class="filter-btn flex-none px-4 py-2 neo-border-thick bg-primary font-black text-xs neo-shadow-sm active">全部</button>`;
-
-    uniqueChapters.forEach(chapter => {
-        buttonsHtml += `<button data-filter="${chapter}" class="filter-btn flex-none px-4 py-2 neo-border-thick bg-white dark:bg-zinc-800 font-bold text-xs neo-shadow-sm">${chapter}</button>`;
-    });
-
-    filterContainer.innerHTML = buttonsHtml;
-
     filterContainer.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             const filter = this.getAttribute('data-filter');
@@ -324,8 +311,18 @@ function applyFilter(filter) {
 
     let filteredCards = allCards;
 
-    if (filter !== 'all') {
-        filteredCards = allCards.filter(card => card.chapter === filter);
+    if (filter === 'unfamiliar') {
+        filteredCards = allCards.filter(card => card.progress && card.progress.mastery_level === 0);
+    } else if (filter === 'lv1') {
+        filteredCards = allCards.filter(card => card.level === 1);
+    } else if (filter === 'lv2') {
+        filteredCards = allCards.filter(card => card.level === 2);
+    } else if (filter === 'lv3') {
+        filteredCards = allCards.filter(card => card.level === 3);
+    } else if (filter === 'lv4') {
+        filteredCards = allCards.filter(card => card.level === 4);
+    } else if (filter === 'lv5') {
+        filteredCards = allCards.filter(card => card.level === 5);
     }
 
     renderCards(filteredCards, container);
@@ -389,43 +386,68 @@ function renderCards(cards, container) {
  * 渲染單張卡片
  */
 function renderCardItem(card) {
-    const shortQuestion = card.question && card.question.length > 35
-        ? card.question.substring(0, 35) + '...'
-        : (card.question || '無題目內容');
+    const description = card.description
+        ? card.description.substring(0, 40) + (card.description.length > 40 ? '...' : '')
+        : '';
 
-    const isCorrect = card.progress?.is_correct;
+    const isHearted = card.progress && card.progress.mastery_level === 0;
+    const heartFill = isHearted ? '#EF4444' : '#F5F5F5'; // #EF4444 is Red
+
+    // 計算 Quiz 進度徽章 - 基於歷史最高分
+    const bestScore = card.progress?.best_quiz_score;
+    let badgeClass = '';
     let badgeEmoji = '';
     let badgeBg = '';
-    let showBadge = false;
 
-    if (isCorrect === true) {
+    if (bestScore === 0 || bestScore === 1) {
+        badgeClass = 'quiz-badge-novice';
+        badgeEmoji = '📝';
+        badgeBg = '#F97316'; // Orange
+    } else if (bestScore === 2) {
+        badgeClass = 'quiz-badge-intermediate';
         badgeEmoji = '✓';
-        badgeBg = '#3B82F6';
-        showBadge = true;
-    } else if (isCorrect === false) {
-        badgeEmoji = '✗';
-        badgeBg = '#EF4444';
-        showBadge = true;
+        badgeBg = '#3B82F6'; // Blue
+    } else if (bestScore >= 3) {
+        badgeClass = 'quiz-badge-perfect';
+        badgeEmoji = '⭐';
+        badgeBg = '#FACC15'; // Gold (永遠顯示星星)
     }
+
+    // 決定是否顯示徽章（只有做過測驗才顯示）
+    const showBadge = bestScore !== null && bestScore !== undefined && bestScore > 0;
+
+    // [Admin Logic] 已發布標記
+    const isPublished = card.is_published;
+    const publishedTag = isPublished ? `<span class="bg-primary text-black border border-black px-1 text-[8px] font-bold uppercase ml-1">PUBLISHED</span>` : '';
 
     return `
         <a href="card.html?id=${card.id}"
            data-card-id="${card.id}"
+           data-source-type="${card.sourceType || 'user_card'}"
+           data-is-published="${isPublished}"
             class="bg-white dark:bg-zinc-900 neo-border-thick neo-shadow p-3 flex flex-col h-[180px] relative transition-transform active:scale-[0.98] admin-card-item">
             ${showBadge ? `
-                <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full neo-border-thick flex items-center justify-center z-20 shadow-lg text-white"
+                <div class="absolute -top-2 -right-2 w-10 h-10 rounded-full neo-border-thick flex items-center justify-center z-20 shadow-lg"
                      style="background-color: ${badgeBg};">
-                    <span class="text-sm font-bold">${badgeEmoji}</span>
+                    <span class="text-lg">${badgeEmoji}</span>
                 </div>
             ` : ''}
-            <div class="mb-2 flex items-center flex-wrap gap-1">
-                <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.subject || '未分類'}</span>
-                <span class="bg-zinc-200 dark:bg-zinc-700 text-black dark:text-white neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.chapter || '未章節'}</span>
+            <div class="mb-2 flex items-center">
+                <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.category || 'General'}</span>
+                ${publishedTag}
             </div>
-            <div class="flex-1 mt-1 overflow-hidden">
-                <p class="text-base font-black tracking-tight leading-snug break-words hyphens-none line-clamp-4" style="word-break: break-word; -webkit-hyphens: none;">${shortQuestion}</p>
+            <div class="flex-1">
+                <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1 break-words hyphens-none ${(!card.abbreviation && card.english_term.length > 15) ? 'text-small' : ''}" style="word-break: break-word; -webkit-hyphens: none;">${card.abbreviation || card.english_term}</h3>
+                <p class="text-[10px] leading-tight opacity-70 line-clamp-2">${card.chinese_translation}。${description}</p>
             </div>
-            <div class="flex justify-end items-end gap-2 mt-2">
+            <div class="flex justify-between items-end gap-2 mt-2">
+                <button data-card-id="${card.id}" data-action="heart" data-hearted="${isHearted}" 
+                    class="heart-btn hover:scale-110 active:scale-95 transition-transform z-10 p-1 -ml-1 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl ${isHearted ? 'text-[#EF4444]' : 'text-black'}" 
+                          style="font-variation-settings: 'FILL' ${isHearted ? 1 : 0}, 'wght' 700;">
+                        favorite
+                    </span>
+                </button>
                 <div class="flex gap-2">
                     <span data-card-id="${card.id}" data-action="edit"
                         class="material-symbols-outlined text-base cursor-pointer hover:text-primary z-10">edit_square</span>
@@ -467,6 +489,16 @@ function bindCardActions(cards) {
     if (currentUser && typeof ADMIN_UUIDS !== 'undefined' && ADMIN_UUIDS.includes(currentUser.id)) {
         bindAdminLongPress();
     }
+
+    // 愛心按鈕 (Heart Button) - Deprecated as mastery_level is removed. 
+    // This could optionally toggle a favorite flag if added back to PRD.
+    document.querySelectorAll('[data-action="heart"]').forEach(btn => {
+        btn.addEventListener('click', async function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            alert('此功能已停用，請使用測驗功能來更新熟悉度。');
+        });
+    });
 
     // 編輯按鈕
     document.querySelectorAll('[data-action="edit"]').forEach(btn => {

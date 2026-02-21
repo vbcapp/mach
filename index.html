@@ -142,7 +142,7 @@
                 </div>
                 <h1 class="text-xl font-black italic tracking-tighter">美青勞資事務師</h1>
             </div>
-            <a href="random-test.html"
+            <a href="vibe-coding/build.html"
                 class="w-10 h-10 neo-border flex items-center justify-center bg-primary text-black neo-shadow-sm active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all">
                 <span class="material-symbols-outlined font-bold">add</span>
             </a>
@@ -193,11 +193,11 @@
 
             <div class="space-y-6">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-2xl font-black italic tracking-tighter uppercase">題庫列表</h2>
+                    <h2 class="text-2xl font-black italic tracking-tighter uppercase">單字卡庫</h2>
                     <span
                         class="text-[10px] font-bold opacity-50 bg-zinc-200 dark:bg-zinc-800 px-2 py-1 neo-border"><span
                             id="user-card-count">-</span>
-                        <span id="card-label">QUESTIONS</span></span>
+                        <span id="card-label">CARDS</span></span>
                 </div>
                 <div class="flex gap-2">
                     <div class="relative flex-1">
@@ -215,7 +215,18 @@
                 <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="filter-buttons">
                     <button data-filter="all"
                         class="filter-btn flex-none px-4 py-2 neo-border-thick bg-primary font-black text-xs neo-shadow-sm active">全部</button>
-                    <!-- Chapters will be injected here dynamically -->
+                    <button data-filter="unfamiliar"
+                        class="filter-btn flex-none px-4 py-2 neo-border-thick bg-white dark:bg-zinc-800 font-bold text-xs neo-shadow-sm text-red-500">❤</button>
+                    <button data-filter="lv1"
+                        class="filter-btn flex-none px-5 py-2 neo-border-thick bg-white dark:bg-zinc-800 font-bold text-xs neo-shadow-sm">Lv.1</button>
+                    <button data-filter="lv2"
+                        class="filter-btn flex-none px-5 py-2 neo-border-thick bg-white dark:bg-zinc-800 font-bold text-xs neo-shadow-sm">Lv.2</button>
+                    <button data-filter="lv3"
+                        class="filter-btn flex-none px-5 py-2 neo-border-thick bg-white dark:bg-zinc-800 font-bold text-xs neo-shadow-sm">Lv.3</button>
+                    <button data-filter="lv4"
+                        class="filter-btn flex-none px-5 py-2 neo-border-thick bg-white dark:bg-zinc-800 font-bold text-xs neo-shadow-sm">Lv.4</button>
+                    <button data-filter="lv5"
+                        class="filter-btn flex-none px-5 py-2 neo-border-thick bg-white dark:bg-zinc-800 font-bold text-xs neo-shadow-sm">Lv.5</button>
                 </div>
                 <div id="cards-container" class="grid grid-cols-2 gap-4">
                     <!-- 卡片將由 JavaScript 動態載入 -->
@@ -233,7 +244,7 @@
                     class="size-14 -mt-8 flex items-center justify-center neo-border-thick neo-shadow bg-primary group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none">
                     <span class="material-symbols-outlined text-3xl font-black">style</span>
                 </div>
-                <span class="text-[10px] font-black uppercase">題庫</span>
+                <span class="text-[10px] font-black uppercase">單字卡</span>
             </button>
             <button onclick="window.location.href='calendar.html'" class="flex flex-col items-center gap-1 group">
                 <div
@@ -413,7 +424,7 @@
 
                 // 避免重複載入閃爍，如果已有資料只重新渲染選取狀態
                 if (allCategories.length === 0) {
-                    const result = await apiService.getUniqueSubjects();
+                    const result = await apiService.getUniqueCategories(userId);
                     if (result.success) {
                         allCategories = sortCategories(result.data);
                     } else {
@@ -476,7 +487,7 @@
                     page: 1, // 篩選後重置為第一頁
                     limit: 100, // 增加數量
                     searchQuery: currentSearchQuery || null,
-                    subject: selectedCategories.size > 0 ? Array.from(selectedCategories) : null
+                    category: selectedCategories.size > 0 ? Array.from(selectedCategories) : null
                 };
 
                 const result = await apiService.getQuestions(options);
