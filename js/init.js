@@ -451,12 +451,6 @@ function renderCardItem(card) {
            data-source-type="${card.sourceType || 'user_card'}"
            data-is-published="${isPublished}"
             class="bg-white dark:bg-zinc-900 neo-border-thick neo-shadow p-3 flex flex-col h-[180px] relative transition-transform active:scale-[0.98] admin-card-item">
-            ${showBadge ? `
-                <div class="absolute -top-2 -right-2 w-10 h-10 rounded-full neo-border-thick flex items-center justify-center z-20 shadow-lg"
-                     style="background-color: ${badgeBg};">
-                    <span class="text-lg">${badgeEmoji}</span>
-                </div>
-            ` : ''}
             <div class="mb-2 flex items-center justify-between">
                 <div class="flex items-center">
                     <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.question_no || '-'}</span>
@@ -470,7 +464,7 @@ function renderCardItem(card) {
                 <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1 break-words hyphens-none ${(card.question && card.question.length > 15) ? 'text-small' : ''}" style="word-break: break-word; -webkit-hyphens: none;">${card.question || ''}</h3>
                 <p class="text-[10px] leading-tight opacity-70 line-clamp-2">${description}</p>
             </div>
-            <div class="flex justify-start items-end gap-2 mt-2">
+            <div class="flex justify-between items-end gap-2 mt-2">
                 <button data-card-id="${card.id}" data-action="heart" data-hearted="${isHearted}"
                     class="heart-btn hover:scale-110 active:scale-95 transition-transform z-10 p-1 -ml-1 flex items-center justify-center">
                     <span class="material-symbols-outlined text-2xl ${isHearted ? 'text-[#EF4444]' : 'text-black'}"
@@ -478,6 +472,12 @@ function renderCardItem(card) {
                         favorite
                     </span>
                 </button>
+                ${showBadge ? `
+                <div class="w-8 h-8 rounded-full neo-border-thick flex items-center justify-center shadow-lg"
+                     style="background-color: ${badgeBg};">
+                    <span class="text-sm">${badgeEmoji}</span>
+                </div>
+                ` : ''}
             </div>
         </a>
     `;
