@@ -414,10 +414,10 @@ class ApiService {
                     }
                 }
 
-                // 4. 計算今日新增卡片數量
+                // 4. 計算今日新增題目數量（改為 questions 資料表）
                 const today = new Date().toISOString().split('T')[0];
                 const { count: todayCount, error: todayError } = await this.supabase
-                    .from('flashcards')
+                    .from('questions')
                     .select('*', { count: 'exact', head: true })
                     .eq('user_id', currentUserId)
                     .gte('created_at', today);

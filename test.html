@@ -161,7 +161,7 @@
             </div>
         </div>
         <!-- 卡片資訊 -->
-        <div class="w-full px-2 mb-4 flex gap-2 flex-wrap justify-center">
+        <div class="w-full px-2 mb-0 flex gap-2 flex-wrap justify-center">
             <div class="bg-white dark:bg-zinc-800 neo-border px-3 py-1.5 rounded-lg shadow-neo-yellow">
                 <span class="text-xs font-bold text-zinc-600 dark:text-zinc-400">類別：</span>
                 <span id="card-category" class="text-xs font-black">--</span>
@@ -268,59 +268,73 @@
 
         // 移除：複習模式和隨機化功能已不需要
 
-        // 從資料庫載入卡片的測驗題目
+        // 從資料庫載入題目（新架構：questions 資料表）
         async function loadCardQuestions(cardId) {
             try {
-                // 使用 apiService 的 supabase 實例直接查詢，包含更多卡片資訊
+                // 使用 apiService 的 supabase 實例直接查詢題目
                 const { data, error } = await apiService.supabase
-                    .from('flashcards')
-                    .select('quiz_questions, english_term, category, chinese_term')
+                    .from('questions')
+                    .select('*')
                     .eq('id', cardId)
                     .single();
 
                 if (error) {
-                    console.error('載入卡片題目失敗:', error);
+                    console.error('載入題目失敗:', error);
                     quizQuestions = defaultQuizQuestions;
                     return;
                 }
 
-                // 儲存完整卡片資料
+                // 儲存完整題目資料
                 currentCardData = data;
 
-                if (data && data.quiz_questions && Array.isArray(data.quiz_questions) && data.quiz_questions.length > 0) {
-                    // 儲存卡片名稱供 result.html 使用
-                    if (data.english_term) {
-                        sessionStorage.setItem('currentCardName', data.english_term);
+                if (data) {
+                    // 儲存題目名稱供 result.html 使用
+                    if (data.question) {
+                        sessionStorage.setItem('currentCardName', data.question);
                     }
 
-                    // 隨機選取1題（不打亂，保持原始索引）
-                    const randomIndex = Math.floor(Math.random() * data.quiz_questions.length);
-                    const selectedQuestion = data.quiz_questions[randomIndex];
+                    // 處理選項：確保是陣列格式
+                    let options = [];
+                    if (Array.isArray(data.options)) {
+                        options = [...data.options];
+                    } else if (typeof data.options === 'object' && data.options !== null) {
+                        // 如果是物件，轉換為陣列
+                        options = Object.values(data.options);
+                    }
 
                     // 確保選項有4個，如果不足則補充
-                    let options = [...selectedQuestion.options];
                     while (options.length < 4) {
                         options.push(`選項 ${options.length + 1}`);
                     }
                     // 如果超過4個，只取前4個
                     options = options.slice(0, 4);
 
-                    // 建立單一題目（不打亂選項順序）
+                    // 處理正確答案：轉換為數字索引（1-based）
+                    let correctAnswer = 1;
+                    if (typeof data.correct_answer === 'number') {
+                        correctAnswer = data.correct_answer;
+                    } else if (typeof data.correct_answer === 'string') {
+                        // 如果是字母 (A, B, C, D)，轉換為數字
+                        const answerMap = { 'A': 1, 'B': 2, 'C': 3, 'D': 4 };
+                        correctAnswer = answerMap[data.correct_answer.toUpperCase()] || 1;
+                    }
+
+                    // 建立單一題目（questions 資料表本身就是單題制）
                     quizQuestions = [{
-                        question: selectedQuestion.question,
+                        question: data.question,
                         options: options,
-                        correctAnswer: selectedQuestion.correctAnswer,
-                        explanation: selectedQuestion.explanation,
-                        originalIndex: randomIndex,
-                        questionType: selectedQuestion.questionType || '單選'  // 題目類型
+                        correctAnswer: correctAnswer,
+                        explanation: data.explanation || '此題目尚無解析',
+                        originalIndex: 0,
+                        questionType: data.question_type || '單選'
                     }];
 
-                    console.log(`成功載入 ${data.english_term} 的測驗題目`);
+                    console.log(`成功載入題目: ${data.question}`);
 
                     // 顯示卡片資訊
                     updateCardInfo();
                 } else {
-                    console.warn('此卡片沒有測驗題目');
+                    console.warn('找不到此題目');
                     quizQuestions = defaultQuizQuestions;
                 }
             } catch (err) {
@@ -337,8 +351,8 @@
             const chapterEl = document.getElementById('card-chapter');
             const questionTypeEl = document.getElementById('question-type');
 
-            if (categoryEl) categoryEl.textContent = currentCardData.category || '未分類';
-            if (chapterEl) chapterEl.textContent = currentCardData.chinese_term || '通用';
+            if (categoryEl) categoryEl.textContent = currentCardData.subject || '未分類';
+            if (chapterEl) chapterEl.textContent = currentCardData.chapter || '通用';
             if (questionTypeEl && quizQuestions[0]) {
                 questionTypeEl.textContent = quizQuestions[0].questionType || '單選';
             }

@@ -421,7 +421,7 @@ function renderCardItem(card) {
     const publishedTag = isPublished ? `<span class="bg-primary text-black border border-black px-1 text-[8px] font-bold uppercase ml-1">PUBLISHED</span>` : '';
 
     return `
-        <a href="card.html?id=${card.id}"
+        <a href="test.html?id=${card.id}"
            data-card-id="${card.id}"
            data-source-type="${card.sourceType || 'user_card'}"
            data-is-published="${isPublished}"
@@ -433,12 +433,12 @@ function renderCardItem(card) {
                 </div>
             ` : ''}
             <div class="mb-2 flex items-center">
-                <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.category || 'General'}</span>
+                <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.chapter || 'General'}</span>
                 ${publishedTag}
             </div>
             <div class="flex-1">
-                <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1 break-words hyphens-none ${(!card.abbreviation && card.english_term && card.english_term.length > 15) ? 'text-small' : ''}" style="word-break: break-word; -webkit-hyphens: none;">${card.abbreviation || card.english_term || ''}</h3>
-                <p class="text-[10px] leading-tight opacity-70 line-clamp-2">${card.chinese_translation || ''}。${description}</p>
+                <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1 break-words hyphens-none ${(card.question && card.question.length > 15) ? 'text-small' : ''}" style="word-break: break-word; -webkit-hyphens: none;">${card.question || ''}</h3>
+                <p class="text-[10px] leading-tight opacity-70 line-clamp-2">${description}</p>
             </div>
             <div class="flex justify-between items-end gap-2 mt-2">
                 <button data-card-id="${card.id}" data-action="heart" data-hearted="${isHearted}" 
@@ -464,7 +464,7 @@ function renderCardItem(card) {
  */
 function bindCardActions(cards) {
     // 卡片連結 - 點擊時快取資料
-    document.querySelectorAll('#cards-container a[href^="card.html"]').forEach(link => {
+    document.querySelectorAll('#cards-container a[href^="test.html"]').forEach(link => {
         link.addEventListener('click', function (e) {
             // 如果點擊的是按鈕，不跳轉
             if (e.target.closest('button') || e.target.closest('[data-action]')) {
