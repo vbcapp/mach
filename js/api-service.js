@@ -210,39 +210,58 @@ class ApiService {
      * @param {string} [avatarUrl] - 頭像 URL (Google OAuth 會提供)
      */
     async _createUserProfile(userId, username, email, avatarUrl = null) {
-        const profileData = {
-            id: userId,
-            username: username,
-            email: email,
-            current_level: 1,
-            current_xp: 0,
-        };
+        try {
+            // 先檢查用戶是否存在，避免觸發 409 Conflict
+            const { data: existingUser, error: checkError } = await this.supabase
+                .from('users')
+                .select('id')
+                .eq('id', userId)
+                .maybeSingle();
 
-        // 如果有頭像 URL，添加到資料中
-        if (avatarUrl) {
-            profileData.avatar_url = avatarUrl;
-        }
-
-        const { error } = await this.supabase
-            .from('users')
-            .upsert(profileData, { onConflict: 'id' }); // 使用 upsert 以支援更新現有資料
-
-        if (error) {
-            // 如果是用戶名重複錯誤，嘗試生成一個唯一的用戶名
-            if (error.code === '23505' && error.message.includes('username')) {
-                const uniqueUsername = `${username}_${Date.now().toString(36)}`;
-                profileData.username = uniqueUsername;
-                const { error: retryError } = await this.supabase
-                    .from('users')
-                    .upsert(profileData, { onConflict: 'id' });
-                if (retryError) {
-                    console.warn('_createUserProfile retry error:', retryError);
-                }
-                return;
+            // 如果用戶已存在，不再重複建立，保留既有的 current_xp 等進度資料
+            if (existingUser) {
+                return { success: true };
             }
-            // 其他重複錯誤 (如 ID 已存在) 可以忽略
-            if (error.code === '23505') return;
-            console.warn('_createUserProfile error:', error);
+
+            const profileData = {
+                id: userId,
+                username: username,
+                email: email,
+                current_level: 1,
+                current_xp: 0,
+            };
+
+            // 如果有頭像 URL，添加到資料中
+            if (avatarUrl) {
+                profileData.avatar_url = avatarUrl;
+            }
+
+            const { error: insertError } = await this.supabase
+                .from('users')
+                .insert(profileData);
+
+            if (insertError) {
+                // 如果是用戶名重複錯誤，嘗試生成一個唯一的用戶名
+                if (insertError.code === '23505' && insertError.message.includes('username')) {
+                    const uniqueUsername = `${username}_${Date.now().toString(36)}`;
+                    profileData.username = uniqueUsername;
+                    const { error: retryError } = await this.supabase
+                        .from('users')
+                        .insert(profileData);
+                    if (retryError) {
+                        console.warn('_createUserProfile retry error:', retryError);
+                    }
+                    return { success: true };
+                }
+
+                // 取消打印重複 PK，因為這代表用戶以某種方式已被建立
+                if (insertError.code === '23505') return { success: true };
+                console.warn('_createUserProfile error:', insertError);
+            }
+            return { success: true };
+        } catch (err) {
+            console.error('_createUserProfile catch error:', err);
+            return { success: false, error: err };
         }
     }
 
@@ -1347,52 +1366,6 @@ class ApiService {
         }
     }
     // ==================== 錯誤處理 ====================
-
-    async _createUserProfile(userId, nickname, email) {
-        try {
-            console.log('Creating user profile for:', userId);
-
-            const attemptInsert = async (name) => {
-                return await this.supabase
-                    .from('users')
-                    .insert({
-                        id: userId,
-                        username: name,
-                        email: email,
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    });
-            };
-
-            let { error } = await attemptInsert(nickname);
-
-            // Retry on username collision
-            if (error && error.code === '23505' && error.message.includes('users_username_key')) {
-                console.log('Username collision, retrying with random suffix...');
-                // Try up to 3 times
-                for (let i = 0; i < 3; i++) {
-                    const suffix = Math.floor(Math.random() * 10000);
-                    const newName = `${nickname}_${suffix}`;
-                    const retry = await attemptInsert(newName);
-                    error = retry.error;
-                    if (!error) break; // Success
-                    if (error.code !== '23505' || !error.message.includes('users_username_key')) break; // Other error
-                }
-            }
-
-            if (error) {
-                // Ignore PK duplication (means user already exists, which is good)
-                if (error.code === '23505' && !error.message.includes('users_username_key')) {
-                    return { success: true };
-                }
-                throw error;
-            }
-            return { success: true };
-        } catch (error) {
-            console.error('Create profile failed:', error);
-            return { success: false, error };
-        }
-    }
 
     _handleError(error, defaultCode = ERROR_CODES.INTERNAL_ERROR) {
         console.error('API Error:', error);
