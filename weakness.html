@@ -98,6 +98,106 @@
         </header>
 
         <main class="flex-grow p-4">
+            <!-- 個人數據儀表板 -->
+            <div id="stats-dashboard" class="mb-6 space-y-4">
+                <!-- 第一行：核心指標 -->
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- 錯題 / 已答題 -->
+                    <div class="neo-brutalism-card bg-white p-4">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="material-symbols-outlined text-[#FF3B30] text-lg">error</span>
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">錯題 / 已答</span>
+                        </div>
+                        <div class="flex items-baseline gap-1">
+                            <span id="stat-wrong-count" class="text-2xl font-black text-[#FF3B30]">--</span>
+                            <span class="text-gray-400 font-bold">/</span>
+                            <span id="stat-answered-count" class="text-lg font-bold text-gray-600">--</span>
+                        </div>
+                    </div>
+
+                    <!-- 整體正確率 -->
+                    <div class="neo-brutalism-card bg-white p-4">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="material-symbols-outlined text-green-500 text-lg">check_circle</span>
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">整體正確率</span>
+                        </div>
+                        <div class="flex items-baseline gap-1">
+                            <span id="stat-accuracy" class="text-2xl font-black text-green-600">--%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 第二行：熟練度 + 進步指標 -->
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- 整體熟練度 -->
+                    <div class="neo-brutalism-card bg-white p-4">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="material-symbols-outlined text-primary text-lg">workspace_premium</span>
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">整體熟練度</span>
+                        </div>
+                        <div class="flex items-baseline gap-1">
+                            <span id="stat-mastery" class="text-2xl font-black">--%</span>
+                        </div>
+                        <div class="text-[10px] text-gray-400 mt-1">
+                            已熟練 <span id="stat-mastered-count" class="font-bold text-black">--</span> 題
+                        </div>
+                    </div>
+
+                    <!-- 進步指標 -->
+                    <div class="neo-brutalism-card bg-white p-4">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span id="improvement-icon" class="material-symbols-outlined text-lg text-gray-400">trending_flat</span>
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">近 7 天進步</span>
+                        </div>
+                        <div class="flex items-baseline gap-1">
+                            <span id="stat-improvement" class="text-2xl font-black text-gray-400">--</span>
+                        </div>
+                        <div id="improvement-desc" class="text-[10px] text-gray-400 mt-1">
+                            正確率變化
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7天/30天 切換區 -->
+                <div class="neo-brutalism-card bg-white p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-lg">show_chart</span>
+                            <span class="text-xs font-black uppercase">錯題趨勢</span>
+                        </div>
+                        <div class="flex gap-1">
+                            <button id="btn-7days" class="px-3 py-1 text-[10px] font-bold neo-border bg-primary" onclick="switchTrendPeriod(7)">7天</button>
+                            <button id="btn-30days" class="px-3 py-1 text-[10px] font-bold neo-border bg-white" onclick="switchTrendPeriod(30)">30天</button>
+                        </div>
+                    </div>
+                    <!-- 趨勢圖表 -->
+                    <div id="trend-chart" class="h-32 flex items-end justify-between gap-1">
+                        <!-- 長條圖會由 JS 填入 -->
+                    </div>
+                    <div class="flex justify-between mt-2 text-[9px] text-gray-400">
+                        <span id="trend-start-date">--</span>
+                        <span id="trend-end-date">今天</span>
+                    </div>
+                    <!-- 圖例 -->
+                    <div class="flex justify-center gap-4 mt-3 text-[10px]">
+                        <div class="flex items-center gap-1">
+                            <div class="w-3 h-3 bg-[#FF3B30] neo-border"></div>
+                            <span class="font-bold">錯題數</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <div class="w-3 h-3 bg-green-500 neo-border"></div>
+                            <span class="font-bold">正確率</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 弱點題目標題 -->
+            <div class="flex items-center gap-2 mb-3 mt-6">
+                <span class="material-symbols-outlined text-[#FF3B30]">priority_high</span>
+                <h2 class="text-sm font-black uppercase">需要加強的題目</h2>
+            </div>
+
             <div id="weakness-list" class="space-y-4 pb-20">
                 <!-- Data will be injected here -->
             </div>
@@ -143,6 +243,10 @@
     </div>
 
     <script>
+        // 全域變數儲存趨勢數據
+        let globalTrendData = [];
+        let currentPeriod = 7;
+
         document.addEventListener('DOMContentLoaded', async () => {
             const listContainer = document.getElementById('weakness-list');
             const emptyState = document.getElementById('empty-state');
@@ -152,19 +256,31 @@
                 await apiService.initialize();
 
                 if (!apiService.currentUser) {
-                    // Redirect to login or show message
                     window.location.href = 'login.html';
                     return;
                 }
 
                 const userId = apiService.currentUser.id;
-                const result = await apiService.getWeaknessList(userId, 30); // Get top 30 weakest
 
-                if (!result.success) {
-                    throw new Error(result.error?.message || 'Failed to fetch weakness data');
+                // 並行載入數據
+                const [statsResult, weaknessResult] = await Promise.all([
+                    apiService.getWeaknessStats(userId),
+                    apiService.getWeaknessList(userId, 30)
+                ]);
+
+                // 渲染儀表板統計
+                if (statsResult.success) {
+                    renderDashboardStats(statsResult.data);
+                    globalTrendData = statsResult.data.trendData;
+                    renderTrendChart(7); // 預設顯示 7 天
                 }
 
-                const weaknessData = result.data;
+                // 渲染弱點列表
+                if (!weaknessResult.success) {
+                    throw new Error(weaknessResult.error?.message || 'Failed to fetch weakness data');
+                }
+
+                const weaknessData = weaknessResult.data;
 
                 if (weaknessData.length === 0) {
                     emptyState.classList.remove('hidden');
@@ -179,6 +295,123 @@
                 loadingOverlay.classList.add('hidden');
             }
         });
+
+        /**
+         * 渲染儀表板統計數據
+         */
+        function renderDashboardStats(stats) {
+            // 基礎數據
+            document.getElementById('stat-wrong-count').textContent = stats.wrongQuestionCount;
+            document.getElementById('stat-answered-count').textContent = stats.totalAnswered;
+            document.getElementById('stat-accuracy').textContent = stats.overallAccuracy + '%';
+            document.getElementById('stat-mastery').textContent = stats.masteryRate + '%';
+            document.getElementById('stat-mastered-count').textContent = stats.masteredCount;
+
+            // 進步指標
+            const improvementEl = document.getElementById('stat-improvement');
+            const improvementIcon = document.getElementById('improvement-icon');
+            const improvementDesc = document.getElementById('improvement-desc');
+
+            const change = stats.improvement.accuracyChange;
+
+            if (change > 0) {
+                improvementEl.textContent = '+' + change + '%';
+                improvementEl.className = 'text-2xl font-black text-green-600';
+                improvementIcon.textContent = 'trending_up';
+                improvementIcon.className = 'material-symbols-outlined text-lg text-green-600';
+                improvementDesc.textContent = '正確率提升';
+                improvementDesc.className = 'text-[10px] text-green-600 mt-1';
+            } else if (change < 0) {
+                improvementEl.textContent = change + '%';
+                improvementEl.className = 'text-2xl font-black text-[#FF3B30]';
+                improvementIcon.textContent = 'trending_down';
+                improvementIcon.className = 'material-symbols-outlined text-lg text-[#FF3B30]';
+                improvementDesc.textContent = '正確率下降';
+                improvementDesc.className = 'text-[10px] text-[#FF3B30] mt-1';
+            } else {
+                improvementEl.textContent = '0%';
+                improvementEl.className = 'text-2xl font-black text-gray-500';
+                improvementIcon.textContent = 'trending_flat';
+                improvementIcon.className = 'material-symbols-outlined text-lg text-gray-500';
+                improvementDesc.textContent = '維持穩定';
+                improvementDesc.className = 'text-[10px] text-gray-500 mt-1';
+            }
+        }
+
+        /**
+         * 切換趨勢圖期間
+         */
+        function switchTrendPeriod(days) {
+            currentPeriod = days;
+
+            // 切換按鈕樣式
+            const btn7 = document.getElementById('btn-7days');
+            const btn30 = document.getElementById('btn-30days');
+
+            if (days === 7) {
+                btn7.className = 'px-3 py-1 text-[10px] font-bold neo-border bg-primary';
+                btn30.className = 'px-3 py-1 text-[10px] font-bold neo-border bg-white';
+            } else {
+                btn7.className = 'px-3 py-1 text-[10px] font-bold neo-border bg-white';
+                btn30.className = 'px-3 py-1 text-[10px] font-bold neo-border bg-primary';
+            }
+
+            renderTrendChart(days);
+        }
+
+        /**
+         * 渲染趨勢圖表
+         */
+        function renderTrendChart(days) {
+            const chartContainer = document.getElementById('trend-chart');
+            const data = globalTrendData.slice(-days);
+
+            if (!data || data.length === 0) {
+                chartContainer.innerHTML = '<div class="w-full text-center text-gray-400 text-xs">暫無數據</div>';
+                return;
+            }
+
+            // 找出最大值用於計算高度比例
+            const maxIncorrect = Math.max(...data.map(d => d.incorrect), 1);
+            const chartHeight = 128; // h-32 = 128px
+
+            // 生成長條圖
+            let barsHtml = '';
+            data.forEach((day, index) => {
+                const incorrectHeight = (day.incorrect / maxIncorrect) * (chartHeight - 20);
+                const accuracyHeight = day.accuracy !== null ? (day.accuracy / 100) * (chartHeight - 20) : 0;
+
+                // 日期標籤（只在特定位置顯示）
+                const showDate = days === 7 || (days === 30 && index % 5 === 0);
+
+                barsHtml += `
+                    <div class="flex-1 flex flex-col items-center justify-end gap-1 relative group">
+                        <!-- 正確率線點 -->
+                        ${day.accuracy !== null ? `
+                            <div class="absolute w-2 h-2 bg-green-500 neo-border rounded-full"
+                                 style="bottom: ${accuracyHeight + 4}px; z-index: 10;">
+                            </div>
+                        ` : ''}
+                        <!-- 錯題長條 -->
+                        <div class="w-full max-w-[20px] bg-[#FF3B30] neo-border transition-all duration-300 hover:bg-[#FF5B50]"
+                             style="height: ${Math.max(incorrectHeight, day.incorrect > 0 ? 4 : 0)}px;">
+                        </div>
+                        <!-- Tooltip -->
+                        <div class="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-[9px] px-2 py-1 whitespace-nowrap z-20 font-bold">
+                            ${day.date.slice(5)}<br>
+                            錯: ${day.incorrect} / 對: ${day.correct}<br>
+                            ${day.accuracy !== null ? '正確率: ' + day.accuracy + '%' : '無作答'}
+                        </div>
+                    </div>
+                `;
+            });
+
+            chartContainer.innerHTML = barsHtml;
+
+            // 更新日期範圍
+            document.getElementById('trend-start-date').textContent = data[0]?.date.slice(5) || '--';
+            document.getElementById('trend-end-date').textContent = '今天';
+        }
 
         function renderWeaknessList(data, container) {
             container.innerHTML = ''; // Clear existing

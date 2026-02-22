@@ -2145,6 +2145,158 @@ class ApiService {
     }
 
     /**
+     * 取得個人弱點統計儀表板數據
+     * @param {string} userId - 用戶 ID
+     * @returns 總錯題數、已作答題數、正確率、熟練度、趨勢數據等
+     */
+    async getWeaknessStats(userId) {
+        try {
+            if (!userId) {
+                return { success: false, error: 'User ID is required' };
+            }
+
+            // 1. 取得該用戶所有的作答進度
+            const { data: progressData, error: progressError } = await this.supabase
+                .from('user_question_progress')
+                .select('question_id, times_reviewed, times_correct, times_incorrect, is_correct')
+                .eq('user_id', userId);
+
+            if (progressError) throw progressError;
+
+            // 2. 計算基礎統計
+            const totalAnswered = progressData ? progressData.length : 0;
+            let totalCorrect = 0;
+            let totalIncorrect = 0;
+            let totalReviewed = 0;
+            let masteredCount = 0; // 熟練題數 (times_correct >= 3)
+
+            progressData?.forEach(p => {
+                totalCorrect += p.times_correct || 0;
+                totalIncorrect += p.times_incorrect || 0;
+                totalReviewed += p.times_reviewed || 0;
+                // 熟練定義：該題答對次數 >= 3
+                if (p.times_correct >= 3) {
+                    masteredCount++;
+                }
+            });
+
+            // 總錯題數（有答錯過的題目數量）
+            const wrongQuestionCount = progressData?.filter(p => p.times_incorrect > 0).length || 0;
+
+            // 整體正確率 (以作答次數計算)
+            const overallAccuracy = totalReviewed > 0
+                ? Math.round((totalCorrect / totalReviewed) * 100)
+                : 0;
+
+            // 整體熟練度 (已熟練題數 / 已作答題數)
+            const masteryRate = totalAnswered > 0
+                ? Math.round((masteredCount / totalAnswered) * 100)
+                : 0;
+
+            // 3. 取得最近 30 天的答題紀錄（用於趨勢分析）
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const thirtyDaysAgoStr = thirtyDaysAgo.toISOString();
+
+            const { data: recentRecords, error: recordsError } = await this.supabase
+                .from('answer_records')
+                .select('is_correct, created_at')
+                .eq('user_id', userId)
+                .gte('created_at', thirtyDaysAgoStr)
+                .order('created_at', { ascending: true });
+
+            if (recordsError) throw recordsError;
+
+            // 4. 計算每日統計（錯題數、正確率）
+            const dailyStats = {};
+
+            // 初始化最近 30 天的日期
+            for (let i = 0; i < 30; i++) {
+                const date = new Date();
+                date.setDate(date.getDate() - (29 - i));
+                const dateStr = date.toISOString().split('T')[0];
+                dailyStats[dateStr] = { correct: 0, incorrect: 0, total: 0 };
+            }
+
+            // 填入實際數據
+            recentRecords?.forEach(record => {
+                const dateStr = record.created_at.split('T')[0];
+                if (dailyStats[dateStr]) {
+                    dailyStats[dateStr].total++;
+                    if (record.is_correct) {
+                        dailyStats[dateStr].correct++;
+                    } else {
+                        dailyStats[dateStr].incorrect++;
+                    }
+                }
+            });
+
+            // 轉換為陣列格式
+            const trendData = Object.entries(dailyStats).map(([date, stats]) => ({
+                date,
+                incorrect: stats.incorrect,
+                correct: stats.correct,
+                total: stats.total,
+                accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : null
+            }));
+
+            // 5. 計算 7 天 vs 30 天的進步幅度
+            const last7Days = trendData.slice(-7);
+            const previous7Days = trendData.slice(-14, -7);
+
+            const last7Incorrect = last7Days.reduce((sum, d) => sum + d.incorrect, 0);
+            const previous7Incorrect = previous7Days.reduce((sum, d) => sum + d.incorrect, 0);
+
+            const last7Total = last7Days.reduce((sum, d) => sum + d.total, 0);
+            const previous7Total = previous7Days.reduce((sum, d) => sum + d.total, 0);
+
+            const last7Correct = last7Days.reduce((sum, d) => sum + d.correct, 0);
+            const previous7Correct = previous7Days.reduce((sum, d) => sum + d.correct, 0);
+
+            const last7Accuracy = last7Total > 0 ? (last7Correct / last7Total) * 100 : 0;
+            const previous7Accuracy = previous7Total > 0 ? (previous7Correct / previous7Total) * 100 : 0;
+
+            // 進步幅度（正確率變化）
+            const accuracyImprovement = last7Accuracy - previous7Accuracy;
+
+            // 錯題數變化
+            const incorrectChange = last7Incorrect - previous7Incorrect;
+
+            return {
+                success: true,
+                data: {
+                    // 基礎統計
+                    totalAnswered,          // 已作答題數
+                    wrongQuestionCount,     // 總錯題數
+                    overallAccuracy,        // 整體正確率 %
+                    masteryRate,            // 整體熟練度 %
+                    masteredCount,          // 已熟練題數
+
+                    // 趨勢數據
+                    trendData,              // 30 天每日數據
+
+                    // 7 天統計
+                    last7Days: {
+                        incorrect: last7Incorrect,
+                        total: last7Total,
+                        accuracy: Math.round(last7Accuracy)
+                    },
+
+                    // 進步指標
+                    improvement: {
+                        accuracyChange: Math.round(accuracyImprovement * 10) / 10,  // 正確率變化
+                        incorrectChange,    // 錯題數變化（負數表示減少）
+                        isImproving: accuracyImprovement > 0 || incorrectChange < 0
+                    }
+                }
+            };
+
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 新增：隨機出題配置與儲存紀錄 (寫入 random_test_sessions)
      * @param {string} userId
      * @param {string} sessionName 自訂名稱
