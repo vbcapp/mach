@@ -68,6 +68,7 @@
 | `last_reviewed_at` | `timestamptz` | NULLABLE | 最後一次作答時間 |
 | `created_at` | `timestamptz` | DEFAULT now() | 建立時間 |
 | `updated_at` | `timestamptz` | DEFAULT now() | 更新時間 |
+| `is_favorite` | `boolean` | DEFAULT false | 用戶收藏標記 |
 
 ## 4. 答題紀錄: `answer_records`
 每次答題都會建立的歷史詳細日誌。

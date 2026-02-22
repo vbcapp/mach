@@ -1137,20 +1137,28 @@ class ApiService {
 
     /**
      * 取得所有不重複的章節列表（用於首頁篩選按鈕）
+     * 依照 chapter_no 排序
      */
     async getUniqueChapters() {
         try {
             const { data, error } = await this.supabase
                 .from('questions')
-                .select('chapter');
+                .select('chapter, chapter_no');
 
             if (error) throw error;
 
-            const uniqueChapters = [...new Set(data.map(item => item.chapter).filter(Boolean))];
+            // 建立 chapter -> chapter_no 的對照表（取每個 chapter 的第一個 chapter_no）
+            const chapterMap = new Map();
+            data.forEach(item => {
+                if (item.chapter && !chapterMap.has(item.chapter)) {
+                    chapterMap.set(item.chapter, item.chapter_no || 999);
+                }
+            });
 
-            // 自然排序（數字優先）
-            const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-            uniqueChapters.sort(collator.compare);
+            // 取得唯一章節並依 chapter_no 排序
+            const uniqueChapters = [...chapterMap.keys()].sort((a, b) => {
+                return (chapterMap.get(a) || 999) - (chapterMap.get(b) || 999);
+            });
 
             return { success: true, data: uniqueChapters };
         } catch (error) {
@@ -1160,12 +1168,13 @@ class ApiService {
 
     /**
      * 根據大科目，取得不重複的章節列表
+     * 依照 chapter_no 排序
      */
     async getUniqueChaptersBySubject(subject) {
         try {
             let query = this.supabase
                 .from('questions')
-                .select('chapter');
+                .select('chapter, chapter_no');
 
             if (subject) {
                 query = query.eq('subject', subject);
@@ -1175,11 +1184,18 @@ class ApiService {
 
             if (error) throw error;
 
-            const uniqueChapters = [...new Set(data.map(item => item.chapter).filter(Boolean))];
+            // 建立 chapter -> chapter_no 的對照表
+            const chapterMap = new Map();
+            data.forEach(item => {
+                if (item.chapter && !chapterMap.has(item.chapter)) {
+                    chapterMap.set(item.chapter, item.chapter_no || 999);
+                }
+            });
 
-            // PRD 規定：自然排序
-            const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-            uniqueChapters.sort(collator.compare);
+            // 取得唯一章節並依 chapter_no 排序
+            const uniqueChapters = [...chapterMap.keys()].sort((a, b) => {
+                return (chapterMap.get(a) || 999) - (chapterMap.get(b) || 999);
+            });
 
             return { success: true, data: uniqueChapters };
         } catch (error) {
@@ -1252,6 +1268,66 @@ class ApiService {
             };
         } catch (error) {
             return this._handleError(error, ERROR_CODES.CARD_NOT_FOUND);
+        }
+    }
+
+    /**
+     * 切換題目的收藏狀態
+     * @param {string} userId - 用戶 ID
+     * @param {string} questionId - 題目 ID
+     * @returns {Object} { success, data: { is_favorite } }
+     */
+    async toggleFavorite(userId, questionId) {
+        try {
+            const now = new Date().toISOString();
+
+            // 1. 檢查是否已有進度記錄
+            const { data: existingProgress, error: fetchError } = await this.supabase
+                .from('user_question_progress')
+                .select('id, is_favorite')
+                .eq('user_id', userId)
+                .eq('question_id', questionId)
+                .maybeSingle();
+
+            if (fetchError && fetchError.code !== 'PGRST116') {
+                throw fetchError;
+            }
+
+            let newFavoriteState;
+
+            if (existingProgress) {
+                // 已有記錄，切換狀態
+                newFavoriteState = !existingProgress.is_favorite;
+                const { error: updateError } = await this.supabase
+                    .from('user_question_progress')
+                    .update({ is_favorite: newFavoriteState, updated_at: now })
+                    .eq('id', existingProgress.id);
+
+                if (updateError) throw updateError;
+            } else {
+                // 尚無記錄，建立新記錄並設為收藏
+                newFavoriteState = true;
+                const { error: insertError } = await this.supabase
+                    .from('user_question_progress')
+                    .insert({
+                        user_id: userId,
+                        question_id: questionId,
+                        is_favorite: true,
+                        is_correct: null,
+                        times_reviewed: 0,
+                        times_correct: 0,
+                        times_incorrect: 0,
+                        created_at: now,
+                        updated_at: now
+                    });
+
+                if (insertError) throw insertError;
+            }
+
+            return { success: true, data: { is_favorite: newFavoriteState } };
+        } catch (error) {
+            console.error('切換收藏失敗:', error);
+            return this._handleError(error);
         }
     }
 

@@ -339,7 +339,7 @@ function applyFilter(filter) {
     let filteredCards = allCards;
 
     if (filter === 'unfamiliar') {
-        filteredCards = allCards.filter(card => card.progress && card.progress.mastery_level === 0);
+        filteredCards = allCards.filter(card => card.progress && card.progress.is_favorite === true);
     } else if (filter.startsWith('chapter:')) {
         // 依照章節篩選
         const chapter = filter.replace('chapter:', '');
@@ -411,7 +411,7 @@ function renderCardItem(card) {
         ? card.description.substring(0, 40) + (card.description.length > 40 ? '...' : '')
         : '';
 
-    const isHearted = card.progress && card.progress.mastery_level === 0;
+    const isHearted = card.progress && card.progress.is_favorite === true;
     const heartFill = isHearted ? '#EF4444' : '#F5F5F5'; // #EF4444 is Red
 
     // 計算 Quiz 進度徽章 - 基於答題進度
@@ -514,13 +514,53 @@ function bindCardActions(cards) {
         bindAdminLongPress();
     }
 
-    // 愛心按鈕 (Heart Button) - Deprecated as mastery_level is removed. 
-    // This could optionally toggle a favorite flag if added back to PRD.
+    // 愛心按鈕 (Heart Button) - 切換收藏狀態
     document.querySelectorAll('[data-action="heart"]').forEach(btn => {
         btn.addEventListener('click', async function (e) {
             e.preventDefault();
             e.stopPropagation();
-            alert('此功能已停用，請使用測驗功能來更新熟悉度。');
+
+            const cardId = this.getAttribute('data-card-id');
+            const userId = currentUser?.id;
+            if (!userId) {
+                console.error('用戶未登入');
+                return;
+            }
+
+            // 取得當前狀態
+            const isCurrentlyHearted = this.getAttribute('data-hearted') === 'true';
+            const iconEl = this.querySelector('.material-symbols-outlined');
+
+            // 樂觀更新 UI
+            const newState = !isCurrentlyHearted;
+            this.setAttribute('data-hearted', newState);
+            if (iconEl) {
+                iconEl.style.fontVariationSettings = `'FILL' ${newState ? 1 : 0}, 'wght' 700`;
+                iconEl.classList.toggle('text-[#EF4444]', newState);
+                iconEl.classList.toggle('text-black', !newState);
+            }
+
+            // 呼叫 API
+            const result = await apiService.toggleFavorite(userId, cardId);
+            if (result.success) {
+                // 更新本地快取
+                const card = allCards.find(c => c.id === cardId);
+                if (card) {
+                    if (!card.progress) {
+                        card.progress = {};
+                    }
+                    card.progress.is_favorite = result.data.is_favorite;
+                }
+            } else {
+                // 回滾 UI
+                this.setAttribute('data-hearted', isCurrentlyHearted);
+                if (iconEl) {
+                    iconEl.style.fontVariationSettings = `'FILL' ${isCurrentlyHearted ? 1 : 0}, 'wght' 700`;
+                    iconEl.classList.toggle('text-[#EF4444]', isCurrentlyHearted);
+                    iconEl.classList.toggle('text-black', !isCurrentlyHearted);
+                }
+                console.error('切換收藏失敗:', result.error);
+            }
         });
     });
 
