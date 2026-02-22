@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>卡片達人榜</title>
+    <title>答題次數排行榜</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&amp;family=Space+Mono:wght@400;700&amp;display=swap"
@@ -63,11 +63,11 @@
             line-height: 1;
         }
         @keyframes capped-gold-shimmer {
-            0%, 100% { 
+            0%, 100% {
                 color: #FFD600;
                 text-shadow: 0 0 5px rgba(255, 214, 0, 0.5);
             }
-            50% { 
+            50% {
                 color: #FFA500;
                 text-shadow: 0 0 15px rgba(255, 165, 0, 0.8);
             }
@@ -78,7 +78,7 @@
                 text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
             }
             50% {
-                color: #4B5563; /* gray-600 */
+                color: #4B5563;
                 text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
             }
         }
@@ -87,6 +87,14 @@
         }
         .black-shimmer {
             animation: black-shimmer 1.5s ease-in-out infinite;
+        }
+        .tab-active {
+            background-color: #FFD600;
+            border-color: black;
+        }
+        .tab-inactive {
+            background-color: white;
+            border-color: black;
         }
     </style>
     <style>
@@ -133,10 +141,23 @@
                 class="neo-border bg-white p-2 flex items-center justify-center active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-transform">
                 <span class="material-symbols-outlined text-2xl">arrow_back</span>
             </a>
-            <h1 class="text-3xl font-black">卡片達人榜</h1>
+            <h1 class="text-3xl font-black">答題次數排行榜</h1>
         </div>
+
+        <!-- 每日/每週切換 -->
+        <div class="flex gap-2 mb-4">
+            <button id="tab-daily" onclick="switchPeriod('daily')"
+                class="flex-1 neo-border py-3 px-4 font-black text-center transition-all tab-active">
+                今日
+            </button>
+            <button id="tab-weekly" onclick="switchPeriod('weekly')"
+                class="flex-1 neo-border py-3 px-4 font-black text-center transition-all tab-inactive">
+                本週
+            </button>
+        </div>
+
         <div class="space-y-1">
-            <p id="total-users" class="text-lg font-bold">總共 -- 位學習者</p>
+            <p id="total-users" class="text-lg font-bold">共 -- 位學習者參與</p>
             <p id="last-update" class="text-sm font-bold text-gray-500">最後更新：--</p>
         </div>
     </header>
@@ -154,7 +175,7 @@
                         <img alt="avatar" src="" class="w-full h-full object-cover" />
                     </div>
                     <span id="rank-2-name" class="font-black text-xs truncate w-full text-center px-1">--</span>
-                    <span id="rank-2-cards" class="font-black text-2xl italic leading-tight">--</span>
+                    <span id="rank-2-count" class="font-black text-2xl italic leading-tight">--</span>
                     <span id="rank-2-level" class="text-[10px] font-bold text-gray-500">Lv.--</span>
                 </div>
             </div>
@@ -171,7 +192,7 @@
                         <img alt="avatar" src="" class="w-full h-full object-cover" />
                     </div>
                     <span id="rank-1-name" class="font-black text-sm truncate w-full text-center px-1">--</span>
-                    <span id="rank-1-cards" class="font-black text-4xl italic leading-tight">--</span>
+                    <span id="rank-1-count" class="font-black text-4xl italic leading-tight">--</span>
                     <span id="rank-1-level" class="text-[11px] font-bold text-black/60">Lv.--</span>
                 </div>
             </div>
@@ -186,7 +207,7 @@
                         <img alt="avatar" src="" class="w-full h-full object-cover" />
                     </div>
                     <span id="rank-3-name" class="font-black text-xs truncate w-full text-center px-1">--</span>
-                    <span id="rank-3-cards" class="font-black text-2xl italic leading-tight">--</span>
+                    <span id="rank-3-count" class="font-black text-2xl italic leading-tight">--</span>
                     <span id="rank-3-level" class="text-[10px] font-bold text-gray-500">Lv.--</span>
                 </div>
             </div>
@@ -200,17 +221,16 @@
         <!-- 底部統計區 -->
         <div id="stats-container" class="grid grid-cols-2 gap-4">
             <div class="neo-card bg-white p-5">
-                <h4 class="text-xs font-black text-gray-500 mb-1">全球卡片排名</h4>
+                <h4 class="text-xs font-black text-gray-500 mb-1">我的排名</h4>
                 <div class="flex items-baseline gap-1">
                     <span id="my-rank" class="text-2xl font-black">#--</span>
                 </div>
             </div>
             <div class="neo-card bg-white p-5">
-                <h4 class="text-xs font-black text-gray-500 mb-1">今日新增</h4>
+                <h4 id="my-count-label" class="text-xs font-black text-gray-500 mb-1">今日答題</h4>
                 <div class="flex items-baseline gap-1">
-                    <span id="today-added" class="text-2xl font-black">+0</span>
-                    <span id="streak-badge"
-                        class="text-[10px] font-bold text-primary bg-black px-1 hidden">STREAK!</span>
+                    <span id="my-count" class="text-2xl font-black">0</span>
+                    <span class="text-sm font-bold text-gray-500">題</span>
                 </div>
             </div>
         </div>
@@ -220,54 +240,81 @@
         // 預設頭像
         const DEFAULT_AVATAR = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCFkz4f23tCsJx2XoWDwRbqOuT7ykrttxTJpEBUBj7buLZ29cFWTodfR05lCnqUVLh3ryGm95QIuMgz8Ut0bpEEuzJ9f89UpWhesieG9w93R2Fsh_3QgrvRu7hyTQXRdBvHIThU-UpRjQwE236gxRaLPmkIISJuouE3wQsycoWG8cb1CJHPoxt4pux1BXWyJhcntBJqar-6xrur66Khwxp5zPrB3dZ-SoKwcDubog8SekixtpZtWO9F63OMvpmxSGtOl6uykNrf0si3';
 
+        let currentPeriod = 'daily';
+        let currentUserId = null;
+
         document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await apiService.initialize();
+                currentUserId = apiService.currentUser?.id;
+                await loadLeaderboard('daily');
+            } catch (error) {
+                console.error('初始化錯誤:', error);
+                document.getElementById('loading-overlay').classList.add('hidden');
+            }
+        });
+
+        async function switchPeriod(period) {
+            if (period === currentPeriod) return;
+
+            currentPeriod = period;
+
+            // 更新 Tab 樣式
+            document.getElementById('tab-daily').className =
+                `flex-1 neo-border py-3 px-4 font-black text-center transition-all ${period === 'daily' ? 'tab-active' : 'tab-inactive'}`;
+            document.getElementById('tab-weekly').className =
+                `flex-1 neo-border py-3 px-4 font-black text-center transition-all ${period === 'weekly' ? 'tab-active' : 'tab-inactive'}`;
+
+            // 顯示 loading
+            document.getElementById('loading-overlay').classList.remove('hidden');
+
+            await loadLeaderboard(period);
+        }
+
+        async function loadLeaderboard(period) {
             const loadingOverlay = document.getElementById('loading-overlay');
             const podiumContainer = document.getElementById('podium-container');
             const rankList = document.getElementById('rank-list');
 
             try {
-                // 初始化 API Service
-                await apiService.initialize();
-
-                const currentUserId = apiService.currentUser?.id;
-
-                // 取得卡片排行榜資料
-                const result = await apiService.getCardLeaderboard(currentUserId);
+                const result = await apiService.getAnswerCountLeaderboard(currentUserId, period);
 
                 if (!result.success) {
                     throw new Error(result.error?.message || '載入失敗');
                 }
 
-                const { data: users, totalUsers, currentUserRank, currentUserData, todayAddedCards } = result;
+                const { data: users, totalParticipants, currentUserRank, currentUserData, periodLabel } = result;
+
+                // 更新統計標籤
+                document.getElementById('my-count-label').textContent = `${periodLabel}答題`;
 
                 // 更新總人數與時間
-                document.getElementById('total-users').textContent = `總共 ${totalUsers.toLocaleString()} 位學習者`;
+                document.getElementById('total-users').textContent = `共 ${totalParticipants.toLocaleString()} 位學習者參與`;
                 document.getElementById('last-update').textContent = `最後更新：${new Date().toLocaleString('zh-TW')}`;
 
+                // 重置頒獎台顯示
+                resetPodium();
+
                 // 渲染邏輯
-                if (totalUsers === 0) {
-                    // 沒有任何用戶
-                    podiumContainer.innerHTML = '<p class="text-center text-gray-500 py-8">目前還沒有學習者</p>';
-                } else if (totalUsers === 1) {
-                    // 單人模式：只顯示冠軍，隱藏 2、3 名
+                if (totalParticipants === 0) {
+                    podiumContainer.innerHTML = `<p class="text-center text-gray-500 py-8">${periodLabel}還沒有人答題</p>`;
+                } else if (users.length === 1) {
                     document.getElementById('rank-2-container').classList.add('hidden');
                     document.getElementById('rank-3-container').classList.add('hidden');
                     document.getElementById('rank-1-container').classList.remove('flex-1');
                     document.getElementById('rank-1-container').classList.add('w-48');
                     renderPodiumUser(1, users[0], currentUserId);
-                } else if (totalUsers === 2) {
-                    // 只有兩人：顯示 1、2 名，隱藏 3
+                } else if (users.length === 2) {
                     document.getElementById('rank-3-container').classList.add('hidden');
                     renderPodiumUser(1, users[0], currentUserId);
                     renderPodiumUser(2, users[1], currentUserId);
                 } else {
-                    // 多人模式：渲染前三名
                     renderPodiumUser(1, users[0], currentUserId);
                     renderPodiumUser(2, users[1], currentUserId);
                     renderPodiumUser(3, users[2], currentUserId);
                 }
 
-                // 渲染第 4 名以後 (最多顯示 10 名)
+                // 渲染第 4 名以後
                 const listUsers = users.slice(3, 10);
                 let listHTML = '';
 
@@ -277,7 +324,7 @@
                     listHTML += renderListItem(rank, user, isCurrentUser);
                 });
 
-                // 如果當前用戶不在前 10 名，額外顯示「你 (You)」區塊
+                // 如果當前用戶不在前 10 名，額外顯示
                 if (currentUserRank > 10 && currentUserData) {
                     listHTML += renderListItem(currentUserRank, currentUserData, true);
                 }
@@ -291,11 +338,8 @@
                     document.getElementById('my-rank').textContent = '--';
                 }
 
-                // 今日新增
-                document.getElementById('today-added').textContent = `+${todayAddedCards}`;
-                if (todayAddedCards >= 5) {
-                    document.getElementById('streak-badge').classList.remove('hidden');
-                }
+                // 我的答題次數
+                document.getElementById('my-count').textContent = currentUserData?.answer_count || 0;
 
             } catch (error) {
                 console.error('排行榜載入錯誤:', error);
@@ -303,31 +347,35 @@
             } finally {
                 loadingOverlay.classList.add('hidden');
             }
-        });
+        }
 
-        /**
-         * 渲染頒獎台用戶 (依卡片數量顯示)
-         */
+        function resetPodium() {
+            // 重置所有容器
+            ['rank-1-container', 'rank-2-container', 'rank-3-container'].forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.remove('hidden', 'w-48');
+                if (id === 'rank-1-container') {
+                    el.classList.add('flex-1');
+                }
+            });
+        }
+
         function renderPodiumUser(rank, user, currentUserId) {
             const isCurrentUser = user.id === currentUserId;
             const avatar = user.avatar_url || DEFAULT_AVATAR;
-            const name = isCurrentUser ? `${user.username} (你)` : user.username;
 
             document.getElementById(`rank-${rank}-avatar`).querySelector('img').src = avatar;
             document.getElementById(`rank-${rank}-name`).textContent = user.username || '無名氏';
-            document.getElementById(`rank-${rank}-cards`).textContent = user.total_questions;
+            document.getElementById(`rank-${rank}-count`).textContent = user.answer_count;
             document.getElementById(`rank-${rank}-level`).textContent = `Lv.${user.actualLevel}`;
 
-            // 如果是當前用戶，加上閃爍效果
             if (isCurrentUser) {
-                // 特殊處理：如果是第一名 (黃色背景)，改用黑色閃爍，否則用金色閃爍
                 const shimmerClass = (rank === 1) ? 'black-shimmer' : 'capped-shimmer';
 
                 document.getElementById(`rank-${rank}-name`).classList.add(shimmerClass);
                 document.getElementById(`rank-${rank}-level`).classList.add(shimmerClass);
                 document.getElementById(`rank-${rank}-card`).classList.add('ring-4', 'ring-primary');
 
-                // 移除另一個 class 以防萬一
                 const otherClass = (rank === 1) ? 'capped-shimmer' : 'black-shimmer';
                 document.getElementById(`rank-${rank}-name`).classList.remove(otherClass);
                 document.getElementById(`rank-${rank}-level`).classList.remove(otherClass);
@@ -338,9 +386,6 @@
             }
         }
 
-        /**
-         * 渲染列表項目 (依卡片數量顯示)
-         */
         function renderListItem(rank, user, isCurrentUser) {
             const avatar = user.avatar_url || DEFAULT_AVATAR;
             const name = isCurrentUser ? '你 (You)' : user.username;
@@ -348,13 +393,11 @@
                 ? 'neo-card-user bg-yellow-50 ring-2 ring-primary ring-inset'
                 : 'neo-card bg-white';
 
-            // 是否有特效：改為當前用戶
             const shimmerClass = isCurrentUser ? 'capped-shimmer' : '';
-            // 等級文字顏色：如果有特效則跟隨特效，否則灰色
             const levelColorClass = isCurrentUser ? '' : 'text-gray-500';
 
             return `
-                <div class="${cardClass} p-4 flex items-center gap-4" onclick="window.location.href='profile.html'">
+                <div class="${cardClass} p-4 flex items-center gap-4">
                     <span class="font-black text-xl w-8 text-center">${isCurrentUser ? '#' + rank : rank}</span>
                     <div class="w-12 h-12 neo-border rounded-full overflow-hidden bg-zinc-100">
                         <img alt="avatar" src="${avatar}" class="w-full h-full object-cover" />
@@ -364,8 +407,8 @@
                         <p class="text-xs font-bold ${levelColorClass} ${shimmerClass}">Lv.${user.actualLevel}</p>
                     </div>
                     <div class="flex items-center gap-2 relative z-10">
-                        <div class="text-4xl font-black italic pr-2 tracking-tighter">${user.total_questions}</div>
-                        <span class="text-[10px] font-black italic uppercase -rotate-90 origin-left translate-x-3 translate-y-3 opacity-80">CARDS</span>
+                        <div class="text-4xl font-black italic pr-2 tracking-tighter">${user.answer_count}</div>
+                        <span class="text-[10px] font-black italic uppercase -rotate-90 origin-left translate-x-3 translate-y-3 opacity-80">QUIZ</span>
                     </div>
                 </div>
             `;

@@ -211,6 +211,109 @@
                         <canvas id="mastery-chart" style="max-width: 400px; max-height: 400px;"></canvas>
                     </div>
                 </div>
+
+                <!-- Chart 4: Daily Answers Trend -->
+                <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 neo-brutalism-card">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-black dark:text-white">insights</span>
+                        <h3 class="text-xl font-black italic uppercase">每日答題總次數趨勢</h3>
+                    </div>
+                    <div class="bg-white p-4 border-2 border-black">
+                        <canvas id="daily-answers-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 5: Daily Active Users -->
+                <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 neo-brutalism-card">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-black dark:text-white">group</span>
+                        <h3 class="text-xl font-black italic uppercase">每日活躍用戶數</h3>
+                    </div>
+                    <div class="bg-white p-4 border-2 border-black">
+                        <canvas id="daily-active-users-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 6: Learning Trends -->
+                <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 neo-brutalism-card">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-black dark:text-white">calendar_month</span>
+                            <h3 class="text-xl font-black italic uppercase">學習趨勢</h3>
+                        </div>
+                        <select id="learning-trends-period"
+                            class="border-2 border-black font-bold p-1 bg-white text-black text-sm"
+                            onchange="renderLearningTrendsChart(this.value)">
+                            <option value="week">每週</option>
+                            <option value="month">每月</option>
+                        </select>
+                    </div>
+                    <div class="bg-white p-4 border-2 border-black">
+                        <canvas id="learning-trends-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 7: Answer Time Distribution -->
+                <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 neo-brutalism-card">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-black dark:text-white">schedule</span>
+                        <h3 class="text-xl font-black italic uppercase">答題時段分佈</h3>
+                    </div>
+                    <div class="bg-white p-4 border-2 border-black">
+                        <canvas id="answer-time-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 8: Overall Accuracy Trend -->
+                <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 neo-brutalism-card">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-black dark:text-white">analytics</span>
+                            <h3 class="text-xl font-black italic uppercase">整體正確率趨勢</h3>
+                        </div>
+                        <select id="overall-accuracy-period"
+                            class="border-2 border-black font-bold p-1 bg-white text-black text-sm"
+                            onchange="renderOverallAccuracyTrendChart(this.value)">
+                            <option value="week">每週</option>
+                            <option value="month">每月</option>
+                        </select>
+                    </div>
+                    <div class="bg-white p-4 border-2 border-black">
+                        <canvas id="overall-accuracy-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 9: First vs Review Accuracy -->
+                <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 neo-brutalism-card">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-black dark:text-white">compare_arrows</span>
+                        <h3 class="text-xl font-black italic uppercase">首次作答 vs 複習正確率</h3>
+                    </div>
+                    <div class="bg-white p-4 border-2 border-black">
+                        <canvas id="first-vs-review-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 10: Average Reviews to Mastery -->
+                <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 neo-brutalism-card">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="material-symbols-outlined text-black dark:text-white">military_tech</span>
+                        <h3 class="text-xl font-black italic uppercase">平均達到精熟的複習次數</h3>
+                    </div>
+                    <div
+                        class="flex flex-col items-center justify-center p-8 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
+                        <div
+                            class="text-sm font-black text-black mb-4 uppercase tracking-widest bg-primary px-2 py-1 border-2 border-black inline-block">
+                            需要幾次作答才能精熟一題？</div>
+                        <div class="flex items-end gap-2 mt-2">
+                            <span id="avg-reviews-value"
+                                class="text-7xl font-black italic bg-primary px-4 border-4 border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                -
+                            </span>
+                            <span class="text-3xl font-black italic text-black pb-1">次</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div
@@ -549,6 +652,8 @@
 
         // ==================== Admin Dashboard Functions ====================
         let registrationsChart, masteryChart;
+        let dailyAnswersChart, dailyActiveUsersChart, learningTrendsChart, answerTimeChart;
+        let overallAccuracyChart, firstVsReviewChart;
 
         async function initAdminDashboard() {
             try {
@@ -562,6 +667,13 @@
                 await renderRegistrationsChart();
                 await renderTopIncorrectCardsDashboard();
                 await renderMasteryChart();
+                await renderDailyAnswersChart();
+                await renderDailyActiveUsersChart();
+                await renderLearningTrendsChart('week');
+                await renderAnswerTimeDistributionChart();
+                await renderOverallAccuracyTrendChart('week');
+                await renderFirstVsReviewAccuracyChart();
+                await renderAverageReviewsToMastery();
             } catch (error) {
                 console.error('初始化管理員儀表板失敗:', error);
             }
@@ -793,6 +905,292 @@
                     }
                 }
             });
+        }
+
+        async function renderDailyAnswersChart() {
+            const result = await apiService.getAdminDailyAnswers(30);
+            if (!result.success) return;
+
+            const ctx = document.getElementById('daily-answers-chart');
+            if (!ctx) return;
+
+            const labels = result.data.map(item => {
+                const date = new Date(item.date);
+                return `${date.getMonth() + 1}/${date.getDate()}`;
+            });
+            const data = result.data.map(item => item.count);
+
+            if (dailyAnswersChart) dailyAnswersChart.destroy();
+
+            dailyAnswersChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '每日答題數',
+                        data: data,
+                        borderColor: '#2196F3',
+                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#2196F3',
+                        pointBorderColor: '#000000',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { font: { family: 'Inter', weight: 'bold' }, color: '#000' } } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Inter', weight: 'bold' } } },
+                        x: { ticks: { font: { family: 'Inter', weight: 'bold' } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        async function renderDailyActiveUsersChart() {
+            const result = await apiService.getAdminDailyActiveUsers(30);
+            if (!result.success) return;
+
+            const ctx = document.getElementById('daily-active-users-chart');
+            if (!ctx) return;
+
+            const labels = result.data.map(item => {
+                const date = new Date(item.date);
+                return `${date.getMonth() + 1}/${date.getDate()}`;
+            });
+            const data = result.data.map(item => item.count);
+
+            if (dailyActiveUsersChart) dailyActiveUsersChart.destroy();
+
+            dailyActiveUsersChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '每日活躍用戶',
+                        data: data,
+                        backgroundColor: '#4CAF50',
+                        borderColor: '#000000',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { font: { family: 'Inter', weight: 'bold' }, color: '#000' } } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, font: { family: 'Inter', weight: 'bold' } } },
+                        x: { ticks: { font: { family: 'Inter', weight: 'bold' } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        async function renderLearningTrendsChart(period = 'week') {
+            const result = await apiService.getAdminLearningTrends(period);
+            if (!result.success) return;
+
+            const ctx = document.getElementById('learning-trends-chart');
+            if (!ctx) return;
+
+            const labels = result.data.map(item => {
+                const date = new Date(item.period_start);
+                if (period === 'month') {
+                    return `${date.getFullYear()}/${date.getMonth() + 1}`;
+                } else {
+                    return `${date.getMonth() + 1}/${date.getDate()} 當週`;
+                }
+            });
+            const data = result.data.map(item => item.count);
+
+            if (learningTrendsChart) learningTrendsChart.destroy();
+
+            learningTrendsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: period === 'month' ? '每月答題數' : '每週答題數',
+                        data: data,
+                        backgroundColor: '#FF9800',
+                        borderColor: '#000000',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { font: { family: 'Inter', weight: 'bold' }, color: '#000' } } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { font: { family: 'Inter', weight: 'bold' } } },
+                        x: { ticks: { font: { family: 'Inter', weight: 'bold' } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        async function renderAnswerTimeDistributionChart() {
+            const result = await apiService.getAdminAnswerTimeDistribution(30);
+            if (!result.success) return;
+
+            const ctx = document.getElementById('answer-time-chart');
+            if (!ctx) return;
+
+            const labels = result.data.map(item => `${item.hour}時`);
+            const data = result.data.map(item => item.count);
+
+            if (answerTimeChart) answerTimeChart.destroy();
+
+            const maxVal = Math.max(...data, 1);
+            const backgroundColors = data.map(val => {
+                const intensity = val / maxVal;
+                // Red color with varying opacity based on heat
+                return `rgba(244, 67, 54, ${Math.max(0.1, intensity)})`;
+            });
+
+            answerTimeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '時段答題熱度 (近30天)',
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderColor: '#000000',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { font: { family: 'Inter', weight: 'bold' }, color: '#000' } } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { font: { family: 'Inter', weight: 'bold' } } },
+                        x: { ticks: { font: { family: 'Inter', weight: 'bold' } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+        async function renderOverallAccuracyTrendChart(period = 'week') {
+            const result = await apiService.getAdminOverallAccuracyTrend(period);
+            if (!result.success) {
+                console.error('取得整體正確率折線數據失敗:', result.error);
+                return;
+            }
+
+            const ctx = document.getElementById('overall-accuracy-chart');
+            if (!ctx) return;
+
+            const labels = result.data.map(item => item.date);
+            const accuracyData = result.data.map(item => item.accuracy);
+
+            if (overallAccuracyChart) {
+                overallAccuracyChart.destroy();
+            }
+
+            overallAccuracyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '整體正確率 (%)',
+                        data: accuracyData,
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#000000',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: true, labels: { font: { family: 'Inter', weight: 'bold' }, color: '#000' } }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { stepSize: 20, font: { family: 'Inter', weight: 'bold' }, callback: function (value) { return value + '%' } },
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' }
+                        },
+                        x: {
+                            ticks: { font: { family: 'Inter', weight: 'bold' } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function renderFirstVsReviewAccuracyChart() {
+            const result = await apiService.getAdminFirstVsReviewAccuracy();
+            if (!result.success) {
+                console.error('取得首次 vs 複習正確率數據失敗:', result.error);
+                return;
+            }
+
+            const ctx = document.getElementById('first-vs-review-chart');
+            if (!ctx) return;
+
+            const labels = result.data.map(item => item.category);
+            const data = result.data.map(item => item.accuracy);
+
+            if (firstVsReviewChart) {
+                firstVsReviewChart.destroy();
+            }
+
+            firstVsReviewChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '正確率 (%)',
+                        data: data,
+                        backgroundColor: ['#60A5FA', '#F59E0B'],
+                        borderColor: '#000000',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) { return context.parsed.y + '%'; }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { font: { family: 'Inter', weight: 'bold' }, callback: function (value) { return value + '%' } }
+                        },
+                        x: { ticks: { font: { family: 'Inter', weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        async function renderAverageReviewsToMastery() {
+            const result = await apiService.getAdminAverageReviewsToMastery();
+            if (!result.success) {
+                console.error('取得平均精熟作答次數失敗:', result.error);
+                return;
+            }
+
+            const el = document.getElementById('avg-reviews-value');
+            if (el) {
+                el.textContent = result.data !== undefined && result.data !== null ? result.data : '-';
+            }
         }
 
 

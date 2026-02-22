@@ -488,6 +488,154 @@ class ApiService {
     }
 
     /**
+     * 取得答題次數排行榜資料
+     * @param {string} currentUserId - 當前用戶 ID
+     * @param {string} period - 時間區間 ('daily' | 'weekly')
+     */
+    async getAnswerCountLeaderboard(currentUserId, period = 'daily') {
+        try {
+            // 計算時間範圍
+            const now = new Date();
+            let startDate;
+
+            if (period === 'daily') {
+                // 今天 00:00:00
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            } else {
+                // 本週一 00:00:00
+                const dayOfWeek = now.getDay();
+                const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 週日為 0，需要回推 6 天
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff);
+            }
+
+            const startDateISO = startDate.toISOString();
+
+            // 1. 從 answer_records 聚合每個用戶的答題次數
+            const { data: answerData, error: answerError } = await this.supabase
+                .from('answer_records')
+                .select('user_id')
+                .gte('created_at', startDateISO);
+
+            if (answerError) throw answerError;
+
+            // 2. 手動聚合計算每個用戶的答題次數
+            const userAnswerCount = {};
+            answerData.forEach(record => {
+                if (record.user_id) {
+                    userAnswerCount[record.user_id] = (userAnswerCount[record.user_id] || 0) + 1;
+                }
+            });
+
+            // 3. 轉換為陣列並排序
+            const sortedUsers = Object.entries(userAnswerCount)
+                .map(([userId, count]) => ({ user_id: userId, answer_count: count }))
+                .sort((a, b) => b.answer_count - a.answer_count)
+                .slice(0, 100);
+
+            // 4. 取得用戶詳細資料
+            const userIds = sortedUsers.map(u => u.user_id);
+            let usersMap = {};
+
+            if (userIds.length > 0) {
+                const { data: usersData, error: usersError } = await this.supabase
+                    .from('users')
+                    .select('id, username, avatar_url, current_xp, correct_answer_count, current_level')
+                    .in('id', userIds);
+
+                if (usersError) throw usersError;
+
+                usersData.forEach(user => {
+                    usersMap[user.id] = user;
+                });
+            }
+
+            // 5. 組合結果
+            const processedUsers = sortedUsers.map(item => {
+                const user = usersMap[item.user_id] || {};
+                let levelState = { actualLevel: user.current_level || 1 };
+
+                if (typeof LevelSystem !== 'undefined') {
+                    levelState = LevelSystem.calculateState(user.current_xp || 0, user.correct_answer_count || 0);
+                }
+
+                return {
+                    id: item.user_id,
+                    username: user.username || '未知用戶',
+                    avatar_url: user.avatar_url,
+                    answer_count: item.answer_count,
+                    actualLevel: levelState.actualLevel
+                };
+            });
+
+            // 6. 找出當前用戶排名
+            let currentUserRank = -1;
+            let currentUserData = null;
+            let currentUserAnswerCount = 0;
+
+            if (currentUserId) {
+                currentUserAnswerCount = userAnswerCount[currentUserId] || 0;
+
+                const index = processedUsers.findIndex(u => u.id === currentUserId);
+                if (index !== -1) {
+                    currentUserRank = index + 1;
+                    currentUserData = processedUsers[index];
+                } else if (currentUserAnswerCount > 0) {
+                    // 不在前 100 名但有答題記錄
+                    const myProfile = await this.getUserProfile(currentUserId);
+                    if (myProfile.success) {
+                        let myLevelState = { actualLevel: myProfile.data.current_level || 1 };
+                        if (typeof LevelSystem !== 'undefined') {
+                            myLevelState = LevelSystem.calculateState(myProfile.data.current_xp || 0, myProfile.data.correct_answer_count || 0);
+                        }
+
+                        currentUserData = {
+                            id: currentUserId,
+                            username: myProfile.data.username,
+                            avatar_url: myProfile.data.avatar_url,
+                            answer_count: currentUserAnswerCount,
+                            actualLevel: myLevelState.actualLevel
+                        };
+
+                        // 計算排名：有多少人答題次數比我多
+                        currentUserRank = Object.values(userAnswerCount).filter(c => c > currentUserAnswerCount).length + 1;
+                    }
+                } else {
+                    // 沒有答題記錄
+                    const myProfile = await this.getUserProfile(currentUserId);
+                    if (myProfile.success) {
+                        let myLevelState = { actualLevel: myProfile.data.current_level || 1 };
+                        if (typeof LevelSystem !== 'undefined') {
+                            myLevelState = LevelSystem.calculateState(myProfile.data.current_xp || 0, myProfile.data.correct_answer_count || 0);
+                        }
+
+                        currentUserData = {
+                            id: currentUserId,
+                            username: myProfile.data.username,
+                            avatar_url: myProfile.data.avatar_url,
+                            answer_count: 0,
+                            actualLevel: myLevelState.actualLevel
+                        };
+                        currentUserRank = Object.keys(userAnswerCount).length + 1;
+                    }
+                }
+            }
+
+            return {
+                success: true,
+                data: processedUsers,
+                totalParticipants: Object.keys(userAnswerCount).length,
+                currentUserRank,
+                currentUserData,
+                period,
+                periodLabel: period === 'daily' ? '今日' : '本週'
+            };
+
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 取得使用者資料
      */
     async getUserProfile(userId) {
@@ -1322,6 +1470,58 @@ class ApiService {
     }
 
     /**
+     * 取得每日答題總次數
+     */
+    async getAdminDailyAnswers(days = 30) {
+        try {
+            const { data, error } = await this.supabase.rpc('get_admin_daily_answers', { days_limit: days });
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 取得每日活躍用戶數
+     */
+    async getAdminDailyActiveUsers(days = 30) {
+        try {
+            const { data, error } = await this.supabase.rpc('get_admin_daily_active_users', { days_limit: days });
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 取得學習趨勢 (週/月)
+     */
+    async getAdminLearningTrends(period = 'week') {
+        try {
+            const { data, error } = await this.supabase.rpc('get_admin_learning_trends', { period_type: period });
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 取得答題時段分佈
+     */
+    async getAdminAnswerTimeDistribution(days = 30) {
+        try {
+            const { data, error } = await this.supabase.rpc('get_admin_answer_time_distribution', { days_limit: days });
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 新增：取得學員熟練度 (等級) 分佈
      * 回傳長度 6 的陣列，對應：未熟悉、初學、進階、熟練、精通、大師
      */
@@ -1354,6 +1554,45 @@ class ApiService {
             });
 
             return { success: true, data: distribution };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 取得整體正確率趨勢 (week/month)
+     */
+    async getAdminOverallAccuracyTrend(period = 'week') {
+        try {
+            const { data, error } = await this.supabase.rpc('get_admin_overall_accuracy_trend', { period_type: period });
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 取得首次 vs 複習正確率
+     */
+    async getAdminFirstVsReviewAccuracy() {
+        try {
+            const { data, error } = await this.supabase.rpc('get_admin_first_vs_review_accuracy');
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 取得平均達到精熟的複習次數
+     */
+    async getAdminAverageReviewsToMastery() {
+        try {
+            const { data, error } = await this.supabase.rpc('get_admin_average_reviews_to_mastery');
+            if (error) throw error;
+            return { success: true, data };
         } catch (error) {
             return this._handleError(error);
         }
