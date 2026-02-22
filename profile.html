@@ -1262,11 +1262,11 @@
                 }
             }
 
-            // 更新題目數量（已作答 / 題目總數）
+            // 更新題目數量（已作答 / 可存取題目總數）
             const cardCount = document.getElementById('user-card-count');
             if (cardCount) {
                 const answered = userData.answered_questions || 0;
-                const total = userData.total_questions || 0;
+                const total = userData.accessible_questions !== undefined ? userData.accessible_questions : (userData.total_questions || 0);
                 cardCount.textContent = `${answered} / ${total}`;
             }
 

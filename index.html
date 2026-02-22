@@ -480,7 +480,7 @@
                     subject: selectedCategories.size > 0 ? Array.from(selectedCategories) : null
                 };
 
-                const result = await apiService.getQuestions(options);
+                const result = await apiService.getAccessibleQuestions(userId, options);
 
                 if (result.success) {
                     const container = document.getElementById('cards-container');

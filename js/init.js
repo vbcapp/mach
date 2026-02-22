@@ -264,10 +264,10 @@ async function loadUserCards() {
     }
 
     try {
-        const result = await apiService.getQuestions({ userId: currentUser.id, limit: 1000 });
+        const result = await apiService.getAccessibleQuestions(currentUser.id, { limit: 1000 });
 
         if (result.success) {
-            allCards = result.data.questions || [];
+            allCards = result.data.cards || result.data.questions || [];
 
             // 計算答對題數（progress.is_correct === true 或 times_correct > 0）
             const correctCount = allCards.filter(card => {
@@ -297,7 +297,7 @@ async function initFilterButtons() {
 
     // 動態載入章節按鈕
     try {
-        const result = await apiService.getUniqueChapters();
+        const result = await apiService.getAccessibleChaptersList(apiService.currentUser?.id);
         if (result.success && result.data.length > 0) {
             result.data.forEach(chapter => {
                 const btn = document.createElement('button');

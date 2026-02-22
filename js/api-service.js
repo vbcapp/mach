@@ -646,10 +646,23 @@ class ApiService {
 
             if (error) throw error;
 
-            // 取得題目總數（共用題庫）
-            const { count: totalQuestions, error: totalError } = await this.supabase
-                .from('questions')
-                .select('*', { count: 'exact', head: true });
+            // 取得該用戶可存取的題目總數
+            let totalQuestions = 0;
+            const accessResult = await this._getUserAccessibleChapters(userId);
+            if (accessResult.success && accessResult.data.length > 0) {
+                const orConditions = accessResult.data.map(
+                    ch => `and(subject.eq."${ch.subject}",chapter.eq."${ch.chapter}")`
+                ).join(',');
+
+                const { count, error: accessCountError } = await this.supabase
+                    .from('questions')
+                    .select('*', { count: 'exact', head: true })
+                    .or(orConditions);
+
+                if (!accessCountError) {
+                    totalQuestions = count || 0;
+                }
+            }
 
             // 取得該用戶已作答的題目數（user_question_progress 中有記錄的）
             const { count: answeredQuestions, error: answeredError } = await this.supabase
@@ -661,7 +674,7 @@ class ApiService {
                 success: true,
                 data: {
                     ...data,
-                    total_questions: totalQuestions || 0,
+                    accessible_questions: totalQuestions || 0,
                     answered_questions: answeredQuestions || 0,
                     correct_answer_count: data.correct_answer_count || 0
                 }
@@ -752,12 +765,12 @@ class ApiService {
 
     // ==================== 題目相關 ====================
     // ==================== 卡片相關 ====================
-
     /**
-     * 取得學員可存取的章節清單，並回傳對應的題目
-     * 支援透過使用者身上的 tags 與 chapter_access 設定比對權限
+     * 取得學員可存取的章節資訊 (內部防護)
+     * @param {string} userId
+     * @returns {Promise<{success: boolean, data?: Array<{subject: string, chapter: string}>, error?: any}>}
      */
-    async getAccessibleQuestions(userId, options = {}) {
+    async _getUserAccessibleChapters(userId) {
         try {
             if (!userId) {
                 return { success: false, error: 'User ID is required' };
@@ -772,22 +785,18 @@ class ApiService {
 
             if (userError) throw userError;
 
-            // 確保 tags 為陣列格式，若無則預設為空陣列
             const userTags = user.tags || [];
 
             // 2. 取得可存取的章節
-            // 條件：(is_public = true) 或是 (學員的 tags 有包含在 allowed_tags 內)
-            // 在 Supabase 中要比對 JSONB 陣列是否有交集，可透過 PostgREST 的過濾條件
-
-            // 如果 `userTags` 是空陣列，呼叫 filter 會出問題。
-            // 我們可以透過 `or` 條件實作。若沒有 tag，只找 `is_public.eq.true`。
             let fetchAccessQuery = this.supabase
                 .from('chapter_access')
                 .select('subject, chapter');
 
             if (userTags.length > 0) {
-                // 將 userTags 陣列轉換為 JSON 格式字串以便傳遞給 PostgREST 'ov' (overlap) 運算子
-                fetchAccessQuery = fetchAccessQuery.or(`is_public.eq.true,allowed_tags.ov.${JSON.stringify(userTags)}`);
+                // Supabase SDK 的 or 語法，如果對 jsonb array 用 ov 會報錯 jsonb && unknown
+                // 因此改為對每一個 tag 產生一組 cs (contains) 的條件
+                const tagConditions = userTags.map(tag => `allowed_tags.cs.[${JSON.stringify(tag)}]`).join(',');
+                fetchAccessQuery = fetchAccessQuery.or(`is_public.eq.true,${tagConditions}`);
             } else {
                 fetchAccessQuery = fetchAccessQuery.eq('is_public', true);
             }
@@ -796,17 +805,69 @@ class ApiService {
 
             if (accessError) throw accessError;
 
-            // 3. 如果沒有任何可用的章節，直接回傳空陣列
-            if (!accessibleChapters || accessibleChapters.length === 0) {
+            return { success: true, data: accessibleChapters || [] };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 取得學員可存取的章節清單，並回傳對應的題目
+     * 支援透過使用者身上的 tags 與 chapter_access 設定比對權限
+     */
+    async getAccessibleQuestions(userId, options = {}) {
+        try {
+            // 1 & 2. 取得可存取的章節
+            const accessResult = await this._getUserAccessibleChapters(userId);
+            if (!accessResult.success) return accessResult;
+
+            let accessibleChapters = accessResult.data;
+
+            // 如果沒有任何可用的章節，直接回傳空陣列
+            if (accessibleChapters.length === 0) {
                 return {
                     success: true,
                     data: {
-                        questions: [],
+                        cards: [],
                         pagination: {
                             currentPage: options.page || 1,
                             totalPages: 0,
                             totalItems: 0,
                             itemsPerPage: options.limit || 20
+                        }
+                    }
+                };
+            }
+
+            const {
+                searchQuery = null,
+                page = 1,
+                limit = 20,
+                subject = null,
+                chapter = null
+            } = options;
+
+            // 如果前端有傳 subject 或 chapter 進行篩選，進一步過濾 accessibleChapters
+            if (subject) {
+                const subjectFilters = Array.isArray(subject) ? subject : [subject];
+                accessibleChapters = accessibleChapters.filter(ch => subjectFilters.includes(ch.subject));
+            }
+            if (chapter) {
+                const chapterFilters = Array.isArray(chapter) ? chapter : [chapter];
+                accessibleChapters = accessibleChapters.filter(ch => chapterFilters.includes(ch.chapter));
+            }
+
+            // 如果過濾後沒有章節了，一樣回傳空陣列
+            if (accessibleChapters.length === 0) {
+                return {
+                    success: true,
+                    data: {
+                        cards: [],
+                        pagination: {
+                            currentPage: page,
+                            totalPages: 0,
+                            totalItems: 0,
+                            itemsPerPage: limit
                         }
                     }
                 };
@@ -818,13 +879,6 @@ class ApiService {
             const orConditions = accessibleChapters.map(
                 ch => `and(subject.eq."${ch.subject}",chapter.eq."${ch.chapter}")`
             ).join(',');
-
-
-            const {
-                searchQuery = null,
-                page = 1,
-                limit = 20
-            } = options;
 
             let query = this.supabase
                 .from('questions')
@@ -862,7 +916,7 @@ class ApiService {
             return {
                 success: true,
                 data: {
-                    questions: questions,
+                    cards: questions,
                     pagination: {
                         currentPage: page,
                         totalPages: Math.ceil(count / limit),
@@ -1127,10 +1181,25 @@ class ApiService {
 
     /**
      * 取得所有不重複的類別（用於首頁篩選 Modal）
-     * 這是 getUniqueSubjects 的別名，供 index.html 的篩選 Modal 使用
+     * 改為根據用戶權限取得
      */
     async getUniqueCategories(userId) {
-        return this.getUniqueSubjects();
+        if (!userId) return { success: false, error: 'User ID is required' };
+        try {
+            const result = await this._getUserAccessibleChapters(userId);
+            if (!result.success) return result;
+
+            // 提取不重複的 subject
+            const uniqueSubjects = [...new Set(result.data.map(ch => ch.subject).filter(Boolean))];
+
+            // 排序
+            const collator = new Intl.Collator('zh-TW', { numeric: true });
+            uniqueSubjects.sort(collator.compare);
+
+            return { success: true, data: uniqueSubjects };
+        } catch (error) {
+            return this._handleError(error);
+        }
     }
 
     /**
@@ -1150,6 +1219,59 @@ class ApiService {
             data.forEach(item => {
                 if (item.chapter && !chapterMap.has(item.chapter)) {
                     chapterMap.set(item.chapter, item.chapter_no || 999);
+                }
+            });
+
+            // 取得唯一章節並依 chapter_no 排序
+            const uniqueChapters = [...chapterMap.keys()].sort((a, b) => {
+                return (chapterMap.get(a) || 999) - (chapterMap.get(b) || 999);
+            });
+
+            return { success: true, data: uniqueChapters };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 取得學員可存取的章節清單 (純章節名稱陣列，供首頁篩選按鈕使用)
+     * 會先抓取有權限的章節，再與原本的 chapter_no 排序邏輯結合
+     */
+    async getAccessibleChaptersList(userId) {
+        if (!userId) return { success: false, error: 'User ID is required' };
+
+        try {
+            // 1. 取得該用戶有權限的章節資料
+            const accessResult = await this._getUserAccessibleChapters(userId);
+            if (!accessResult.success) return accessResult;
+
+            // 提取有權限的章節名稱 (去重)
+            const allowedChapterNames = [...new Set(accessResult.data.map(ch => ch.chapter).filter(Boolean))];
+
+            if (allowedChapterNames.length === 0) {
+                return { success: true, data: [] };
+            }
+
+            // 2. 獲取排序資訊，只過濾在 allowedChapterNames 裡面的
+            const { data, error } = await this.supabase
+                .from('questions')
+                .select('chapter, chapter_no')
+                .in('chapter', allowedChapterNames);
+
+            if (error) throw error;
+
+            // 建立 chapter -> chapter_no 的對照表
+            const chapterMap = new Map();
+            data.forEach(item => {
+                if (item.chapter && !chapterMap.has(item.chapter)) {
+                    chapterMap.set(item.chapter, item.chapter_no || 999);
+                }
+            });
+
+            // 如果有些章節在題庫中沒有對應的題目 (例如被手動新增章節權限但不含任何題目)，防呆處理
+            allowedChapterNames.forEach(ch => {
+                if (!chapterMap.has(ch)) {
+                    chapterMap.set(ch, 999);
                 }
             });
 

@@ -81,8 +81,7 @@
                 <span class="material-symbols-outlined text-xl block mx-auto mb-1">folder_managed</span>
                 章節
             </button>
-            <button id="tab-btn-users" onclick="switchTab('users')"
-                class="flex-1 py-3 font-black text-sm bg-white">
+            <button id="tab-btn-users" onclick="switchTab('users')" class="flex-1 py-3 font-black text-sm bg-white">
                 <span class="material-symbols-outlined text-xl block mx-auto mb-1">group</span>
                 學員
             </button>
@@ -104,15 +103,15 @@
                     </button>
                 </div>
 
-                <div id="tags-list" class="space-y-3">
-                    <div id="tags-loading" class="text-center py-8">
-                        <span class="material-symbols-outlined animate-spin text-3xl">progress_activity</span>
-                        <p class="text-sm font-bold mt-2">載入中...</p>
-                    </div>
-                    <div id="tags-empty" class="hidden text-center py-8">
-                        <span class="material-symbols-outlined text-6xl text-zinc-300">label_off</span>
-                        <p class="mt-2 text-sm font-bold text-zinc-500">尚無標籤</p>
-                    </div>
+                <div id="tags-loading" class="text-center py-8">
+                    <span class="material-symbols-outlined animate-spin text-3xl">progress_activity</span>
+                    <p class="text-sm font-bold mt-2">載入中...</p>
+                </div>
+                <div id="tags-empty" class="hidden text-center py-8">
+                    <span class="material-symbols-outlined text-6xl text-zinc-300">label_off</span>
+                    <p class="mt-2 text-sm font-bold text-zinc-500">尚無標籤</p>
+                </div>
+                <div id="tags-list" class="space-y-3 hidden">
                 </div>
             </section>
 
@@ -134,11 +133,11 @@
                     <p class="text-xs font-bold">勾選「公開」讓所有學員存取，或選擇特定標籤進行存取控制。</p>
                 </div>
 
-                <div id="chapters-list" class="space-y-4">
-                    <div id="chapters-loading" class="text-center py-8">
-                        <span class="material-symbols-outlined animate-spin text-3xl">progress_activity</span>
-                        <p class="text-sm font-bold mt-2">載入中...</p>
-                    </div>
+                <div id="chapters-loading" class="text-center py-8">
+                    <span class="material-symbols-outlined animate-spin text-3xl">progress_activity</span>
+                    <p class="text-sm font-bold mt-2">載入中...</p>
+                </div>
+                <div id="chapters-list" class="space-y-4 hidden">
                 </div>
             </section>
 
@@ -159,22 +158,25 @@
                 <!-- 搜尋列 -->
                 <div class="relative">
                     <input id="user-search-input" type="text" oninput="searchUsers(this.value)"
-                           class="w-full border-4 border-black p-3 pl-12 font-bold focus:outline-none focus:ring-2 focus:ring-primary"
-                           placeholder="搜尋學員 (名稱或 Email)">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                        class="w-full border-4 border-black p-3 pl-12 font-bold focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="搜尋學員 (名稱或 Email)">
+                    <span
+                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
                 </div>
 
                 <!-- 全選列 -->
                 <div class="flex items-center gap-3 p-2 bg-gray-100 border-2 border-black">
-                    <input type="checkbox" id="select-all-users" onchange="toggleSelectAll()" class="w-5 h-5 border-2 border-black accent-primary">
-                    <label for="select-all-users" class="font-bold text-sm">全選 (<span id="selected-count">0</span> / <span id="total-count">0</span>)</label>
+                    <input type="checkbox" id="select-all-users" onchange="toggleSelectAll()"
+                        class="w-5 h-5 border-2 border-black accent-primary">
+                    <label for="select-all-users" class="font-bold text-sm">全選 (<span id="selected-count">0</span> /
+                        <span id="total-count">0</span>)</label>
                 </div>
 
-                <div id="users-list" class="space-y-2 max-h-[50vh] overflow-y-auto">
-                    <div id="users-loading" class="text-center py-8">
-                        <span class="material-symbols-outlined animate-spin text-3xl">progress_activity</span>
-                        <p class="text-sm font-bold mt-2">載入中...</p>
-                    </div>
+                <div id="users-loading" class="text-center py-8">
+                    <span class="material-symbols-outlined animate-spin text-3xl">progress_activity</span>
+                    <p class="text-sm font-bold mt-2">載入中...</p>
+                </div>
+                <div id="users-list" class="space-y-2 max-h-[50vh] overflow-y-auto hidden">
                 </div>
             </section>
         </main>
@@ -190,27 +192,33 @@
                 <div>
                     <label class="text-xs font-black uppercase tracking-widest mb-2 block">標籤名稱</label>
                     <input id="tag-name-input" type="text"
-                           class="w-full border-4 border-black p-3 font-bold focus:outline-none focus:ring-2 focus:ring-primary"
-                           placeholder="例如：第1梯">
+                        class="w-full border-4 border-black p-3 font-bold focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="例如：第1梯">
                 </div>
                 <div>
                     <label class="text-xs font-black uppercase tracking-widest mb-2 block">標籤顏色</label>
                     <div id="color-options" class="flex gap-2 flex-wrap mb-2">
                         <button type="button" onclick="selectColor('#FFD600')" data-color="#FFD600"
-                            class="color-option w-10 h-10 border-4 border-black" style="background-color: #FFD600"></button>
+                            class="color-option w-10 h-10 border-4 border-black"
+                            style="background-color: #FFD600"></button>
                         <button type="button" onclick="selectColor('#4CAF50')" data-color="#4CAF50"
-                            class="color-option w-10 h-10 border-2 border-black" style="background-color: #4CAF50"></button>
+                            class="color-option w-10 h-10 border-2 border-black"
+                            style="background-color: #4CAF50"></button>
                         <button type="button" onclick="selectColor('#2196F3')" data-color="#2196F3"
-                            class="color-option w-10 h-10 border-2 border-black" style="background-color: #2196F3"></button>
+                            class="color-option w-10 h-10 border-2 border-black"
+                            style="background-color: #2196F3"></button>
                         <button type="button" onclick="selectColor('#9C27B0')" data-color="#9C27B0"
-                            class="color-option w-10 h-10 border-2 border-black" style="background-color: #9C27B0"></button>
+                            class="color-option w-10 h-10 border-2 border-black"
+                            style="background-color: #9C27B0"></button>
                         <button type="button" onclick="selectColor('#FF5722')" data-color="#FF5722"
-                            class="color-option w-10 h-10 border-2 border-black" style="background-color: #FF5722"></button>
+                            class="color-option w-10 h-10 border-2 border-black"
+                            style="background-color: #FF5722"></button>
                         <button type="button" onclick="selectColor('#9E9E9E')" data-color="#9E9E9E"
-                            class="color-option w-10 h-10 border-2 border-black" style="background-color: #9E9E9E"></button>
+                            class="color-option w-10 h-10 border-2 border-black"
+                            style="background-color: #9E9E9E"></button>
                     </div>
                     <input id="tag-color-input" type="color" value="#FFD600" onchange="selectColor(this.value)"
-                           class="w-full h-10 border-4 border-black cursor-pointer">
+                        class="w-full h-10 border-4 border-black cursor-pointer">
                 </div>
             </div>
             <div class="p-4 border-t-2 border-black flex gap-3">
@@ -227,8 +235,10 @@
     </div>
 
     <!-- ==================== 章節權限編輯 Modal ==================== -->
-    <div id="chapter-access-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
-        <div class="bg-white border-4 border-black w-full max-w-sm max-h-[80vh] overflow-hidden shadow-[8px_8px_0px_0px_#FFD600] flex flex-col">
+    <div id="chapter-access-modal"
+        class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
+        <div
+            class="bg-white border-4 border-black w-full max-w-sm max-h-[80vh] overflow-hidden shadow-[8px_8px_0px_0px_#FFD600] flex flex-col">
             <div class="bg-black text-white px-4 py-3 flex-shrink-0">
                 <h3 class="font-black text-lg">編輯章節權限</h3>
                 <p id="chapter-access-subtitle" class="text-sm text-gray-300 mt-1"></p>
@@ -241,9 +251,13 @@
                         <p class="text-xs text-gray-500">啟用後，所有學員都可存取</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="chapter-is-public" onchange="toggleChapterTagsSection()" class="sr-only peer">
-                        <div class="w-12 h-6 bg-gray-300 border-2 border-black peer-checked:bg-green-500 relative transition-colors">
-                            <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-black transition-transform peer-checked:translate-x-6"></div>
+                        <input type="checkbox" id="chapter-is-public" onchange="toggleChapterTagsSection()"
+                            class="sr-only peer">
+                        <div
+                            class="w-12 h-6 bg-gray-300 border-2 border-black peer-checked:bg-green-500 relative transition-colors">
+                            <div
+                                class="absolute top-0.5 left-0.5 w-4 h-4 bg-black transition-transform peer-checked:translate-x-6">
+                            </div>
                         </div>
                     </label>
                 </div>
@@ -268,7 +282,8 @@
 
     <!-- ==================== 學員標籤編輯 Modal ==================== -->
     <div id="user-tag-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
-        <div class="bg-white border-4 border-black w-full max-w-sm max-h-[80vh] overflow-hidden shadow-[8px_8px_0px_0px_#FFD600] flex flex-col">
+        <div
+            class="bg-white border-4 border-black w-full max-w-sm max-h-[80vh] overflow-hidden shadow-[8px_8px_0px_0px_#FFD600] flex flex-col">
             <div class="bg-black text-white px-4 py-3 flex-shrink-0">
                 <h3 class="font-black text-lg">編輯學員標籤</h3>
                 <p id="user-tag-modal-subtitle" class="text-sm text-gray-300 mt-1"></p>
@@ -417,6 +432,7 @@
             const empty = document.getElementById('tags-empty');
             const list = document.getElementById('tags-list');
 
+            list.classList.add('hidden');
             loading.classList.remove('hidden');
             empty.classList.add('hidden');
 
@@ -442,15 +458,15 @@
 
             if (allTags.length === 0) {
                 empty.classList.remove('hidden');
-                // 只移除動態生成的標籤項目
-                list.querySelectorAll('.tag-item').forEach(el => el.remove());
+                list.classList.add('hidden');
                 return;
             }
 
             empty.classList.add('hidden');
+            list.classList.remove('hidden');
 
             // 移除舊的標籤項目
-            list.querySelectorAll('.tag-item').forEach(el => el.remove());
+            list.innerHTML = '';
 
             // 加入新的標籤項目
             allTags.forEach(tag => {
@@ -563,6 +579,7 @@
             const loading = document.getElementById('chapters-loading');
             const list = document.getElementById('chapters-list');
 
+            list.classList.add('hidden');
             loading.classList.remove('hidden');
 
             // 確保標籤已載入
@@ -591,6 +608,7 @@
             const loading = document.getElementById('chapters-loading');
 
             loading.classList.add('hidden');
+            list.classList.remove('hidden');
 
             if (allChapterAccess.length === 0) {
                 list.innerHTML = `
@@ -776,8 +794,10 @@
         // ==================== 學員標籤管理 ====================
         async function loadUsers() {
             const loading = document.getElementById('users-loading');
+            const list = document.getElementById('users-list');
 
-            loading.classList.remove('hidden');
+            if (list) list.classList.add('hidden');
+            if (loading) loading.classList.remove('hidden');
 
             // 確保標籤已載入
             if (allTags.length === 0) {
@@ -807,6 +827,7 @@
             const loading = document.getElementById('users-loading');
 
             loading.classList.add('hidden');
+            list.classList.remove('hidden');
 
             if (filteredUsers.length === 0) {
                 list.innerHTML = `
@@ -841,9 +862,9 @@
                                onchange="toggleUserSelection('${user.id}')">
                         <div class="w-10 h-10 border-2 border-black bg-gray-200 flex-shrink-0 overflow-hidden flex items-center justify-center">
                             ${user.avatar_url
-                                ? `<img src="${user.avatar_url}" class="w-full h-full object-cover">`
-                                : '<span class="material-symbols-outlined text-2xl text-gray-400">person</span>'
-                            }
+                        ? `<img src="${user.avatar_url}" class="w-full h-full object-cover">`
+                        : '<span class="material-symbols-outlined text-2xl text-gray-400">person</span>'
+                    }
                         </div>
                         <div class="flex-grow min-w-0">
                             <p class="font-black truncate">${escapeHtml(user.username || '未命名')}</p>
