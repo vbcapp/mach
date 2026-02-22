@@ -142,8 +142,8 @@
                 </div>
                 <h1 class="text-xl font-black italic tracking-tighter">美青勞資事務師</h1>
             </div>
-            <button onclick="window.location.href='create.html'"
-                class="w-10 h-10 neo-border-thick bg-primary flex items-center justify-center neo-shadow-sm active:shadow-none active:translate-x-[1px] active:translate-y-[1px]">
+            <button id="admin-create-btn" onclick="window.location.href='create.html'"
+                class="w-10 h-10 neo-border-thick bg-primary flex items-center justify-center neo-shadow-sm active:shadow-none active:translate-x-[1px] active:translate-y-[1px] hidden">
                 <span class="material-symbols-outlined text-black font-bold">add</span>
             </button>
         </header>
@@ -583,6 +583,26 @@
             // Check for onboarding
             if (typeof OnboardingSystem !== 'undefined') {
                 OnboardingSystem.checkAndShow();
+            }
+        });
+
+        // 管理員按鈕顯示控制
+        window.addEventListener('load', () => {
+            const checkAdmin = () => {
+                const currentUser = apiService?.currentUser;
+                if (currentUser && typeof ADMIN_UUIDS !== 'undefined' && ADMIN_UUIDS.includes(currentUser.id)) {
+                    const adminBtn = document.getElementById('admin-create-btn');
+                    if (adminBtn) {
+                        adminBtn.classList.remove('hidden');
+                    }
+                }
+            };
+
+            // 延遲檢查，確保 apiService 已初始化
+            if (apiService?.currentUser) {
+                checkAdmin();
+            } else {
+                setTimeout(checkAdmin, 500);
             }
         });
     </script>
