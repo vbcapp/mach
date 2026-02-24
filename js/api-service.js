@@ -2650,6 +2650,137 @@ class ApiService {
         }
     }
 
+    // ==================== 遊戲化驅動力系統 API ====================
+
+    /**
+     * T002 - 取得今日新增熟練題數
+     * @param {string} userId - 用戶 ID
+     * @returns {Promise<{success: boolean, data: {todayMastered, weekMastered, consecutiveDays, yesterdayMastered}}>}
+     */
+    async getTodayMasteredCount(userId) {
+        try {
+            if (!userId) {
+                return { success: false, error: 'User ID is required' };
+            }
+
+            // 定義時間範圍
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const yesterdayStart = new Date(todayStart);
+            yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+            const weekAgoStart = new Date(todayStart);
+            weekAgoStart.setDate(weekAgoStart.getDate() - 7);
+
+            // 1. 查詢所有熟練題目 (times_correct >= 3)
+            const { data: allMastered, error: allError } = await this.supabase
+                .from('user_question_progress')
+                .select('question_id, times_correct, updated_at')
+                .eq('user_id', userId)
+                .gte('times_correct', 3);
+
+            if (allError) throw allError;
+
+            if (!allMastered || allMastered.length === 0) {
+                return {
+                    success: true,
+                    data: {
+                        todayMastered: 0,
+                        weekMastered: 0,
+                        consecutiveDays: 0,
+                        yesterdayMastered: 0
+                    }
+                };
+            }
+
+            // 2. 一次性查詢所有答對記錄（優化效能）
+            const masteredQuestionIds = allMastered.map(q => q.question_id);
+            const { data: allCorrectRecords, error: recordsError } = await this.supabase
+                .from('answer_records')
+                .select('question_id, created_at')
+                .eq('user_id', userId)
+                .in('question_id', masteredQuestionIds)
+                .eq('is_correct', true)
+                .order('created_at', { ascending: true });
+
+            if (recordsError) throw recordsError;
+
+            // 3. 按題目分組答對記錄
+            const recordsByQuestion = {};
+            allCorrectRecords?.forEach(record => {
+                if (!recordsByQuestion[record.question_id]) {
+                    recordsByQuestion[record.question_id] = [];
+                }
+                recordsByQuestion[record.question_id].push(new Date(record.created_at));
+            });
+
+            // 4. 計算每個題目達到熟練（第 3 次答對）的時間
+            const masteryTimes = [];
+            for (const questionId of masteredQuestionIds) {
+                const correctTimes = recordsByQuestion[questionId];
+                if (correctTimes && correctTimes.length >= 3) {
+                    masteryTimes.push({
+                        questionId: questionId,
+                        masteredAt: correctTimes[2] // 第 3 次答對的時間
+                    });
+                }
+            }
+
+            // 5. 統計今日、昨日、本週新增熟練數
+            let todayMastered = 0;
+            let yesterdayMastered = 0;
+            let weekMastered = 0;
+
+            masteryTimes.forEach(({ masteredAt }) => {
+                if (masteredAt >= todayStart) {
+                    todayMastered++;
+                    weekMastered++;
+                } else if (masteredAt >= yesterdayStart) {
+                    yesterdayMastered++;
+                    weekMastered++;
+                } else if (masteredAt >= weekAgoStart) {
+                    weekMastered++;
+                }
+            });
+
+            // 6. 計算連續天數（從今天往回檢查）
+            // 將達到熟練的日期按天分組
+            const masteryByDate = {};
+            masteryTimes.forEach(({ masteredAt }) => {
+                const dateKey = masteredAt.toISOString().split('T')[0]; // YYYY-MM-DD
+                if (!masteryByDate[dateKey]) {
+                    masteryByDate[dateKey] = 0;
+                }
+                masteryByDate[dateKey]++;
+            });
+
+            let consecutiveDays = 0;
+            let checkDate = new Date(todayStart);
+
+            for (let i = 0; i < 365; i++) { // 最多檢查 365 天
+                const dateKey = checkDate.toISOString().split('T')[0];
+
+                if (masteryByDate[dateKey] && masteryByDate[dateKey] > 0) {
+                    consecutiveDays++;
+                    checkDate.setDate(checkDate.getDate() - 1); // 往前一天
+                } else {
+                    break; // 中斷連續
+                }
+            }
+
+            return {
+                success: true,
+                data: {
+                    todayMastered: todayMastered,
+                    weekMastered: weekMastered,
+                    consecutiveDays: consecutiveDays,
+                    yesterdayMastered: yesterdayMastered
+                }
+            };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
     // ==================== 考卷建立相關 ====================
 
     /**
