@@ -2781,6 +2781,98 @@ class ApiService {
         }
     }
 
+    /**
+     * T003 - 取得本次 vs 歷史正確率
+     * @param {string} userId - 用戶 ID
+     * @param {number} recentCount - 最近幾題（預設 10）
+     * @returns {Promise<{success: boolean, data: {recentAccuracy, historicalAccuracy, improvement, recentCount, historicalCount, isBestPerformance}}>}
+     */
+    async getRecentVsHistoricalAccuracy(userId, recentCount = 10) {
+        try {
+            if (!userId) {
+                return { success: false, error: 'User ID is required' };
+            }
+
+            // 1. 查詢所有答題記錄（按時間排序，最新的在前）
+            const { data: allRecords, error: allError } = await this.supabase
+                .from('answer_records')
+                .select('is_correct, created_at')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (allError) throw allError;
+
+            // 2. 處理無記錄或記錄不足的情況
+            if (!allRecords || allRecords.length === 0) {
+                return {
+                    success: true,
+                    data: {
+                        recentAccuracy: 0,
+                        historicalAccuracy: 0,
+                        improvement: 0,
+                        recentCount: 0,
+                        historicalCount: 0,
+                        isBestPerformance: false
+                    }
+                };
+            }
+
+            const totalCount = allRecords.length;
+
+            // 3. 取得最近 N 題
+            const actualRecentCount = Math.min(recentCount, totalCount);
+            const recentRecords = allRecords.slice(0, actualRecentCount);
+
+            // 4. 計算最近 N 題正確率
+            const recentCorrect = recentRecords.filter(r => r.is_correct).length;
+            const recentAccuracy = actualRecentCount > 0
+                ? Math.round((recentCorrect / actualRecentCount) * 100)
+                : 0;
+
+            // 5. 計算歷史平均正確率
+            const historicalCorrect = allRecords.filter(r => r.is_correct).length;
+            const historicalAccuracy = totalCount > 0
+                ? Math.round((historicalCorrect / totalCount) * 100)
+                : 0;
+
+            // 6. 計算進步幅度
+            const improvement = recentAccuracy - historicalAccuracy;
+
+            // 7. 判斷是否為最佳表現
+            // 策略：檢查是否有任何連續 N 題的正確率超過當前最近 N 題
+            let isBestPerformance = true;
+
+            if (totalCount >= recentCount) {
+                // 滑動窗口檢查所有連續 N 題的正確率
+                for (let i = 0; i <= totalCount - recentCount; i++) {
+                    const windowRecords = allRecords.slice(i, i + recentCount);
+                    const windowCorrect = windowRecords.filter(r => r.is_correct).length;
+                    const windowAccuracy = Math.round((windowCorrect / recentCount) * 100);
+
+                    // 如果有任何窗口的正確率高於當前最近 N 題（且不是同一個窗口），則不是最佳表現
+                    if (i !== 0 && windowAccuracy > recentAccuracy) {
+                        isBestPerformance = false;
+                        break;
+                    }
+                }
+            }
+
+            return {
+                success: true,
+                data: {
+                    recentAccuracy: recentAccuracy,
+                    historicalAccuracy: historicalAccuracy,
+                    improvement: improvement,
+                    recentCount: actualRecentCount,
+                    historicalCount: totalCount,
+                    isBestPerformance: isBestPerformance
+                }
+            };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
     // ==================== 考卷建立相關 ====================
 
     /**
