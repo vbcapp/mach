@@ -2873,6 +2873,133 @@ class ApiService {
         }
     }
 
+    /**
+     * T004 - 取得錯誤選項分析
+     * 分析學員最常選的錯誤選項，找出思維盲點
+     * @param {string} userId - 用戶 ID
+     * @param {number} limit - 返回前 N 個錯最多的題目（預設 5）
+     * @returns {Promise<{success: boolean, data: Array}>}
+     */
+    async getWrongAnswerPatterns(userId, limit = 5) {
+        try {
+            if (!userId) {
+                return { success: false, error: 'User ID is required' };
+            }
+
+            // 1. 查詢所有錯誤答題記錄（含用戶答案）
+            const { data: wrongRecords, error: wrongError } = await this.supabase
+                .from('answer_records')
+                .select('question_id, user_answer, created_at')
+                .eq('user_id', userId)
+                .eq('is_correct', false)
+                .order('created_at', { ascending: false });
+
+            if (wrongError) throw wrongError;
+
+            // 2. 處理無錯誤記錄的情況
+            if (!wrongRecords || wrongRecords.length === 0) {
+                return {
+                    success: true,
+                    data: []
+                };
+            }
+
+            // 3. 按 question_id 分組統計錯誤次數與錯誤答案分布
+            const questionStats = {};
+            wrongRecords.forEach(record => {
+                const qid = record.question_id;
+
+                if (!questionStats[qid]) {
+                    questionStats[qid] = {
+                        questionId: qid,
+                        timesWrong: 0,
+                        wrongAnswerCounts: {}
+                    };
+                }
+
+                questionStats[qid].timesWrong++;
+
+                // 統計各錯誤選項的次數
+                const userAnswer = record.user_answer;
+                let answerKey = JSON.stringify(userAnswer); // 將答案轉為字串作為 key
+
+                if (!questionStats[qid].wrongAnswerCounts[answerKey]) {
+                    questionStats[qid].wrongAnswerCounts[answerKey] = {
+                        count: 0,
+                        answer: userAnswer
+                    };
+                }
+                questionStats[qid].wrongAnswerCounts[answerKey].count++;
+            });
+
+            // 4. 排序：錯誤次數最多的題目
+            const sortedQuestions = Object.values(questionStats)
+                .sort((a, b) => b.timesWrong - a.timesWrong)
+                .slice(0, limit);
+
+            // 5. 查詢這些題目的詳細資訊
+            const questionIds = sortedQuestions.map(q => q.questionId);
+
+            if (questionIds.length === 0) {
+                return {
+                    success: true,
+                    data: []
+                };
+            }
+
+            const { data: questions, error: questionsError } = await this.supabase
+                .from('questions')
+                .select('id, question, subject, chapter, options, correct_answer, question_type')
+                .in('id', questionIds);
+
+            if (questionsError) throw questionsError;
+
+            // 6. 合併統計數據與題目詳情
+            const result = sortedQuestions.map(stat => {
+                const questionData = questions.find(q => q.id === stat.questionId);
+
+                if (!questionData) return null;
+
+                // 找出最常選的錯誤答案
+                const wrongAnswersArray = Object.values(stat.wrongAnswerCounts)
+                    .sort((a, b) => b.count - a.count);
+
+                const mostCommonWrongAnswer = wrongAnswersArray.length > 0
+                    ? wrongAnswersArray[0].answer
+                    : null;
+
+                // 轉換 wrongAnswerCounts 為更易讀的格式
+                const wrongAnswerDistribution = {};
+                wrongAnswersArray.forEach(item => {
+                    const answerStr = Array.isArray(item.answer)
+                        ? item.answer.join(', ')
+                        : String(item.answer);
+                    wrongAnswerDistribution[answerStr] = item.count;
+                });
+
+                return {
+                    questionId: stat.questionId,
+                    question: questionData.question,
+                    subject: questionData.subject,
+                    chapter: questionData.chapter,
+                    timesWrong: stat.timesWrong,
+                    mostCommonWrongAnswer: mostCommonWrongAnswer,
+                    wrongAnswerCounts: wrongAnswerDistribution,
+                    correctAnswer: questionData.correct_answer,
+                    options: questionData.options,
+                    questionType: questionData.question_type
+                };
+            }).filter(item => item !== null);
+
+            return {
+                success: true,
+                data: result
+            };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
     // ==================== 考卷建立相關 ====================
 
     /**

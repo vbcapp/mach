@@ -150,7 +150,7 @@ async getRecentVsHistoricalAccuracy(userId, recentCount = 10)
 
 ### T004 - 實作錯誤選項分析 API
 **優先級：** 🔴 極高
-**狀態：** ⏳ 待開始
+**狀態：** ✅ 已完成
 **負責人：** 後端開發
 **相依性：** 無（使用現有資料）
 
@@ -192,9 +192,9 @@ async getWrongAnswerPatterns(userId, limit = 5)
 5. Join `questions` 表取得題目詳情
 
 **測試案例：**
-- [ ] 有多個錯誤選項的題目
-- [ ] 只錯一次的題目
-- [ ] 無錯誤記錄
+- [x] 有多個錯誤選項的題目
+- [x] 只錯一次的題目
+- [x] 無錯誤記錄
 
 **預計時間：** 3 小時
 **參考文件：** `database.md` - `answer_records`, `questions` 表
@@ -628,7 +628,7 @@ async submitAnswer(userId, questionId, userAnswer, isCorrect, responseTimeMs) {
 | Phase | 完成度 | 預計完成日期 |
 |-------|--------|-------------|
 | Phase 1: 資料庫建置 | ✅ 100% | 2026-02-24 |
-| Phase 2: API 開發 | 25% (2/8) | 進行中 |
+| Phase 2: API 開發 | 38% (3/8) | 進行中 |
 | Phase 3: 前端整合 | 0% | 待定 |
 | Phase 4: 文件更新 | 0% | 待定 |
 
