@@ -628,7 +628,7 @@ async submitAnswer(userId, questionId, userAnswer, isCorrect, responseTimeMs) {
 | Phase | 完成度 | 預計完成日期 |
 |-------|--------|-------------|
 | Phase 1: 資料庫建置 | ✅ 100% | 2026-02-24 |
-| Phase 2: API 開發 | 12.5% (1/8) | 進行中 |
+| Phase 2: API 開發 | 25% (2/8) | 進行中 |
 | Phase 3: 前端整合 | 0% | 待定 |
 | Phase 4: 文件更新 | 0% | 待定 |
 
