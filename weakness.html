@@ -82,6 +82,7 @@
     <script src="js/level-system.js"></script>
     <script src="js/api-service.js"></script>
     <script src="js/ai-service.js"></script>
+    <script src="js/components/bottom-nav.js"></script>
 
     <style>
         /* AI 分析卡片內容樣式 */
@@ -591,37 +592,8 @@
             </div>
         </main>
 
-        <nav
-            class="fixed bottom-0 w-full max-w-[430px] bg-white dark:bg-zinc-900 border-t-thick border-black flex justify-around items-center px-2 py-4 pb-8 z-50">
-            <button onclick="window.location.href='index.html'" class="flex flex-col items-center gap-1 group">
-                <div
-                    class="size-11 flex items-center justify-center neo-border neo-shadow-sm bg-white group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none transition-transform">
-                    <span class="material-symbols-outlined text-2xl font-bold">style</span>
-                </div>
-                <span class="text-[9px] font-black uppercase">單字卡</span>
-            </button>
-            <button class="flex flex-col items-center gap-1 group cursor-default">
-                <div
-                    class="size-14 -mt-8 flex items-center justify-center neo-border-thick neo-shadow bg-primary group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none transition-transform">
-                    <span class="material-symbols-outlined text-3xl font-black">analytics</span>
-                </div>
-                <span class="text-[10px] font-black uppercase">弱點分析</span>
-            </button>
-            <button onclick="window.location.href='rank.html'" class="flex flex-col items-center gap-1 group">
-                <div
-                    class="size-11 flex items-center justify-center neo-border neo-shadow-sm bg-white group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none transition-transform">
-                    <span class="material-symbols-outlined text-2xl font-bold">trophy</span>
-                </div>
-                <span class="text-[9px] font-black uppercase">排行榜</span>
-            </button>
-            <button onclick="window.location.href='profile.html'" class="flex flex-col items-center gap-1 group">
-                <div
-                    class="size-11 flex items-center justify-center neo-border neo-shadow-sm bg-white group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none transition-transform">
-                    <span class="material-symbols-outlined text-2xl font-bold">person</span>
-                </div>
-                <span class="text-[9px] font-black uppercase">個人</span>
-            </button>
-        </nav>
+        <!-- Bottom Navigation Component -->
+        <div id="bottom-nav" data-active-page="weakness"></div>
     </div>
 
     <script>

@@ -6,9 +6,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>美青勞資事務師 - 排行榜入口 (圖示修復版)</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&amp;family=Space+Mono:wght@400;700&amp;display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&amp;display=swap" rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         rel="stylesheet" />
@@ -23,8 +21,7 @@
                         "background-dark": "#1A1A1A",
                     },
                     fontFamily: {
-                        display: ["Noto Sans TC", "sans-serif"],
-                        mono: ["Space Mono", "monospace"],
+                        display: ["Inter", "sans-serif"],
                     },
                     boxShadow: {
                         'brutal': '4px 4px 0px 0px rgba(0,0,0,1)',
@@ -37,7 +34,7 @@
     </script>
     <style type="text/tailwindcss">
         body {
-            font-family: 'Noto Sans TC', sans-serif;
+            font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
             min-height: 100dvh;
         }
@@ -58,12 +55,9 @@
             box-shadow: 6px 6px 0px 0px black;
         }
         .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+            font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
             display: inline-block;
             line-height: 1;
-        }
-        .material-symbols-outlined.fill-1 {
-            font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
         }
         .neo-nav-active {
             border: 3px solid black;
@@ -118,37 +112,9 @@
                 </a>
             </div>
         </main>
-        <nav
-            class="fixed bottom-0 w-full max-w-[430px] bg-white dark:bg-zinc-900 border-t-thick border-black flex justify-around items-center px-2 py-4 pb-8 z-50">
-            <button onclick="window.location.href='index.html'" class="flex flex-col items-center gap-1 group">
-                <div
-                    class="size-11 flex items-center justify-center neo-border neo-shadow-sm bg-white group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none">
-                    <span class="material-symbols-outlined text-2xl font-bold">style</span>
-                </div>
-                <span class="text-[9px] font-black uppercase">單字卡</span>
-            </button>
-            <button onclick="window.location.href='weakness.html'" class="flex flex-col items-center gap-1 group">
-                <div
-                    class="size-11 flex items-center justify-center neo-border neo-shadow-sm bg-white group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none">
-                    <span class="material-symbols-outlined text-2xl font-bold">analytics</span>
-                </div>
-                <span class="text-[10px] font-black uppercase">弱點分析</span>
-            </button>
-            <button class="flex flex-col items-center gap-1 group">
-                <div
-                    class="size-14 -mt-8 flex items-center justify-center neo-border-thick neo-shadow bg-primary group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none">
-                    <span class="material-symbols-outlined text-3xl font-black">trophy</span>
-                </div>
-                <span class="text-[10px] font-black uppercase">排行榜</span>
-            </button>
-            <button onclick="window.location.href='profile.html'" class="flex flex-col items-center gap-1 group">
-                <div
-                    class="size-11 flex items-center justify-center neo-border neo-shadow-sm bg-white group-active:translate-y-0.5 group-active:translate-x-0.5 group-active:shadow-none">
-                    <span class="material-symbols-outlined text-2xl font-bold">person</span>
-                </div>
-                <span class="text-[9px] font-black uppercase">個人</span>
-            </button>
-        </nav>
+        <!-- Bottom Navigation Component -->
+        <div id="bottom-nav" data-active-page="rank"></div>
+        <script src="js/components/bottom-nav.js"></script>
     </div>
 </body>
 
