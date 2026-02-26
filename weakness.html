@@ -359,6 +359,94 @@
         </div>
     </div>
 
+    <!-- 本次答題表現說明 Modal -->
+    <div id="performance-info-modal" class="modal-overlay" onclick="closePerformanceInfoModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">show_chart</span>
+                    <span class="font-black text-sm uppercase">什麼是「本次答題表現」？</span>
+                </div>
+                <button class="modal-close" onclick="closePerformanceInfoModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="space-y-4 text-sm">
+                    <!-- 定義說明 -->
+                    <div class="flex items-start gap-3 bg-blue-50 border-2 border-blue-400 p-3">
+                        <span class="text-2xl shrink-0">📊</span>
+                        <div>
+                            <div class="font-black text-base mb-1">定義說明</div>
+                            <p class="text-sm leading-relaxed">
+                                「本次答題表現」統計你<strong class="text-blue-600 font-black">最近 10 題</strong>的正確率，並與你的<strong class="font-black">歷史平均正確率</strong>做比較。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 為什麼要比較 -->
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl shrink-0">🎯</span>
+                        <div>
+                            <div class="font-black text-base mb-1">為什麼要比較？</div>
+                            <p class="text-sm leading-relaxed">
+                                透過比較，你可以清楚看到自己<strong class="font-black">是否在進步</strong>，還是遇到了學習瓶頸需要調整策略。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 如何解讀 -->
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl shrink-0">💡</span>
+                        <div>
+                            <div class="font-black text-base mb-1">如何解讀？</div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex items-start gap-2">
+                                    <span class="text-green-600 font-bold">📈</span>
+                                    <div>
+                                        <span class="font-bold text-green-600">高於平均：</span>
+                                        <span class="text-gray-700">狀態好！保持專注繼續努力</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="text-gray-600 font-bold">➡️</span>
+                                    <div>
+                                        <span class="font-bold text-gray-600">持平：</span>
+                                        <span class="text-gray-700">維持穩定，可再挑戰難題</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-2">
+                                    <span class="text-red-600 font-bold">📉</span>
+                                    <div>
+                                        <span class="font-bold text-red-600">低於平均：</span>
+                                        <span class="text-gray-700">需要休息或複習基礎觀念</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 建議 -->
+                    <div class="bg-yellow-50 border-2 border-yellow-400 p-3">
+                        <div class="flex items-start gap-2">
+                            <span class="text-lg shrink-0">⭐</span>
+                            <div>
+                                <div class="font-black text-sm mb-1">小提醒</div>
+                                <p class="text-xs leading-relaxed text-gray-700">
+                                    如果連續多次低於平均，別氣餒！這可能代表系統正推薦更難的題目給你，是學習進階的好機會。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 關閉按鈕 -->
+                <button onclick="closePerformanceInfoModal()"
+                    class="w-full bg-blue-500 text-white border-4 border-black py-3 px-4 font-black text-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mt-4 hover:bg-blue-600">
+                    我知道了！
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto border-x-2 border-black/5">
         <header class="bg-primary pt-12 pb-6 px-6 border-b-8 border-black sticky top-0 z-40">
             <div class="flex items-center gap-4 mb-2">
@@ -515,6 +603,10 @@
                     <div class="flex items-center gap-2 mb-2">
                         <span class="material-symbols-outlined text-blue-600 text-xl">show_chart</span>
                         <span class="text-xs font-black uppercase">本次答題表現</span>
+                        <button onclick="showPerformanceInfoModal()"
+                            class="w-5 h-5 bg-blue-500 text-white border-2 border-black rounded-full flex items-center justify-center text-xs font-black hover:bg-blue-600 hover:scale-110 transition-transform cursor-pointer">
+                            ?
+                        </button>
                     </div>
                     <div class="flex items-center justify-between">
                         <div class="flex-1">
@@ -1692,6 +1784,26 @@
         }
 
         /**
+         * 顯示本次答題表現說明彈窗
+         */
+        function showPerformanceInfoModal() {
+            const modal = document.getElementById('performance-info-modal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        /**
+         * 關閉本次答題表現說明彈窗
+         */
+        function closePerformanceInfoModal(event) {
+            if (!event || event.target.id === 'performance-info-modal') {
+                const modal = document.getElementById('performance-info-modal');
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        /**
          * 儲存考試設定
          */
         async function saveExamSettings() {
@@ -1772,6 +1884,8 @@
             if (e.key === 'Escape') {
                 closeAIAnalysisModal();
                 closeExamSettingsModal();
+                closeMasteryInfoModal();
+                closePerformanceInfoModal();
             }
         });
     </script>
