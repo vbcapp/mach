@@ -95,7 +95,7 @@ const BottomNav = {
                 id: 'index',
                 href: 'index.html',
                 icon: 'style',
-                label: '單字卡'
+                label: '題目卡'
             },
             {
                 id: 'weakness',
