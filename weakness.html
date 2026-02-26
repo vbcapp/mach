@@ -254,6 +254,71 @@
         </header>
 
         <main class="flex-grow p-4">
+            <!-- 📅 考試倒數區塊 -->
+            <div id="exam-countdown-section" class="mb-6 hidden">
+                <div class="neo-brutalism-card bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-purple-600 text-xl">event</span>
+                            <span class="text-xs font-black uppercase">考試倒數</span>
+                        </div>
+                        <button onclick="window.location.href='profile.html'"
+                                class="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">settings</span>
+                            設定
+                        </button>
+                    </div>
+                    <div class="mb-3">
+                        <div class="flex items-baseline gap-2 mb-1">
+                            <span class="text-3xl font-black text-purple-600" id="countdown-days">--</span>
+                            <span class="text-sm font-bold text-gray-600">天</span>
+                            <span class="text-xs text-gray-500" id="exam-name-display">（--）</span>
+                        </div>
+                        <div class="text-[10px] text-gray-500">
+                            考試日期：<span id="exam-date-display" class="font-bold">--</span>
+                        </div>
+                    </div>
+                    <!-- 完成進度 -->
+                    <div class="mb-3">
+                        <div class="flex justify-between items-baseline mb-1">
+                            <span class="text-[10px] font-bold text-gray-600 uppercase">你的完成進度</span>
+                            <span id="progress-percent" class="text-sm font-black text-purple-600">--%</span>
+                        </div>
+                        <div class="h-4 neo-border bg-white overflow-hidden mb-1">
+                            <div id="progress-bar" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <div class="text-[10px] text-gray-500">
+                            已熟練：<span id="mastered-count" class="font-bold text-black">--</span> /
+                            <span id="total-questions" class="font-bold">--</span> 題
+                        </div>
+                    </div>
+                    <!-- 預估完成 -->
+                    <div id="estimation-section" class="bg-white/60 border-2 border-black p-3">
+                        <div class="text-[10px] mb-1">
+                            💡 <span class="font-bold">以目前速度</span>（每日 <span id="current-speed" class="font-bold text-purple-600">--</span> 題熟練）
+                        </div>
+                        <div id="estimation-text" class="text-xs font-bold text-gray-700 mb-2">
+                            <!-- 預估文字會由 JS 填入 -->
+                        </div>
+                        <div id="suggestion-text" class="text-[10px] text-orange-600 font-bold">
+                            <!-- 建議文字會由 JS 填入 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 未設定考試時的提示 -->
+            <div id="exam-not-set-hint" class="mb-6">
+                <div class="neo-brutalism-card bg-gradient-to-br from-gray-50 to-gray-100 p-4 text-center">
+                    <span class="material-symbols-outlined text-gray-300 text-3xl mb-2 block">event_busy</span>
+                    <p class="text-xs font-bold text-gray-500 mb-2">尚未設定考試日期</p>
+                    <button onclick="window.location.href='profile.html'"
+                            class="px-4 py-2 neo-border bg-primary font-black text-xs hover:bg-yellow-400">
+                        前往設定 →
+                    </button>
+                </div>
+            </div>
+
             <!-- 🎯 即時成就感模組 -->
             <div class="mb-6 space-y-3">
                 <div class="flex items-center gap-2 mb-2">
@@ -586,14 +651,20 @@
                 const userId = apiService.currentUser.id;
 
                 // 並行載入所有數據
-                const [statsResult, weaknessResult, analysisState, todayMasteredResult, recentAccuracyResult, wrongPatternsResult] = await Promise.all([
+                const [statsResult, weaknessResult, analysisState, todayMasteredResult, recentAccuracyResult, wrongPatternsResult, examSettings] = await Promise.all([
                     apiService.getWeaknessStats(userId),
                     apiService.getWeaknessList(userId, 30),
                     apiService.checkTodayAnalysisExists(userId),
                     apiService.getTodayMasteredCount(userId),
                     apiService.getRecentVsHistoricalAccuracy(userId, 10),
-                    apiService.getWrongAnswerPatterns(userId, 5)
+                    apiService.getWrongAnswerPatterns(userId, 5),
+                    loadExamSettings(userId)
                 ]);
+
+                // 渲染考試倒數
+                if (examSettings) {
+                    renderExamCountdown(examSettings, statsResult.data);
+                }
 
                 // 渲染即時成就感模組
                 if (todayMasteredResult.success) {
@@ -662,6 +733,126 @@
                 loadingOverlay.classList.add('hidden');
             }
         });
+
+        /**
+         * 載入考試設定
+         */
+        async function loadExamSettings(userId) {
+            try {
+                const { data, error } = await apiService.supabase
+                    .from('users')
+                    .select('exam_name, exam_date, daily_goal')
+                    .eq('id', userId)
+                    .single();
+
+                if (error) throw error;
+                return data;
+            } catch (error) {
+                console.error('載入考試設定失敗:', error);
+                return null;
+            }
+        }
+
+        /**
+         * 渲染考試倒數
+         */
+        function renderExamCountdown(examSettings, stats) {
+            const countdownSection = document.getElementById('exam-countdown-section');
+            const notSetHint = document.getElementById('exam-not-set-hint');
+
+            // 檢查是否有設定考試日期
+            if (!examSettings || !examSettings.exam_date || !examSettings.exam_name) {
+                countdownSection.classList.add('hidden');
+                notSetHint.classList.remove('hidden');
+                return;
+            }
+
+            // 隱藏未設定提示，顯示倒數區塊
+            notSetHint.classList.add('hidden');
+            countdownSection.classList.remove('hidden');
+
+            // 計算剩餘天數
+            const examDate = new Date(examSettings.exam_date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const daysRemaining = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
+
+            // 檢查考試日期是否已過
+            if (daysRemaining < 0) {
+                document.getElementById('countdown-days').textContent = '已過期';
+                document.getElementById('countdown-days').className = 'text-3xl font-black text-red-600';
+                document.getElementById('exam-name-display').textContent = `（${examSettings.exam_name}）`;
+                document.getElementById('exam-date-display').textContent = examSettings.exam_date;
+                document.getElementById('estimation-section').innerHTML = '<div class="text-xs font-bold text-red-600">⚠️ 考試日期已過，請更新設定</div>';
+                return;
+            }
+
+            // 更新基本資訊
+            document.getElementById('countdown-days').textContent = daysRemaining;
+            document.getElementById('exam-name-display').textContent = `（${examSettings.exam_name}）`;
+            document.getElementById('exam-date-display').textContent = examSettings.exam_date;
+
+            // 計算進度
+            const masteredCount = stats.masteredCount || 0;
+            const totalQuestions = stats.totalQuestionsInBank || 0;
+            const progressPercent = totalQuestions > 0 ? Math.round((masteredCount / totalQuestions) * 100) : 0;
+
+            document.getElementById('mastered-count').textContent = masteredCount;
+            document.getElementById('total-questions').textContent = totalQuestions;
+            document.getElementById('progress-percent').textContent = progressPercent + '%';
+            document.getElementById('progress-bar').style.width = progressPercent + '%';
+
+            // 計算近 7 天平均熟練速度
+            const recentTrendData = (stats.trendData || []).slice(-7);
+            let totalMastered = 0;
+            let daysWithData = 0;
+
+            recentTrendData.forEach(day => {
+                // 假設熟練標準是答對 3 次，這裡簡化計算
+                // 實際應該查詢 user_question_progress 中 times_correct >= 3 的增量
+                // 但為了不增加複雜度，我們用正確題數的增長作為近似
+                if (day.correct > 0) {
+                    totalMastered += Math.floor(day.correct / 3); // 粗估：每 3 次正確代表 1 題熟練
+                    daysWithData++;
+                }
+            });
+
+            const avgDailySpeed = daysWithData > 0 ? Math.max(1, Math.round(totalMastered / 7)) : 5; // 預設 5
+            document.getElementById('current-speed').textContent = avgDailySpeed;
+
+            // 計算預估完成天數
+            const remainingQuestions = totalQuestions - masteredCount;
+            const estimatedDays = avgDailySpeed > 0 ? Math.ceil(remainingQuestions / avgDailySpeed) : 999;
+
+            // 計算緩衝天數
+            const bufferDays = daysRemaining - estimatedDays;
+
+            // 更新預估文字
+            const estimationText = document.getElementById('estimation-text');
+            const suggestionText = document.getElementById('suggestion-text');
+            const progressBar = document.getElementById('progress-bar');
+
+            if (remainingQuestions === 0) {
+                estimationText.innerHTML = '🎉 <span class="text-green-600">已完成所有題目！</span>';
+                suggestionText.innerHTML = '✅ 保持複習，鞏固知識';
+                progressBar.className = 'h-full bg-green-500 transition-all duration-500';
+            } else if (bufferDays > 0) {
+                estimationText.innerHTML = `預計 <span class="text-purple-600 font-black">${estimatedDays}</span> 天後達成 100%`;
+                suggestionText.innerHTML = `✅ 距離考試還有 <span class="text-green-600 font-bold">${bufferDays}</span> 天緩衝，進度超前！`;
+                progressBar.className = 'h-full bg-green-500 transition-all duration-500';
+            } else if (bufferDays === 0) {
+                estimationText.innerHTML = `預計 <span class="text-yellow-600 font-black">${estimatedDays}</span> 天後達成 100%`;
+                suggestionText.innerHTML = '⚠️ 進度正常，需持續努力';
+                progressBar.className = 'h-full bg-yellow-500 transition-all duration-500';
+            } else {
+                // 進度落後
+                const neededSpeed = Math.ceil(remainingQuestions / daysRemaining);
+                const speedIncrease = neededSpeed - avgDailySpeed;
+                estimationText.innerHTML = `預計 <span class="text-red-600 font-black">${estimatedDays}</span> 天後達成 100%`;
+                suggestionText.innerHTML = `🔥 進度落後 <span class="text-red-600 font-bold">${Math.abs(bufferDays)}</span> 天！建議每日增加到 <span class="font-black">${neededSpeed}</span> 題（+${speedIncrease} 題）`;
+                progressBar.className = 'h-full bg-red-500 transition-all duration-500';
+            }
+        }
 
         /**
          * 渲染今日新增熟練題數

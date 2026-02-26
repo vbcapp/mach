@@ -336,6 +336,40 @@
                     0
                 </div>
             </div>
+
+            <!-- 考試設定區塊 -->
+            <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 space-y-4 neo-brutalism-card">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-black dark:text-white">calendar_month</span>
+                    <span class="text-xl font-black italic uppercase">考試設定</span>
+                </div>
+                <div class="space-y-3">
+                    <!-- 考試項目 -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">考試項目</label>
+                        <input id="exam-name-input" type="text" placeholder="例如：甲級技術士" maxlength="100"
+                            class="w-full border-2 border-black p-2 font-bold text-sm focus:outline-none focus:border-primary" />
+                    </div>
+                    <!-- 考試日期 -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">考試日期</label>
+                        <input id="exam-date-input" type="date"
+                            class="w-full border-2 border-black p-2 font-bold text-sm focus:outline-none focus:border-primary" />
+                    </div>
+                    <!-- 每日目標 -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">每日目標（題數）</label>
+                        <input id="daily-goal-input" type="number" min="1" max="100" value="20"
+                            class="w-full border-2 border-black p-2 font-bold text-sm focus:outline-none focus:border-primary" />
+                        <div class="text-[10px] text-gray-400 mt-1">建議設定 10-30 題，依個人時間調整</div>
+                    </div>
+                    <!-- 儲存按鈕 -->
+                    <button id="save-exam-settings-btn" onclick="saveExamSettings()"
+                        class="w-full bg-primary border-4 border-black py-3 px-4 font-black italic text-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        儲存設定
+                    </button>
+                </div>
+            </div>
             <div id="admin-backup-card"
                 class="hidden bg-white dark:bg-gray-800 border-4 border-black p-4 space-y-4 neo-brutalism-card">
                 <div class="flex items-center gap-3">
@@ -480,6 +514,9 @@
 
                     // 更新其他 UI (Level, XP 等)
                     updateProfilePageUI(profileResult.data); // 這會處理頭像
+
+                    // 載入考試設定
+                    loadExamSettings(profileResult.data);
 
                     // ==================== Admin Dashboard ====================
                     // 檢查是否為管理員
@@ -1287,6 +1324,95 @@
                     imgEl.classList.add('hidden');
                     iconEl.classList.remove('hidden');
                 }
+            }
+        }
+
+        /**
+         * 載入考試設定
+         */
+        function loadExamSettings(userData) {
+            const examNameInput = document.getElementById('exam-name-input');
+            const examDateInput = document.getElementById('exam-date-input');
+            const dailyGoalInput = document.getElementById('daily-goal-input');
+
+            if (examNameInput && userData.exam_name) {
+                examNameInput.value = userData.exam_name;
+            }
+            if (examDateInput && userData.exam_date) {
+                examDateInput.value = userData.exam_date;
+            }
+            if (dailyGoalInput && userData.daily_goal !== undefined) {
+                dailyGoalInput.value = userData.daily_goal;
+            }
+        }
+
+        /**
+         * 儲存考試設定
+         */
+        async function saveExamSettings() {
+            if (!apiService.currentUser) {
+                alert('請先登入');
+                return;
+            }
+
+            const examName = document.getElementById('exam-name-input').value.trim();
+            const examDate = document.getElementById('exam-date-input').value;
+            const dailyGoal = parseInt(document.getElementById('daily-goal-input').value) || 20;
+
+            // 驗證
+            if (!examName) {
+                alert('請輸入考試項目');
+                return;
+            }
+            if (!examDate) {
+                alert('請選擇考試日期');
+                return;
+            }
+            const selectedDate = new Date(examDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate < today) {
+                alert('考試日期須為未來日期');
+                return;
+            }
+            if (dailyGoal < 1 || dailyGoal > 100) {
+                alert('每日目標須在 1-100 題之間');
+                return;
+            }
+
+            // 顯示載入狀態
+            const btn = document.getElementById('save-exam-settings-btn');
+            const originalText = btn.textContent;
+            btn.textContent = '儲存中...';
+            btn.disabled = true;
+
+            try {
+                // 直接使用 Supabase Client 更新 users 表
+                const { data, error } = await apiService.supabase
+                    .from('users')
+                    .update({
+                        exam_name: examName,
+                        exam_date: examDate,
+                        daily_goal: dailyGoal
+                    })
+                    .eq('id', apiService.currentUser.id);
+
+                if (error) throw error;
+
+                // 更新快取
+                const cached = JSON.parse(sessionStorage.getItem('userData') || '{}');
+                cached.exam_name = examName;
+                cached.exam_date = examDate;
+                cached.daily_goal = dailyGoal;
+                sessionStorage.setItem('userData', JSON.stringify(cached));
+
+                alert('✅ 考試設定已儲存！');
+            } catch (error) {
+                console.error('儲存失敗:', error);
+                alert('❌ 儲存失敗：' + (error.message || '未知錯誤'));
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
             }
         }
     </script>
