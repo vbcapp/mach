@@ -132,6 +132,27 @@
             from { transform: translateY(-20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+
+        /* Mastery Card Styles - Elite Gold */
+        .mastery-gold {
+            background: linear-gradient(135deg, #fffcf0 0%, #fff9d6 100%) !important;
+            border-color: #ffd400 !important;
+            box-shadow: 4px 4px 0px 0px #b8860b !important;
+        }
+        .mastery-gold-dark {
+            background: linear-gradient(135deg, #2d2a10 0%, #1a1805 100%) !important;
+            border-color: #ffd400 !important;
+            box-shadow: 4px 4px 0px 0px #000000 !important;
+        }
+        .medal-glow {
+            box-shadow: 0 0 15px rgba(255, 212, 0, 0.8);
+            animation: pulse-gold 2s infinite;
+        }
+        @keyframes pulse-gold {
+            0% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 212, 0, 0.5); }
+            50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(255, 212, 0, 0.9); }
+            100% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 212, 0, 0.5); }
+        }
     </style>
     <!-- Add LevelSystem Script -->
     <script src="js/level-system.js"></script>

@@ -441,19 +441,38 @@ function renderCardItem(card) {
     // 決定是否顯示徽章（只有做過測驗才顯示）
     const showBadge = progress && isCorrect !== null && isCorrect !== undefined;
 
+    // [Mastery Logic] 判斷是否為熟練卡 (答對 3 次以上)
+    const isMastered = timesCorrect >= 3;
+    const masteryClass = isMastered ? 'mastery-gold dark:mastery-gold-dark' : '';
+    const badgeHtml = isMastered
+        ? `<div class="w-10 h-10 rounded-full bg-yellow-400 border-[3px] border-yellow-600 flex items-center justify-center medal-glow shadow-lg">
+                <span class="text-lg">🏆</span>
+           </div>`
+        : (showBadge ? `
+                <div class="w-8 h-8 rounded-full neo-border-thick flex items-center justify-center shadow-lg"
+                     style="background-color: ${badgeBg};">
+                    <span class="text-sm">${badgeEmoji}</span>
+                </div>
+                ` : '');
+
     // [Admin Logic] 已發布標記
     const isPublished = card.is_published;
     const publishedTag = isPublished ? `<span class="bg-primary text-black border border-black px-1 text-[8px] font-bold uppercase ml-1">PUBLISHED</span>` : '';
+
+    // 頂部標籤：如果是熟練卡，顯示 已精通
+    const topTag = isMastered
+        ? `<span class="bg-yellow-500 border-2 border-black text-white px-1.5 py-0.5 text-[8px] font-bold uppercase">已精通</span>`
+        : `<span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.question_no || '-'}</span>`;
 
     return `
         <a href="test.html?id=${card.id}"
            data-card-id="${card.id}"
            data-source-type="${card.sourceType || 'user_card'}"
            data-is-published="${isPublished}"
-            class="bg-white dark:bg-zinc-900 neo-border-thick neo-shadow p-3 flex flex-col h-[180px] relative transition-transform active:scale-[0.98] admin-card-item">
+            class="bg-white dark:bg-zinc-900 neo-border-thick neo-shadow p-3 flex flex-col h-[180px] relative transition-transform active:scale-[0.98] admin-card-item ${masteryClass}">
             <div class="mb-2 flex items-center justify-between">
                 <div class="flex items-center">
-                    <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.question_no || '-'}</span>
+                    ${topTag}
                 </div>
                 <div class="flex items-center gap-1">
                     <span class="bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase">${card.chapter || 'General'}</span>
@@ -461,23 +480,18 @@ function renderCardItem(card) {
                 </div>
             </div>
             <div class="flex-1 overflow-y-auto min-h-0 pr-1 custom-scrollbar">
-                <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1 break-words hyphens-none ${(card.question && card.question.length > 15) ? 'text-small' : ''}" style="word-break: break-word; -webkit-hyphens: none;">${card.question || ''}</h3>
-                <p class="text-[10px] leading-tight opacity-70 line-clamp-2">${description}</p>
+                <h3 class="text-xl font-black italic tracking-tighter uppercase leading-tight mb-1 break-words hyphens-none ${(card.question && card.question.length > 15) ? 'text-small' : ''} ${isMastered ? 'text-yellow-900 dark:text-yellow-100' : ''}" style="word-break: break-word; -webkit-hyphens: none;">${card.question || ''}</h3>
+                <p class="text-[10px] leading-tight opacity-70 line-clamp-2 ${isMastered ? 'text-yellow-800 dark:text-yellow-300' : ''}">${description}</p>
             </div>
             <div class="flex justify-between items-end gap-2 mt-2">
                 <button data-card-id="${card.id}" data-action="heart" data-hearted="${isHearted}"
                     class="heart-btn hover:scale-110 active:scale-95 transition-transform z-10 p-1 -ml-1 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-2xl ${isHearted ? 'text-[#EF4444]' : 'text-black'}"
+                    <span class="material-symbols-outlined text-2xl ${isHearted ? 'text-[#EF4444]' : (isMastered ? 'text-yellow-700 dark:text-yellow-500' : 'text-black')}"
                           style="font-variation-settings: 'FILL' ${isHearted ? 1 : 0}, 'wght' 700;">
                         favorite
                     </span>
                 </button>
-                ${showBadge ? `
-                <div class="w-8 h-8 rounded-full neo-border-thick flex items-center justify-center shadow-lg"
-                     style="background-color: ${badgeBg};">
-                    <span class="text-sm">${badgeEmoji}</span>
-                </div>
-                ` : ''}
+                ${badgeHtml}
             </div>
         </a>
     `;

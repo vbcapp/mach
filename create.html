@@ -76,17 +76,23 @@
         <div class="bg-white border-b-4 border-black px-6 py-4">
             <div class="flex items-center justify-between">
                 <div id="step-1-indicator" class="flex items-center gap-2">
-                    <div class="step-circle w-8 h-8 bg-primary border-2 border-black flex items-center justify-center font-black">1</div>
+                    <div
+                        class="step-circle w-8 h-8 bg-primary border-2 border-black flex items-center justify-center font-black">
+                        1</div>
                     <span class="text-sm font-bold hidden sm:inline">選擇來源</span>
                 </div>
                 <div class="flex-1 h-1 bg-black mx-2"></div>
                 <div id="step-2-indicator" class="flex items-center gap-2">
-                    <div class="step-circle w-8 h-8 bg-gray-200 border-2 border-black flex items-center justify-center font-black">2</div>
+                    <div
+                        class="step-circle w-8 h-8 bg-gray-200 border-2 border-black flex items-center justify-center font-black">
+                        2</div>
                     <span class="text-sm font-bold hidden sm:inline">設定考卷</span>
                 </div>
                 <div class="flex-1 h-1 bg-black mx-2"></div>
                 <div id="step-3-indicator" class="flex items-center gap-2">
-                    <div class="step-circle w-8 h-8 bg-gray-200 border-2 border-black flex items-center justify-center font-black">3</div>
+                    <div
+                        class="step-circle w-8 h-8 bg-gray-200 border-2 border-black flex items-center justify-center font-black">
+                        3</div>
                     <span class="text-sm font-bold hidden sm:inline">預覽確認</span>
                 </div>
             </div>
@@ -117,7 +123,8 @@
                     </div>
                     <div class="flex items-center gap-4">
                         <span id="selected-chapters-count" class="text-sm font-bold">0 個章節</span>
-                        <span id="available-questions-count" class="bg-primary px-3 py-1 border-2 border-black font-black">0 題可選</span>
+                        <span id="available-questions-count"
+                            class="bg-primary px-3 py-1 border-2 border-black font-black">0 題可選</span>
                     </div>
                 </div>
 
@@ -136,20 +143,47 @@
                         <h2 class="text-lg font-black italic uppercase">考卷設定</h2>
                     </div>
 
-                    <!-- 新類別名稱 -->
+                    <!-- 選擇舊類別 / 新增大類別 -->
                     <div>
-                        <label class="text-xs font-black uppercase tracking-widest mb-2 block">新類別名稱 *</label>
-                        <input id="new-subject-input" type="text"
-                            class="w-full border-4 border-black p-3 font-bold focus:outline-none focus:ring-2 focus:ring-primary"
-                            placeholder="例如：114年模擬考">
+                        <label class="text-xs font-black uppercase tracking-widest mb-2 block">選擇舊類別 或 新增大類別 *</label>
+                        <div class="relative">
+                            <input id="new-subject-input" type="text" list="existing-subjects"
+                                class="w-full border-4 border-black p-3 font-bold focus:outline-none focus:ring-2 focus:ring-primary"
+                                placeholder="輸入或選擇類別（例如：114年模擬考）">
+                            <datalist id="existing-subjects">
+                                <!-- 動態生成現有類別選項 -->
+                            </datalist>
+                            <span
+                                class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 pointer-events-none">
+                                arrow_drop_down
+                            </span>
+                        </div>
+                        <p class="text-[10px] text-gray-600 mt-1">💡 點擊可看到現有類別，或直接輸入新類別名稱</p>
                     </div>
 
                     <!-- 新章節名稱 -->
                     <div>
-                        <label class="text-xs font-black uppercase tracking-widest mb-2 block">新章節名稱 *</label>
+                        <label
+                            class="text-xs font-black uppercase tracking-widest mb-2 flex items-center justify-between">
+                            <span>新章節名稱 *</span>
+                            <button type="button" id="toggle-chapters-btn" onclick="toggleExistingChapters()"
+                                class="text-[10px] bg-gray-100 border-2 border-black px-2 py-1 font-bold flex items-center gap-1 hover:bg-gray-200">
+                                <span class="material-symbols-outlined text-xs">visibility</span>
+                                <span id="toggle-chapters-text">展開查看現有章節</span>
+                            </button>
+                        </label>
                         <input id="new-chapter-input" type="text"
                             class="w-full border-4 border-black p-3 font-bold focus:outline-none focus:ring-2 focus:ring-primary"
                             placeholder="例如：第一回">
+
+                        <!-- 現有章節列表（可展開/收合） -->
+                        <div id="existing-chapters-list"
+                            class="hidden mt-2 bg-gray-50 border-2 border-black p-3 max-h-40 overflow-y-auto no-scrollbar">
+                            <p class="text-xs font-bold text-gray-500 mb-2">📋 現有的 類別：章節</p>
+                            <div id="chapters-content" class="space-y-1">
+                                <!-- 動態生成 -->
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 抽取題數 -->
@@ -184,7 +218,8 @@
                             <span class="material-symbols-outlined text-2xl">preview</span>
                             <h2 class="text-lg font-black italic uppercase">考卷預覽</h2>
                         </div>
-                        <button onclick="regeneratePreview()" class="bg-gray-100 border-2 border-black px-3 py-1 font-bold text-sm flex items-center gap-1">
+                        <button onclick="regeneratePreview()"
+                            class="bg-gray-100 border-2 border-black px-3 py-1 font-bold text-sm flex items-center gap-1">
                             <span class="material-symbols-outlined text-sm">refresh</span> 重新抽題
                         </button>
                     </div>
@@ -419,6 +454,62 @@
             const countInput = document.getElementById('question-count-input');
             if (parseInt(countInput.value) > totalAvailable) {
                 countInput.value = totalAvailable;
+            }
+
+            // 填充現有類別選項
+            populateExistingSubjects();
+
+            // 填充現有章節列表
+            populateExistingChapters();
+        }
+
+        // ==================== 填充現有類別選項 ====================
+        function populateExistingSubjects() {
+            const datalist = document.getElementById('existing-subjects');
+
+            // 取得所有不重複的類別
+            const uniqueSubjects = [...new Set(subjectChapterStats.map(item => item.subject))];
+
+            datalist.innerHTML = uniqueSubjects.map(subject =>
+                `<option value="${escapeHtml(subject)}">`
+            ).join('');
+        }
+
+        // ==================== 填充現有章節列表 ====================
+        function populateExistingChapters() {
+            const content = document.getElementById('chapters-content');
+
+            // 按類別分組顯示章節
+            const grouped = {};
+            subjectChapterStats.forEach(item => {
+                if (!grouped[item.subject]) {
+                    grouped[item.subject] = [];
+                }
+                grouped[item.subject].push(item.chapter);
+            });
+
+            content.innerHTML = Object.entries(grouped).map(([subject, chapters]) => `
+                <div class="text-xs">
+                    <span class="font-black text-black">${escapeHtml(subject)}：</span>
+                    <span class="text-gray-700">${chapters.map(ch => escapeHtml(ch)).join('、')}</span>
+                </div>
+            `).join('');
+        }
+
+        // ==================== 切換現有章節顯示 ====================
+        function toggleExistingChapters() {
+            const list = document.getElementById('existing-chapters-list');
+            const btnText = document.getElementById('toggle-chapters-text');
+            const btn = document.getElementById('toggle-chapters-btn');
+
+            if (list.classList.contains('hidden')) {
+                list.classList.remove('hidden');
+                btnText.textContent = '收合章節列表';
+                btn.querySelector('.material-symbols-outlined').textContent = 'visibility_off';
+            } else {
+                list.classList.add('hidden');
+                btnText.textContent = '展開查看現有章節';
+                btn.querySelector('.material-symbols-outlined').textContent = 'visibility';
             }
         }
 
