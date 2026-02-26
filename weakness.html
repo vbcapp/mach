@@ -246,6 +246,47 @@
         </div>
     </div>
 
+    <!-- 考試設定 Modal -->
+    <div id="exam-settings-modal" class="modal-overlay" onclick="closeExamSettingsModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">calendar_month</span>
+                    <span class="font-black text-sm uppercase">考試設定</span>
+                </div>
+                <button class="modal-close" onclick="closeExamSettingsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="space-y-3">
+                    <!-- 考試項目 -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">考試項目</label>
+                        <input id="exam-name-input" type="text" placeholder="例如：甲級技術士" maxlength="100"
+                            class="w-full border-2 border-black p-2 font-bold text-sm focus:outline-none focus:border-primary" />
+                    </div>
+                    <!-- 考試日期 -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">考試日期</label>
+                        <input id="exam-date-input" type="date"
+                            class="w-full border-2 border-black p-2 font-bold text-sm focus:outline-none focus:border-primary" />
+                    </div>
+                    <!-- 每日目標 -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 mb-1">每日目標（題數）</label>
+                        <input id="daily-goal-input" type="number" min="1" max="100" value="20"
+                            class="w-full border-2 border-black p-2 font-bold text-sm focus:outline-none focus:border-primary" />
+                        <div class="text-[10px] text-gray-400 mt-1">建議設定 10-30 題，依個人時間調整</div>
+                    </div>
+                    <!-- 儲存按鈕 -->
+                    <button id="save-exam-settings-btn" onclick="saveExamSettings()"
+                        class="w-full bg-primary border-4 border-black py-3 px-4 font-black italic text-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        儲存設定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto border-x-2 border-black/5">
         <header class="bg-primary pt-12 pb-6 px-6 border-b-8 border-black sticky top-0 z-40">
             <div class="flex items-center gap-4 mb-2">
@@ -263,7 +304,7 @@
                             <span class="material-symbols-outlined text-purple-600 text-xl">event</span>
                             <span class="text-xs font-black uppercase">考試倒數</span>
                         </div>
-                        <button onclick="window.location.href='profile.html'"
+                        <button onclick="openExamSettingsModal()"
                                 class="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1">
                             <span class="material-symbols-outlined text-sm">settings</span>
                             設定
@@ -313,7 +354,7 @@
                 <div class="neo-brutalism-card bg-gradient-to-br from-gray-50 to-gray-100 p-4 text-center">
                     <span class="material-symbols-outlined text-gray-300 text-3xl mb-2 block">event_busy</span>
                     <p class="text-xs font-bold text-gray-500 mb-2">尚未設定考試日期</p>
-                    <button onclick="window.location.href='profile.html'"
+                    <button onclick="openExamSettingsModal()"
                             class="px-4 py-2 neo-border bg-primary font-black text-xs hover:bg-yellow-400">
                         前往設定 →
                     </button>
@@ -1350,10 +1391,135 @@
             }
         }
 
+        /**
+         * 打開考試設定 Modal
+         */
+        async function openExamSettingsModal() {
+            const modal = document.getElementById('exam-settings-modal');
+
+            // 載入當前設定
+            try {
+                const { data: userData, error } = await apiService.supabase
+                    .from('users')
+                    .select('exam_name, exam_date, daily_goal')
+                    .eq('id', apiService.currentUser.id)
+                    .single();
+
+                if (error) throw error;
+
+                if (userData) {
+                    const examNameInput = document.getElementById('exam-name-input');
+                    const examDateInput = document.getElementById('exam-date-input');
+                    const dailyGoalInput = document.getElementById('daily-goal-input');
+
+                    if (examNameInput && userData.exam_name) {
+                        examNameInput.value = userData.exam_name;
+                    }
+                    if (examDateInput && userData.exam_date) {
+                        examDateInput.value = userData.exam_date;
+                    }
+                    if (dailyGoalInput && userData.daily_goal !== undefined) {
+                        dailyGoalInput.value = userData.daily_goal;
+                    }
+                }
+            } catch (error) {
+                console.error('載入考試設定失敗:', error);
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        /**
+         * 關閉考試設定 Modal
+         */
+        function closeExamSettingsModal(event) {
+            if (!event || event.target.id === 'exam-settings-modal') {
+                const modal = document.getElementById('exam-settings-modal');
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        /**
+         * 儲存考試設定
+         */
+        async function saveExamSettings() {
+            if (!apiService.currentUser) {
+                alert('請先登入');
+                return;
+            }
+
+            const examName = document.getElementById('exam-name-input').value.trim();
+            const examDate = document.getElementById('exam-date-input').value;
+            const dailyGoal = parseInt(document.getElementById('daily-goal-input').value) || 20;
+
+            // 驗證
+            if (!examName) {
+                alert('請輸入考試項目');
+                return;
+            }
+            if (!examDate) {
+                alert('請選擇考試日期');
+                return;
+            }
+            const selectedDate = new Date(examDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate < today) {
+                alert('考試日期須為未來日期');
+                return;
+            }
+            if (dailyGoal < 1 || dailyGoal > 100) {
+                alert('每日目標須在 1-100 題之間');
+                return;
+            }
+
+            // 顯示載入狀態
+            const btn = document.getElementById('save-exam-settings-btn');
+            const originalText = btn.textContent;
+            btn.textContent = '儲存中...';
+            btn.disabled = true;
+
+            try {
+                // 直接使用 Supabase Client 更新 users 表
+                const { data, error } = await apiService.supabase
+                    .from('users')
+                    .update({
+                        exam_name: examName,
+                        exam_date: examDate,
+                        daily_goal: dailyGoal
+                    })
+                    .eq('id', apiService.currentUser.id);
+
+                if (error) throw error;
+
+                // 更新快取
+                const cached = JSON.parse(sessionStorage.getItem('userData') || '{}');
+                cached.exam_name = examName;
+                cached.exam_date = examDate;
+                cached.daily_goal = dailyGoal;
+                sessionStorage.setItem('userData', JSON.stringify(cached));
+
+                alert('✅ 考試設定已儲存！');
+                closeExamSettingsModal();
+
+                // 重新載入考試倒數資訊
+                await loadExamSettings();
+            } catch (error) {
+                console.error('儲存失敗:', error);
+                alert('❌ 儲存失敗：' + (error.message || '未知錯誤'));
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        }
+
         // ESC 鍵關閉 Modal
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeAIAnalysisModal();
+                closeExamSettingsModal();
             }
         });
     </script>
