@@ -541,7 +541,7 @@ const bufferDays = daysRemaining - estimatedDays;
 **設計參考：** `docs/PRD.md` - 弱點分析頁面
 
 **實作內容：**
-1. **即時成就感區塊**
+1. **即時成就區塊**
    - 今日新增熟練題數（含連勝天數）
    - 本次 vs 歷史正確率
    - 錯題二刷正確率

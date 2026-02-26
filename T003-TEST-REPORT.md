@@ -210,7 +210,7 @@ const result = await apiService.getRecentVsHistoricalAccuracy(userId, 10);
 if (result.success) {
     const { recentAccuracy, improvement, isBestPerformance } = result.data;
 
-    // 顯示即時成就感
+    // 顯示即時成就
     if (improvement > 0) {
         showSuccessToast(`太棒了！最近表現進步 ${improvement}% 🎉`);
     }
