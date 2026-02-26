@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>熟練度卡片 UI 方案預覽</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+        }
+        .neo-brutalism-card {
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0 #000;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+        .neo-brutalism-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 #000;
+        }
+
+        /* 彈窗樣式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.2s;
+        }
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            border: 3px solid #000;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 8px 8px 0 #000;
+            animation: slideUp 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* 資訊按鈕樣式 */
+        .info-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 2px solid #000;
+            transition: all 0.2s;
+        }
+        .info-btn:hover {
+            transform: scale(1.1);
+            background: #2563eb;
+        }
+
+        /* Tooltip 樣式 */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: left;
+            border-radius: 8px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 11px;
+            line-height: 1.4;
+            border: 2px solid #000;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #000 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* 首次提示動畫 */
+        .first-time-hint {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .section {
+            margin-bottom: 48px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            padding: 8px 16px;
+            background: #fef3c7;
+            border: 2px solid #000;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .pros-cons {
+            margin-top: 12px;
+            padding: 12px;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .pros-cons div {
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-black mb-8 text-center">📊 熟練度卡片 UI 改善方案</h1>
+
+        <!-- 方案 1: 原始版本（對照組） -->
+        <div class="section">
+            <div class="section-title">❌ 原始版本（問題版）</div>
+            <div class="neo-brutalism-card bg-gradient-to-br from-green-50 to-emerald-50 p-4 max-w-md">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-green-600 text-xl">workspace_premium</span>
+                    <span class="text-xs font-black uppercase">今日新增熟練</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-green-600 text-xl">🎯</span>
+                            <span class="text-3xl font-black text-green-600">0</span>
+                            <span class="text-sm font-bold text-gray-600">題</span>
+                        </div>
+                        <div class="mt-1 text-[10px] text-gray-600">
+                            💪 本週累積：<span class="font-bold text-black">6</span> 題
+                        </div>
+                        <div class="mt-1 text-[10px] text-orange-600">🔥 連續 <span class="font-bold text-orange-600">2</span> 天都有進步！</div>
+                    </div>
+                </div>
+            </div>
+            <div class="pros-cons">
+                <div>❌ 問題：「熟練」定義不清楚</div>
+                <div>❌ 用戶不知道如何達成「熟練」</div>
+            </div>
+        </div>
+
+        <!-- 方案 2: 直接說明規則 -->
+        <div class="section">
+            <div class="section-title">✅ 方案 1：文案中直接說明規則</div>
+            <div class="neo-brutalism-card bg-gradient-to-br from-green-50 to-emerald-50 p-4 max-w-md">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-green-600 text-xl">workspace_premium</span>
+                    <span class="text-xs font-black uppercase">今日精熟題數</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="w-full">
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-green-600 text-xl">🎯</span>
+                            <span class="text-3xl font-black text-green-600">0</span>
+                            <span class="text-sm font-bold text-gray-600">題</span>
+                        </div>
+                        <div class="mt-2 text-[11px] text-gray-600 bg-white/70 p-2 rounded border border-green-200">
+                            📚 <span class="font-bold text-green-700">連續答對 3 次</span> = 精熟 1 題
+                        </div>
+                        <div class="mt-2 text-[10px] text-gray-600">
+                            💪 本週累積：<span class="font-bold text-black">6</span> 題
+                        </div>
+                        <div class="mt-1 text-[10px] text-orange-600">🔥 連續 <span class="font-bold text-orange-600">2</span> 天都有進步！</div>
+                    </div>
+                </div>
+            </div>
+            <div class="pros-cons">
+                <div>✅ 優點：規則直接可見，不需額外操作</div>
+                <div>✅ 優點：降低認知負擔</div>
+                <div>⚠️ 缺點：卡片稍微變高</div>
+                <div>⚠️ 缺點：老用戶可能覺得重複</div>
+            </div>
+        </div>
+
+        <!-- 方案 3: 資訊圖示 + Hover Tooltip -->
+        <div class="section">
+            <div class="section-title">✅ 方案 2：資訊圖示 + Hover 提示</div>
+            <div class="neo-brutalism-card bg-gradient-to-br from-green-50 to-emerald-50 p-4 max-w-md">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-green-600 text-xl">workspace_premium</span>
+                    <span class="text-xs font-black uppercase">今日精熟題數</span>
+                    <div class="tooltip">
+                        <span class="info-btn">?</span>
+                        <span class="tooltiptext">
+                            <strong>什麼是「精熟」？</strong><br>
+                            當你將一題<strong>連續答對 3 次</strong>，就算精熟這題！<br><br>
+                            💡 精熟的題目會減少出現頻率
+                        </span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-green-600 text-xl">🎯</span>
+                            <span class="text-3xl font-black text-green-600">0</span>
+                            <span class="text-sm font-bold text-gray-600">題</span>
+                        </div>
+                        <div class="mt-1 text-[10px] text-gray-600">
+                            💪 本週累積：<span class="font-bold text-black">6</span> 題
+                        </div>
+                        <div class="mt-1 text-[10px] text-orange-600">🔥 連續 <span class="font-bold text-orange-600">2</span> 天都有進步！</div>
+                    </div>
+                </div>
+            </div>
+            <div class="pros-cons">
+                <div>✅ 優點：不佔空間，保持卡片簡潔</div>
+                <div>✅ 優點：需要時才顯示，不干擾老用戶</div>
+                <div>⚠️ 缺點：需要 hover 才看得到（手機需改成點擊）</div>
+                <div>⚠️ 缺點：可能被忽略</div>
+            </div>
+        </div>
+
+        <!-- 方案 4: 資訊圖示 + 點擊彈窗 -->
+        <div class="section">
+            <div class="section-title">✅ 方案 3：資訊圖示 + 點擊彈窗（跨平台友善）</div>
+            <div class="neo-brutalism-card bg-gradient-to-br from-green-50 to-emerald-50 p-4 max-w-md">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-green-600 text-xl">workspace_premium</span>
+                    <span class="text-xs font-black uppercase">今日精熟題數</span>
+                    <button class="info-btn" onclick="showModal('modal1')">?</button>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-green-600 text-xl">🎯</span>
+                            <span class="text-3xl font-black text-green-600">0</span>
+                            <span class="text-sm font-bold text-gray-600">題</span>
+                        </div>
+                        <div class="mt-1 text-[10px] text-gray-600">
+                            💪 本週累積：<span class="font-bold text-black">6</span> 題
+                        </div>
+                        <div class="mt-1 text-[10px] text-orange-600">🔥 連續 <span class="font-bold text-orange-600">2</span> 天都有進步！</div>
+                    </div>
+                </div>
+            </div>
+            <div class="pros-cons">
+                <div>✅ 優點：手機、桌面都好用</div>
+                <div>✅ 優點：可以放更多說明內容</div>
+                <div>✅ 優點：需要時才彈出，不干擾視覺</div>
+                <div>⚠️ 缺點：多一次點擊操作</div>
+            </div>
+        </div>
+
+        <!-- 方案 5: 首次使用提示 + 簡化文案 -->
+        <div class="section">
+            <div class="section-title">✅ 方案 4：首次提示 + 之後簡化（推薦！）</div>
+            <div class="neo-brutalism-card bg-gradient-to-br from-green-50 to-emerald-50 p-4 max-w-md first-time-hint">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-green-600 text-xl">workspace_premium</span>
+                    <span class="text-xs font-black uppercase">今日精熟題數</span>
+                    <button class="info-btn" onclick="showModal('modal2')">?</button>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="w-full">
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-green-600 text-xl">🎯</span>
+                            <span class="text-3xl font-black text-green-600">0</span>
+                            <span class="text-sm font-bold text-gray-600">題</span>
+                        </div>
+                        <!-- 首次使用提示 -->
+                        <div class="mt-2 text-[11px] bg-yellow-100 border-2 border-yellow-400 p-2 rounded-lg">
+                            <div class="flex items-start gap-1">
+                                <span>💡</span>
+                                <div>
+                                    <strong>新手提示：</strong>連續答對 3 次 = 精熟 1 題<br>
+                                    <button onclick="this.closest('.bg-yellow-100').style.display='none'" class="text-[10px] underline mt-1">我知道了，不再顯示</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-[10px] text-gray-600">
+                            💪 本週累積：<span class="font-bold text-black">6</span> 題
+                        </div>
+                        <div class="mt-1 text-[10px] text-orange-600">🔥 連續 <span class="font-bold text-orange-600">2</span> 天都有進步！</div>
+                    </div>
+                </div>
+            </div>
+            <div class="pros-cons">
+                <div>✅ 優點：首次使用有引導，老用戶不受干擾</div>
+                <div>✅ 優點：用戶可主動關閉提示</div>
+                <div>✅ 優點：保留資訊按鈕，需要時可再查看</div>
+                <div>✅ 優點：最佳平衡</div>
+            </div>
+        </div>
+
+        <!-- 推薦總結 -->
+        <div class="mt-12 p-6 bg-blue-50 border-4 border-blue-600 rounded-xl">
+            <h2 class="text-xl font-black mb-4">🎯 UX 專家推薦</h2>
+            <div class="space-y-3 text-sm">
+                <div><strong>最佳方案：方案 4</strong>（首次提示 + 資訊按鈕）</div>
+                <div><strong>理由：</strong></div>
+                <ul class="list-disc ml-6 space-y-1">
+                    <li>新用戶：首次看到黃色提示框，清楚知道規則</li>
+                    <li>老用戶：關閉提示後，介面保持簡潔</li>
+                    <li>忘記規則：隨時可點擊 <span class="info-btn" style="vertical-align: middle;">?</span> 查看詳細說明</li>
+                    <li>跨平台：手機、桌面都好操作</li>
+                </ul>
+                <div class="mt-4 p-3 bg-white rounded border-2 border-blue-400">
+                    <strong>實作建議：</strong><br>
+                    1. 使用 localStorage 記錄是否已顯示過提示<br>
+                    2. 首次使用顯示黃色提示框（含動畫吸引注意）<br>
+                    3. 用戶點擊「我知道了」後，設定 localStorage，隱藏提示<br>
+                    4. 保留資訊按鈕，點擊彈出詳細說明彈窗
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 彈窗 Modal 1 -->
+    <div id="modal1" class="modal" onclick="if(event.target === this) closeModal('modal1')">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-black">📚 什麼是「精熟」？</h3>
+                <button onclick="closeModal('modal1')" class="text-2xl font-bold hover:text-red-600">&times;</button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div class="flex items-start gap-2">
+                    <span class="text-2xl">🎯</span>
+                    <div>
+                        <strong>精熟定義</strong><br>
+                        當你將某一題<strong class="text-green-600">連續答對 3 次</strong>，就算精熟這題！
+                    </div>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-2xl">💡</span>
+                    <div>
+                        <strong>為什麼是 3 次？</strong><br>
+                        這代表你真的理解了，不是靠猜測或短期記憶
+                    </div>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-2xl">📉</span>
+                    <div>
+                        <strong>精熟後的好處</strong><br>
+                        精熟的題目會減少出現頻率，讓你專注在還不熟的題目
+                    </div>
+                </div>
+            </div>
+            <button onclick="closeModal('modal1')" class="mt-4 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg border-2 border-black">
+                我知道了！
+            </button>
+        </div>
+    </div>
+
+    <!-- 彈窗 Modal 2 -->
+    <div id="modal2" class="modal" onclick="if(event.target === this) closeModal('modal2')">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-black">📚 什麼是「精熟」？</h3>
+                <button onclick="closeModal('modal2')" class="text-2xl font-bold hover:text-red-600">&times;</button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div class="flex items-start gap-2">
+                    <span class="text-2xl">🎯</span>
+                    <div>
+                        <strong>精熟定義</strong><br>
+                        當你將某一題<strong class="text-green-600">連續答對 3 次</strong>，就算精熟這題！
+                    </div>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-2xl">💡</span>
+                    <div>
+                        <strong>為什麼是 3 次？</strong><br>
+                        這代表你真的理解了，不是靠猜測或短期記憶
+                    </div>
+                </div>
+                <div class="flex items-start gap-2">
+                    <span class="text-2xl">📉</span>
+                    <div>
+                        <strong>精熟後的好處</strong><br>
+                        精熟的題目會減少出現頻率，讓你專注在還不熟的題目
+                    </div>
+                </div>
+            </div>
+            <button onclick="closeModal('modal2')" class="mt-4 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg border-2 border-black">
+                我知道了！
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // ESC 鍵關閉彈窗
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

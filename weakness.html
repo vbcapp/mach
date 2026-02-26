@@ -304,6 +304,61 @@
         </div>
     </div>
 
+    <!-- 精熟說明 Modal -->
+    <div id="mastery-info-modal" class="modal-overlay" onclick="closeMasteryInfoModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">workspace_premium</span>
+                    <span class="font-black text-sm uppercase">什麼是「精熟」？</span>
+                </div>
+                <button class="modal-close" onclick="closeMasteryInfoModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="space-y-4 text-sm">
+                    <!-- 精熟定義 -->
+                    <div class="flex items-start gap-3 bg-green-50 border-2 border-green-400 p-3">
+                        <span class="text-2xl shrink-0">🎯</span>
+                        <div>
+                            <div class="font-black text-base mb-1">精熟定義</div>
+                            <p class="text-sm leading-relaxed">
+                                當你將某一題<strong class="text-green-600 font-black">連續答對 3 次</strong>，就算精熟這題！
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 為什麼是 3 次 -->
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl shrink-0">💡</span>
+                        <div>
+                            <div class="font-black text-base mb-1">為什麼是 3 次？</div>
+                            <p class="text-sm leading-relaxed">
+                                這代表你真的理解了，不是靠猜測或短期記憶。多次答對才能證明長期記憶已建立。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 精熟後的好處 -->
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl shrink-0">📉</span>
+                        <div>
+                            <div class="font-black text-base mb-1">精熟後的好處</div>
+                            <p class="text-sm leading-relaxed">
+                                精熟的題目會<strong class="font-black">減少出現頻率</strong>，讓你專注在還不熟的題目，學習效率更高！
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 關閉按鈕 -->
+                <button onclick="closeMasteryInfoModal()"
+                    class="w-full bg-green-500 text-white border-4 border-black py-3 px-4 font-black text-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mt-4 hover:bg-green-600">
+                    我知道了！
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto border-x-2 border-black/5">
         <header class="bg-primary pt-12 pb-6 px-6 border-b-8 border-black sticky top-0 z-40">
             <div class="flex items-center gap-4 mb-2">
@@ -432,7 +487,11 @@
                 <div class="neo-brutalism-card bg-gradient-to-br from-green-50 to-emerald-50 p-4">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="material-symbols-outlined text-green-600 text-xl">workspace_premium</span>
-                        <span class="text-xs font-black uppercase">今日新增熟練</span>
+                        <span class="text-xs font-black uppercase">今日精熟題數</span>
+                        <button onclick="showMasteryInfoModal()"
+                            class="w-5 h-5 bg-blue-500 text-white border-2 border-black rounded-full flex items-center justify-center text-xs font-black hover:bg-blue-600 hover:scale-110 transition-transform cursor-pointer">
+                            ?
+                        </button>
                     </div>
                     <div class="flex items-center justify-between">
                         <div>
@@ -747,6 +806,16 @@
                 toast.classList.add('hidden');
             }, 3000);
         }
+
+        // ESC 鍵關閉所有彈窗
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                document.body.style.overflow = '';
+            }
+        });
 
         document.addEventListener('DOMContentLoaded', async () => {
             const listContainer = document.getElementById('weakness-list');
@@ -1597,6 +1666,26 @@
         function closeExamSettingsModal(event) {
             if (!event || event.target.id === 'exam-settings-modal') {
                 const modal = document.getElementById('exam-settings-modal');
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        /**
+         * 顯示精熟說明彈窗
+         */
+        function showMasteryInfoModal() {
+            const modal = document.getElementById('mastery-info-modal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        /**
+         * 關閉精熟說明彈窗
+         */
+        function closeMasteryInfoModal(event) {
+            if (!event || event.target.id === 'mastery-info-modal') {
+                const modal = document.getElementById('mastery-info-modal');
                 modal.classList.remove('active');
                 document.body.style.overflow = '';
             }
