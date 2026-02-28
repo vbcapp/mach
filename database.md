@@ -23,16 +23,14 @@
 | `email` | `varchar` | UNIQUE | 用戶信箱 |
 | `avatar_url` | `text` | NULLABLE | 大頭貼 URL |
 | `current_level` | `integer` | DEFAULT 1 | 當前等級 |
-| `current_xp` | `integer` | DEFAULT 0 | 目前累積經驗值 |
-| `current_level_xp` | `integer` | DEFAULT 0 | 當前等級內已累積的經驗值 |
+| `current_xp` | `integer` | DEFAULT 0 | 目前累積經驗值 (由 LevelSystem 計算累計) |
 | `next_level_xp` | `integer` | DEFAULT 100 | 下一等級所需經驗總值 |
-| `perfect_card_count` | `integer` | DEFAULT 0 | 已棄用，改用 correct_answer_count |
 | `correct_answer_count` | `integer` | DEFAULT 0 | 答對題目總數 |
 | `total_questions` | `integer` | DEFAULT 0 | 已作答的題目總數 |
 | `created_at` | `timestamptz` | DEFAULT now() | 帳號建立時間 |
 | `updated_at` | `timestamptz` | DEFAULT now() | 最後更新時間 |
 | `tags` | `jsonb` | DEFAULT '[]' | 學員標籤，如 `["第1梯", "VIP"]` |
-| `exam_name` | `varchar` | NULLABLE | 考試項目名稱（用戶手動設定，如「甲級技術士」） |
+| `exam_name` | `text` | NULLABLE | 考試項目名稱（用戶手動設定，如「甲級技術士」） |
 | `exam_date` | `date` | NULLABLE | 考試日期（用戶手動設定） |
 | `daily_goal` | `integer` | DEFAULT 20 | 每日目標題數（用戶手動設定） |
 
@@ -616,7 +614,7 @@ async getUserAnalysisHistory(userId, limit = 10) {
 ```sql
 -- 在 users 表新增考試相關欄位
 ALTER TABLE users
-ADD COLUMN IF NOT EXISTS exam_name varchar(100);
+ADD COLUMN IF NOT EXISTS exam_name text;
 
 ALTER TABLE users
 ADD COLUMN IF NOT EXISTS exam_date date;
@@ -630,7 +628,7 @@ ADD COLUMN IF NOT EXISTS daily_goal integer DEFAULT 20;
 
 | 欄位名稱 (Column) | 資料型別 (Type) | 屬性與預設值 (Attributes & Default) | 說明 (Description) |
 | --- | --- | --- | --- |
-| `exam_name` | `varchar(100)` | NULLABLE | 考試項目名稱（如「甲級技術士」） |
+| `exam_name` | `text` | NULLABLE | 考試項目名稱（如「甲級技術士」） |
 | `exam_date` | `date` | NULLABLE | 考試日期 |
 | `daily_goal` | `integer` | DEFAULT 20 | 每日答題目標（可調整） |
 
@@ -719,7 +717,7 @@ WITH CHECK (auth.uid() = user_id);
 
 -- 3. 擴充 users 表（考試資訊：名稱 + 日期 + 每日目標）
 ALTER TABLE users
-ADD COLUMN IF NOT EXISTS exam_name varchar(100);
+ADD COLUMN IF NOT EXISTS exam_name text;
 
 ALTER TABLE users
 ADD COLUMN IF NOT EXISTS exam_date date;

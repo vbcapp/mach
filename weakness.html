@@ -448,6 +448,21 @@
         </div>
     </div>
 
+    <!-- 數據卡片說明 Modal -->
+    <div id="card-help-modal" class="modal-overlay" onclick="closeCardHelpModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="flex items-center gap-2">
+                    <span id="card-help-icon" class="material-symbols-outlined text-xl">info</span>
+                    <span id="card-help-title" class="font-black text-sm uppercase">說明</span>
+                </div>
+                <button class="modal-close" onclick="closeCardHelpModal()">&times;</button>
+            </div>
+            <div id="card-help-body" class="modal-body">
+            </div>
+        </div>
+    </div>
+
     <div class="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto border-x-2 border-black/5">
         <header class="bg-primary pt-12 pb-6 px-6 border-b-8 border-black sticky top-0 z-40">
             <div class="flex items-center gap-4 mb-2">
@@ -572,7 +587,8 @@
                     </div>
                 </div>
 
-                <!-- 1. 今日新增熟練題數 -->
+                <!-- 1 & 2: 今日精熟題數 + 本次答題表現（左右並排） -->
+                <div class="grid grid-cols-2 gap-3">
                 <div class="neo-brutalism-card bg-gradient-to-br from-green-50 to-emerald-50 p-4">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="material-symbols-outlined text-green-600 text-xl">workspace_premium</span>
@@ -599,7 +615,6 @@
                     </div>
                 </div>
 
-                <!-- 2. 本次答題表現 vs 歷史平均 -->
                 <div class="neo-brutalism-card bg-gradient-to-br from-blue-50 to-cyan-50 p-4">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="material-symbols-outlined text-blue-600 text-xl">show_chart</span>
@@ -623,6 +638,7 @@
                             </div>
                         </div>
                     </div>
+                </div>
                 </div>
 
                 <!-- 3. 錯誤選項分析（Top 3） -->
@@ -649,72 +665,63 @@
             <div id="stats-dashboard" class="mb-6 space-y-4">
                 <!-- 第一行：核心指標 (3欄) -->
                 <div class="grid grid-cols-3 gap-2">
-                    <!-- 錯題 / 已答題 -->
-                    <div class="neo-brutalism-card bg-white p-3">
+                    <!-- 卡片一：累計答題概覽 -->
+                    <div class="neo-brutalism-card bg-white p-2.5">
                         <div class="flex items-center gap-1 mb-1">
-                            <span class="material-symbols-outlined text-[#FF3B30] text-sm">error</span>
-                            <span class="text-[9px] font-bold text-gray-500 uppercase">錯題/已答</span>
+                            <span class="material-symbols-outlined text-green-500 text-xs">task_alt</span>
+                            <span class="text-[8px] font-bold text-gray-500 uppercase">累計答題</span>
+                            <button onclick="showCardHelpModal('answered')"
+                                class="w-4 h-4 bg-blue-500 text-white border-[1.5px] border-black rounded-full flex items-center justify-center text-[8px] font-black hover:bg-blue-600 hover:scale-110 transition-transform cursor-pointer ml-auto shrink-0">?</button>
                         </div>
                         <div class="flex items-baseline gap-0.5">
-                            <span id="stat-wrong-count" class="text-xl font-black text-[#FF3B30]">--</span>
-                            <span class="text-gray-400 font-bold text-sm">/</span>
-                            <span id="stat-answered-count" class="text-sm font-bold text-gray-600">--</span>
+                            <span id="stat-correct-count" class="text-lg font-black text-green-600">--</span>
+                            <span class="text-gray-400 font-bold text-[10px]">題對</span>
+                            <span class="text-gray-300 font-bold text-xs mx-0.5">/</span>
+                            <span id="stat-answered-count-2" class="text-xs font-bold text-gray-500">--</span>
+                            <span class="text-gray-400 font-bold text-[10px]">題</span>
                         </div>
+                        <div class="text-[8px] text-gray-400 mt-0.5">已作答過的題目</div>
                     </div>
 
-                    <!-- 正確題數 / 已答題 -->
-                    <div class="neo-brutalism-card bg-white p-3">
+                    <!-- 卡片二：今日正確率 -->
+                    <div class="neo-brutalism-card bg-white p-2.5">
                         <div class="flex items-center gap-1 mb-1">
-                            <span class="material-symbols-outlined text-green-500 text-sm">task_alt</span>
-                            <span class="text-[9px] font-bold text-gray-500 uppercase">正確/已答</span>
+                            <span class="material-symbols-outlined text-blue-500 text-xs">today</span>
+                            <span class="text-[8px] font-bold text-gray-500 uppercase">今日正確率</span>
+                            <button onclick="showCardHelpModal('todayAccuracy')"
+                                class="w-4 h-4 bg-blue-500 text-white border-[1.5px] border-black rounded-full flex items-center justify-center text-[8px] font-black hover:bg-blue-600 hover:scale-110 transition-transform cursor-pointer ml-auto shrink-0">?</button>
                         </div>
-                        <div class="flex items-baseline gap-0.5">
-                            <span id="stat-correct-count" class="text-xl font-black text-green-600">--</span>
-                            <span class="text-gray-400 font-bold text-sm">/</span>
-                            <span id="stat-answered-count-2" class="text-sm font-bold text-gray-600">--</span>
+                        <div id="today-accuracy-display">
+                            <span id="stat-today-accuracy" class="text-lg font-black text-blue-600">--%</span>
                         </div>
+                        <div id="today-accuracy-desc" class="text-[8px] text-gray-400 mt-0.5">今天的表現</div>
                     </div>
 
-                    <!-- 整體正確率 -->
-                    <div class="neo-brutalism-card bg-white p-3">
+                    <!-- 卡片三：近期進步 -->
+                    <div class="neo-brutalism-card bg-white p-2.5">
                         <div class="flex items-center gap-1 mb-1">
-                            <span class="material-symbols-outlined text-blue-500 text-sm">percent</span>
-                            <span class="text-[9px] font-bold text-gray-500 uppercase">正確率</span>
-                        </div>
-                        <div class="flex items-baseline gap-0.5">
-                            <span id="stat-accuracy" class="text-xl font-black text-blue-600">--%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 第二行：熟練度 + 進步指標 -->
-                <div class="grid grid-cols-2 gap-3">
-                    <!-- 已答題之熟練度 -->
-                    <div class="neo-brutalism-card bg-white p-4">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="material-symbols-outlined text-primary text-lg">workspace_premium</span>
-                            <span class="text-[10px] font-bold text-gray-500 uppercase">已答題之熟練度</span>
-                        </div>
-                        <div class="flex items-baseline gap-1">
-                            <span id="stat-mastery" class="text-2xl font-black">--%</span>
-                        </div>
-                        <div class="text-[10px] text-gray-400 mt-1">
-                            已熟練 <span id="stat-mastered-count" class="font-bold text-black">--</span> 題
-                        </div>
-                    </div>
-
-                    <!-- 進步指標 -->
-                    <div class="neo-brutalism-card bg-white p-4">
-                        <div class="flex items-center gap-2 mb-1">
                             <span id="improvement-icon"
-                                class="material-symbols-outlined text-lg text-gray-400">trending_flat</span>
-                            <span class="text-[10px] font-bold text-gray-500 uppercase">近 7 天進步</span>
+                                class="material-symbols-outlined text-sm text-gray-400">trending_flat</span>
+                            <span id="improvement-period-label" class="text-[8px] font-bold text-gray-500 uppercase">近1天</span>
+                            <button onclick="showCardHelpModal('improvement')"
+                                class="w-4 h-4 bg-blue-500 text-white border-[1.5px] border-black rounded-full flex items-center justify-center text-[8px] font-black hover:bg-blue-600 hover:scale-110 transition-transform cursor-pointer ml-auto shrink-0">?</button>
                         </div>
-                        <div class="flex items-baseline gap-1">
-                            <span id="stat-improvement" class="text-2xl font-black text-gray-400">--</span>
+                        <div class="flex items-baseline gap-0.5">
+                            <span id="stat-improvement" class="text-lg font-black text-gray-400">--</span>
                         </div>
-                        <div id="improvement-desc" class="text-[10px] text-gray-400 mt-1">
-                            正確率變化
+                        <div class="flex items-center justify-between mt-0.5">
+                            <div id="improvement-desc" class="text-[8px] text-gray-400">
+                                正確率變化
+                            </div>
+                            <!-- 時段切換按鈕 -->
+                            <div class="flex gap-0.5">
+                                <button onclick="switchImprovementPeriod(1)" id="period-btn-1"
+                                    class="text-[7px] font-black px-1 py-0.5 border border-black bg-black text-white rounded">1天</button>
+                                <button onclick="switchImprovementPeriod(3)" id="period-btn-3"
+                                    class="text-[7px] font-black px-1 py-0.5 border border-black bg-white text-black rounded hover:bg-gray-100">3天</button>
+                                <button onclick="switchImprovementPeriod(7)" id="period-btn-7"
+                                    class="text-[7px] font-black px-1 py-0.5 border border-black bg-white text-black rounded hover:bg-gray-100">7天</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1315,53 +1322,268 @@
             }
         }
 
+        // 當前選擇的進步時段
+        let currentImprovementPeriod = 1;
+
         /**
          * 渲染儀表板統計數據
          */
         function renderDashboardStats(stats) {
             globalStats = stats; // 儲存供後續使用
 
-            // 基礎數據
-            document.getElementById('stat-wrong-count').textContent = stats.wrongQuestionCount;
-            document.getElementById('stat-answered-count').textContent = stats.totalAnswered;
+            // 卡片一：累計答題
             document.getElementById('stat-correct-count').textContent = stats.correctQuestionCount;
             document.getElementById('stat-answered-count-2').textContent = stats.totalAnswered;
-            document.getElementById('stat-accuracy').textContent = stats.overallAccuracy + '%';
-            document.getElementById('stat-mastery').textContent = stats.masteryRate + '%';
-            document.getElementById('stat-mastered-count').textContent = stats.masteredCount;
 
-            // 進步指標
-            const improvementEl = document.getElementById('stat-improvement');
-            const improvementIcon = document.getElementById('improvement-icon');
-            const improvementDesc = document.getElementById('improvement-desc');
+            // 卡片二：今日正確率
+            const todayAccuracyEl = document.getElementById('stat-today-accuracy');
+            const todayDescEl = document.getElementById('today-accuracy-desc');
 
-            const change = stats.improvement.accuracyChange;
-
-            if (change > 0) {
-                improvementEl.textContent = '+' + change + '%';
-                improvementEl.className = 'text-2xl font-black text-green-600';
-                improvementIcon.textContent = 'trending_up';
-                improvementIcon.className = 'material-symbols-outlined text-lg text-green-600';
-                improvementDesc.textContent = '正確率提升';
-                improvementDesc.className = 'text-[10px] text-green-600 mt-1';
-            } else if (change < 0) {
-                improvementEl.textContent = change + '%';
-                improvementEl.className = 'text-2xl font-black text-[#FF3B30]';
-                improvementIcon.textContent = 'trending_down';
-                improvementIcon.className = 'material-symbols-outlined text-lg text-[#FF3B30]';
-                improvementDesc.textContent = '正確率下降';
-                improvementDesc.className = 'text-[10px] text-[#FF3B30] mt-1';
+            if (stats.todayAccuracy !== null && stats.todayAccuracy !== undefined) {
+                todayAccuracyEl.textContent = stats.todayAccuracy + '%';
+                todayAccuracyEl.className = 'text-lg font-black text-blue-600';
+                todayDescEl.textContent = '今日 ' + stats.todayCorrect + '/' + stats.todayTotal + ' 題答對';
+                todayDescEl.className = 'text-[8px] text-blue-500 mt-0.5';
             } else {
-                improvementEl.textContent = '0%';
-                improvementEl.className = 'text-2xl font-black text-gray-500';
-                improvementIcon.textContent = 'trending_flat';
-                improvementIcon.className = 'material-symbols-outlined text-lg text-gray-500';
-                improvementDesc.textContent = '維持穩定';
-                improvementDesc.className = 'text-[10px] text-gray-500 mt-1';
+                todayAccuracyEl.textContent = '尚未作答';
+                todayAccuracyEl.className = 'text-sm font-black text-gray-400';
+                todayDescEl.textContent = '今天還沒開始練習喔';
+                todayDescEl.className = 'text-[8px] text-gray-400 mt-0.5';
             }
+
+            // 卡片三：進步指標（預設顯示 1 天）
+            renderImprovementCard(stats, currentImprovementPeriod);
 
             // 預估完成天數
             updateEstimatedDays(stats);
+        }
+
+        /**
+         * 渲染進步指標卡片
+         */
+        function renderImprovementCard(stats, period) {
+            const improvementEl = document.getElementById('stat-improvement');
+            const improvementIcon = document.getElementById('improvement-icon');
+            const improvementDesc = document.getElementById('improvement-desc');
+            const periodLabel = document.getElementById('improvement-period-label');
+
+            const periodLabels = { 1: '近1天', 3: '近3天', 7: '近7天' };
+            periodLabel.textContent = periodLabels[period] || '近1天';
+
+            const periodData = stats.improvementByPeriod?.[period];
+            const change = periodData?.change;
+
+            if (change === null || change === undefined || !periodData?.hasData) {
+                improvementEl.textContent = '資料不足';
+                improvementEl.className = 'text-sm font-black text-gray-400';
+                improvementIcon.textContent = 'trending_flat';
+                improvementIcon.className = 'material-symbols-outlined text-sm text-gray-400';
+                improvementDesc.textContent = '需要更多答題紀錄';
+                improvementDesc.className = 'text-[8px] text-gray-400';
+            } else if (change > 0) {
+                improvementEl.textContent = '+' + change + '%';
+                improvementEl.className = 'text-lg font-black text-green-600';
+                improvementIcon.textContent = 'trending_up';
+                improvementIcon.className = 'material-symbols-outlined text-sm text-green-600';
+                improvementDesc.textContent = '正確率提升';
+                improvementDesc.className = 'text-[8px] text-green-600';
+            } else if (change < 0) {
+                improvementEl.textContent = change + '%';
+                improvementEl.className = 'text-lg font-black text-[#FF3B30]';
+                improvementIcon.textContent = 'trending_down';
+                improvementIcon.className = 'material-symbols-outlined text-sm text-[#FF3B30]';
+                improvementDesc.textContent = '正確率下降';
+                improvementDesc.className = 'text-[8px] text-[#FF3B30]';
+            } else {
+                improvementEl.textContent = '0%';
+                improvementEl.className = 'text-lg font-black text-gray-500';
+                improvementIcon.textContent = 'trending_flat';
+                improvementIcon.className = 'material-symbols-outlined text-sm text-gray-500';
+                improvementDesc.textContent = '維持穩定';
+                improvementDesc.className = 'text-[8px] text-gray-500';
+            }
+        }
+
+        /**
+         * 切換進步指標時段
+         */
+        function switchImprovementPeriod(period) {
+            currentImprovementPeriod = period;
+
+            // 更新按鈕樣式
+            [1, 3, 7].forEach(p => {
+                const btn = document.getElementById('period-btn-' + p);
+                if (p === period) {
+                    btn.className = 'text-[7px] font-black px-1 py-0.5 border border-black bg-black text-white rounded';
+                } else {
+                    btn.className = 'text-[7px] font-black px-1 py-0.5 border border-black bg-white text-black rounded hover:bg-gray-100';
+                }
+            });
+
+            if (globalStats) {
+                renderImprovementCard(globalStats, period);
+            }
+        }
+
+        /**
+         * 顯示數據卡片說明彈窗
+         */
+        function showCardHelpModal(type) {
+            const modal = document.getElementById('card-help-modal');
+            const icon = document.getElementById('card-help-icon');
+            const title = document.getElementById('card-help-title');
+            const body = document.getElementById('card-help-body');
+
+            const helpContent = {
+                answered: {
+                    icon: 'task_alt',
+                    title: '什麼是「累計答題」？',
+                    body: `
+                        <div class="space-y-4 text-sm">
+                            <div class="flex items-start gap-3 bg-green-50 border-2 border-green-400 p-3">
+                                <span class="text-2xl shrink-0">📋</span>
+                                <div>
+                                    <div class="font-black text-base mb-1">這張卡片在說什麼？</div>
+                                    <p class="text-sm leading-relaxed">
+                                        顯示你<strong class="text-green-600 font-black">曾答對過的題目數</strong> / <strong class="font-black">總共作答過的題目數</strong>。
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-2xl shrink-0">💡</span>
+                                <div>
+                                    <div class="font-black text-base mb-1">怎麼看？</div>
+                                    <p class="text-sm leading-relaxed">
+                                        只要你曾經答對過一次，就會被記入左邊的數字。這讓你知道<strong class="font-black">你接觸過多少題</strong>，以及<strong class="font-black">有多少題你至少會了一次</strong>。
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="bg-yellow-50 border-2 border-yellow-400 p-3">
+                                <div class="flex items-start gap-2">
+                                    <span class="text-lg shrink-0">⭐</span>
+                                    <p class="text-xs leading-relaxed text-gray-700">
+                                        這個數字會持續累積，讓你看到自己走了多遠。不用擔心，只管繼續練習就好！
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="closeCardHelpModal()"
+                            class="w-full bg-green-500 text-white border-4 border-black py-3 px-4 font-black text-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mt-4 hover:bg-green-600">
+                            我知道了！
+                        </button>
+                    `
+                },
+                todayAccuracy: {
+                    icon: 'today',
+                    title: '什麼是「今日正確率」？',
+                    body: `
+                        <div class="space-y-4 text-sm">
+                            <div class="flex items-start gap-3 bg-blue-50 border-2 border-blue-400 p-3">
+                                <span class="text-2xl shrink-0">📊</span>
+                                <div>
+                                    <div class="font-black text-base mb-1">這張卡片在說什麼？</div>
+                                    <p class="text-sm leading-relaxed">
+                                        顯示你<strong class="text-blue-600 font-black">今天</strong>所有答題中，答對的比例。
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-2xl shrink-0">🎯</span>
+                                <div>
+                                    <div class="font-black text-base mb-1">為什麼只看今天？</div>
+                                    <p class="text-sm leading-relaxed">
+                                        每天都是新的開始！今日正確率讓你專注在<strong class="font-black">當下的表現</strong>，不被過去的失誤影響心情。
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-2xl shrink-0">💡</span>
+                                <div>
+                                    <div class="font-black text-base mb-1">如果顯示「尚未作答」？</div>
+                                    <p class="text-sm leading-relaxed">
+                                        代表你今天還沒開始練習，去答幾題就會看到數字囉！
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="closeCardHelpModal()"
+                            class="w-full bg-blue-500 text-white border-4 border-black py-3 px-4 font-black text-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mt-4 hover:bg-blue-600">
+                            我知道了！
+                        </button>
+                    `
+                },
+                improvement: {
+                    icon: 'trending_up',
+                    title: '什麼是「近期進步」？',
+                    body: `
+                        <div class="space-y-4 text-sm">
+                            <div class="flex items-start gap-3 bg-purple-50 border-2 border-purple-400 p-3">
+                                <span class="text-2xl shrink-0">📈</span>
+                                <div>
+                                    <div class="font-black text-base mb-1">這張卡片在說什麼？</div>
+                                    <p class="text-sm leading-relaxed">
+                                        比較你<strong class="text-purple-600 font-black">最近的正確率</strong>和<strong class="font-black">再之前同樣天數</strong>的正確率差異。
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-2xl shrink-0">🔄</span>
+                                <div>
+                                    <div class="font-black text-base mb-1">可以切換時段</div>
+                                    <div class="space-y-1 text-sm">
+                                        <p><strong class="font-black">1天：</strong>今天 vs 昨天</p>
+                                        <p><strong class="font-black">3天：</strong>近3天 vs 前3天</p>
+                                        <p><strong class="font-black">7天：</strong>近7天 vs 前7天</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-2xl shrink-0">💡</span>
+                                <div>
+                                    <div class="font-black text-base mb-1">怎麼解讀？</div>
+                                    <div class="space-y-1 text-sm">
+                                        <p class="text-green-600"><strong>+數字%</strong> = 正確率比之前高，你在進步！</p>
+                                        <p class="text-red-500"><strong>-數字%</strong> = 正確率比之前低，可能遇到難題</p>
+                                        <p class="text-gray-500"><strong>資料不足</strong> = 該時段沒有足夠的答題紀錄</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-yellow-50 border-2 border-yellow-400 p-3">
+                                <div class="flex items-start gap-2">
+                                    <span class="text-lg shrink-0">⭐</span>
+                                    <p class="text-xs leading-relaxed text-gray-700">
+                                        短期波動很正常！建議用 7 天的趨勢來判斷整體進步方向。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="closeCardHelpModal()"
+                            class="w-full bg-purple-500 text-white border-4 border-black py-3 px-4 font-black text-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mt-4 hover:bg-purple-600">
+                            我知道了！
+                        </button>
+                    `
+                }
+            };
+
+            const content = helpContent[type];
+            if (!content) return;
+
+            icon.textContent = content.icon;
+            title.textContent = content.title;
+            body.innerHTML = content.body;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        /**
+         * 關閉數據卡片說明彈窗
+         */
+        function closeCardHelpModal(event) {
+            if (!event || event.target.id === 'card-help-modal') {
+                const modal = document.getElementById('card-help-modal');
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
         }
 
         /**

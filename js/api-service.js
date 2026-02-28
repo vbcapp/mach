@@ -2495,17 +2495,32 @@ class ApiService {
             // 4. 計算每日統計（錯題數、正確率）
             const dailyStats = {};
 
-            // 初始化最近 30 天的日期
+            // 將日期轉為本地日期字串（YYYY-MM-DD）
+            // 注意：Supabase 回傳格式為 "2026-02-28 12:21:55.227+08"（空格分隔），
+            // 部分瀏覽器無法正確解析，需先轉為 ISO 格式（T 分隔）
+            function toLocalDateStr(date) {
+                if (!date) return '';
+                // 將 Supabase 的空格格式轉為標準 ISO 格式
+                const normalized = typeof date === 'string' ? date.replace(' ', 'T') : date;
+                const d = new Date(normalized);
+                if (isNaN(d.getTime())) return '';
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            // 初始化最近 30 天的日期（使用本地時間）
             for (let i = 0; i < 30; i++) {
                 const date = new Date();
                 date.setDate(date.getDate() - (29 - i));
-                const dateStr = date.toISOString().split('T')[0];
+                const dateStr = toLocalDateStr(date);
                 dailyStats[dateStr] = { correct: 0, incorrect: 0, total: 0 };
             }
 
-            // 填入實際數據
+            // 填入實際數據（將 UTC 時間轉為本地日期）
             recentRecords?.forEach(record => {
-                const dateStr = record.created_at.split('T')[0];
+                const dateStr = toLocalDateStr(record.created_at);
                 if (dailyStats[dateStr]) {
                     dailyStats[dateStr].total++;
                     if (record.is_correct) {
@@ -2516,36 +2531,58 @@ class ApiService {
                 }
             });
 
-            // 轉換為陣列格式
-            const trendData = Object.entries(dailyStats).map(([date, stats]) => ({
-                date,
-                incorrect: stats.incorrect,
-                correct: stats.correct,
-                total: stats.total,
-                accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : null
-            }));
+            // 轉換為陣列格式，並確保按日期排序
+            const trendData = Object.entries(dailyStats)
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([date, stats]) => ({
+                    date,
+                    incorrect: stats.incorrect,
+                    correct: stats.correct,
+                    total: stats.total,
+                    accuracy: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : null
+                }));
 
-            // 5. 計算 7 天 vs 30 天的進步幅度
+            // 5. 今日正確率 (精確定位「今天」)
+            const todayStr = toLocalDateStr(new Date());
+            const todayData = dailyStats[todayStr];
+
+            const todayAccuracy = todayData && todayData.total > 0
+                ? Math.round((todayData.correct / todayData.total) * 100)
+                : null; // null 代表今日尚未作答
+            const todayTotal = todayData ? todayData.total : 0;
+            const todayCorrect = todayData ? todayData.correct : 0;
+
+            // 6. 多時段進步指標（1天、3天、7天）
+            function calcImprovement(days) {
+                const recent = trendData.slice(-days);
+                const previous = trendData.slice(-days * 2, -days);
+                const recentTotal = recent.reduce((s, d) => s + d.total, 0);
+                const recentCorrect = recent.reduce((s, d) => s + d.correct, 0);
+                const prevTotal = previous.reduce((s, d) => s + d.total, 0);
+                const prevCorrect = previous.reduce((s, d) => s + d.correct, 0);
+                const recentAcc = recentTotal > 0 ? (recentCorrect / recentTotal) * 100 : 0;
+                const prevAcc = prevTotal > 0 ? (prevCorrect / prevTotal) * 100 : 0;
+
+                // 如果最近有作答，但前一週期沒數據，我們將其視為進步
+                // 否則如果兩邊都沒數據，才顯示「資料不足」
+                const hasData = recentTotal > 0;
+                return {
+                    change: hasData ? Math.round((recentAcc - prevAcc) * 10) / 10 : null,
+                    recentTotal,
+                    hasData: hasData
+                };
+            }
+
+            const improvement1d = calcImprovement(1);
+            const improvement3d = calcImprovement(3);
+            const improvement7d = calcImprovement(7);
+
+            // 相容舊欄位
             const last7Days = trendData.slice(-7);
-            const previous7Days = trendData.slice(-14, -7);
-
             const last7Incorrect = last7Days.reduce((sum, d) => sum + d.incorrect, 0);
-            const previous7Incorrect = previous7Days.reduce((sum, d) => sum + d.incorrect, 0);
-
             const last7Total = last7Days.reduce((sum, d) => sum + d.total, 0);
-            const previous7Total = previous7Days.reduce((sum, d) => sum + d.total, 0);
-
             const last7Correct = last7Days.reduce((sum, d) => sum + d.correct, 0);
-            const previous7Correct = previous7Days.reduce((sum, d) => sum + d.correct, 0);
-
             const last7Accuracy = last7Total > 0 ? (last7Correct / last7Total) * 100 : 0;
-            const previous7Accuracy = previous7Total > 0 ? (previous7Correct / previous7Total) * 100 : 0;
-
-            // 進步幅度（正確率變化）
-            const accuracyImprovement = last7Accuracy - previous7Accuracy;
-
-            // 錯題數變化
-            const incorrectChange = last7Incorrect - previous7Incorrect;
 
             return {
                 success: true,
@@ -2557,6 +2594,11 @@ class ApiService {
                     overallAccuracy,        // 整體正確率 %
                     masteryRate,            // 已答題之熟練度 %
                     masteredCount,          // 已熟練題數
+
+                    // 今日統計
+                    todayAccuracy,          // 今日正確率 % (null=尚未作答)
+                    todayTotal,             // 今日作答次數
+                    todayCorrect,           // 今日答對次數
 
                     // 預估計算用
                     totalQuestionsInBank: totalQuestionsInBank || 0,  // 題庫總題數
@@ -2572,11 +2614,18 @@ class ApiService {
                         accuracy: Math.round(last7Accuracy)
                     },
 
-                    // 進步指標
+                    // 多時段進步指標
+                    improvementByPeriod: {
+                        '1': improvement1d,
+                        '3': improvement3d,
+                        '7': improvement7d
+                    },
+
+                    // 相容舊欄位
                     improvement: {
-                        accuracyChange: Math.round(accuracyImprovement * 10) / 10,  // 正確率變化
-                        incorrectChange,    // 錯題數變化（負數表示減少）
-                        isImproving: accuracyImprovement > 0 || incorrectChange < 0
+                        accuracyChange: improvement7d.change || 0,
+                        incorrectChange: 0,
+                        isImproving: (improvement7d.change || 0) > 0
                     }
                 }
             };
