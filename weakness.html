@@ -49,6 +49,12 @@
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
         }
+        /* 層級分段副標題 */
+        .section-subtitle {
+            font-size: 0.625rem;
+            font-weight: 700;
+            color: #9ca3af;
+        }
         .toast-enter {
             animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -481,6 +487,7 @@
                 <div class="flex items-center gap-2 mb-2">
                     <span class="material-symbols-outlined text-primary">emoji_events</span>
                     <h2 class="text-sm font-black uppercase">今天的我</h2>
+                    <span class="section-subtitle">— 即時情緒回饋</span>
                 </div>
 
                 <!-- 1. 今日目標達成狀況 -->
@@ -584,6 +591,11 @@
             <!-- ═══════════════════════════════════════════════ -->
 
             <div id="stats-dashboard" class="mb-6 space-y-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="material-symbols-outlined text-green-500">trending_up</span>
+                    <h2 class="text-sm font-black uppercase">進步的我</h2>
+                    <span class="section-subtitle">— 趨勢與成長確認</span>
+                </div>
                 <!-- 3. 三欄小卡：累計答題 / 今日正確率 / 近期進步 -->
                 <div class="grid grid-cols-3 gap-2">
                     <!-- 卡片一：累計答題概覽 -->
@@ -704,6 +716,7 @@
                 <div class="flex items-center gap-2 mb-2">
                     <span class="material-symbols-outlined text-red-500">troubleshoot</span>
                     <h2 class="text-sm font-black uppercase">弱點診斷</h2>
+                    <span class="section-subtitle">— 精準定位你的盲區</span>
                 </div>
 
                 <!-- 6. 最常錯的選項（Top 3~5） -->
@@ -764,6 +777,7 @@
                 <div class="flex items-center gap-2 mb-2">
                     <span class="material-symbols-outlined text-purple-600">rocket_launch</span>
                     <h2 class="text-sm font-black uppercase">進度規劃</h2>
+                    <span class="section-subtitle">— 掌握你的備考節奏</span>
                 </div>
 
                 <!-- 8. 考試倒數 -->
