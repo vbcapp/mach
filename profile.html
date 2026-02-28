@@ -300,30 +300,6 @@
                         <canvas id="first-vs-review-chart"></canvas>
                     </div>
                 </div>
-
-                <!-- Chart 10: Average Reviews to Mastery -->
-                <div class="bg-white dark:bg-gray-800 border-4 border-black p-4 neo-brutalism-card">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="material-symbols-outlined text-black dark:text-white">military_tech</span>
-                        <h3 class="text-xl font-black italic uppercase">平均達到精熟的複習次數</h3>
-                    </div>
-                    <div
-                        class="flex flex-col items-center justify-center p-8 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
-                        <div
-                            class="text-sm font-black text-black mb-4 uppercase tracking-widest bg-primary px-2 py-1 border-2 border-black inline-block text-center">
-                            需要幾次作答才能精熟一題？</div>
-                        <div class="text-xs font-bold text-gray-500 mb-2 border-dashed border-b-2 border-gray-400 pb-1">
-                            (答對次數 ≥ 7 次 或 正確率 ≥ 80%)
-                        </div>
-                        <div class="flex items-end gap-2 mt-2">
-                            <span id="avg-reviews-value"
-                                class="text-7xl font-black italic bg-primary px-4 border-4 border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                                -
-                            </span>
-                            <span class="text-3xl font-black italic text-black pb-1">次</span>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div
@@ -700,7 +676,6 @@
                 await renderAnswerTimeDistributionChart();
                 await renderOverallAccuracyTrendChart('week');
                 await renderFirstVsReviewAccuracyChart();
-                await renderAverageReviewsToMastery();
             } catch (error) {
                 console.error('初始化管理員儀表板失敗:', error);
             }
@@ -1207,18 +1182,6 @@
             });
         }
 
-        async function renderAverageReviewsToMastery() {
-            const result = await apiService.getAdminAverageReviewsToMastery();
-            if (!result.success) {
-                console.error('取得平均精熟作答次數失敗:', result.error);
-                return;
-            }
-
-            const el = document.getElementById('avg-reviews-value');
-            if (el) {
-                el.textContent = result.data !== undefined && result.data !== null ? result.data : '-';
-            }
-        }
 
 
 
