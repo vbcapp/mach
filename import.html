@@ -261,9 +261,9 @@
                 return;
             }
 
-            // 檢查管理員權限
-            if (typeof ADMIN_UUIDS !== 'undefined' && !ADMIN_UUIDS.includes(apiService.currentUser.id)) {
-                ModalSystem.alert('權限不足', '只有管理員可以匯入題目', () => {
+            // 檢查最高管理者權限（只有最高管理者才能匯入）
+            if (typeof SUPER_ADMIN_UUIDS === 'undefined' || !SUPER_ADMIN_UUIDS.includes(apiService.currentUser.id)) {
+                ModalSystem.alert('權限不足', '只有最高管理者可以匯入題目', () => {
                     window.location.href = 'profile.html';
                 });
                 return;

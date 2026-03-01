@@ -1917,6 +1917,29 @@ class ApiService {
     }
 
     /**
+     * 批量更新多個章節的權限設定
+     * @param {string[]} accessIds - 章節權限 ID 陣列
+     * @param {Object} updates - 更新內容 { is_public, allowed_tags }
+     */
+    async batchUpdateChapterAccess(accessIds, updates) {
+        try {
+            const { error } = await this.supabase
+                .from('chapter_access')
+                .update({
+                    is_public: updates.is_public,
+                    allowed_tags: updates.allowed_tags,
+                    updated_at: new Date().toISOString()
+                })
+                .in('id', accessIds);
+
+            if (error) throw error;
+            return { success: true, updatedCount: accessIds.length };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 批量更新章節的 allowed_tags
      * @param {string} subject - 大科目
      * @param {string} chapter - 章節

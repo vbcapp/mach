@@ -27,12 +27,25 @@ const ERROR_CODES = {
 
 // ==================== 管理員配置 ====================
 // 管理員 UUID 配置
-const MASTER_ADMIN_ID = '68b72a80-57d8-40ee-811e-be58bea1e69f'; // 原始管理員 (母版卡片來源)
+const MASTER_ADMIN_ID = '96e40a3a-5417-4cd2-bc64-beffab960331'; // 原始管理員 (母版卡片來源) ceceloveye@gmail.com
+
+// 最高管理者 UUID（可匯入 JSON、完整管理權限）
+const SUPER_ADMIN_UUIDS = [
+    '96e40a3a-5417-4cd2-bc64-beffab960331', // ceceloveye@gmail.com
+];
+
+// 次高管理者 UUID（管理儀表板，但不能匯入 JSON）
+const SUB_ADMIN_UUIDS = [
+    '074640cd-6b42-4115-a7c2-4218e4e0169a', // cecelove_e@hotmail.com
+];
+
+// 所有管理員（包含最高+次高，用於向下相容）
 const ADMIN_UUIDS = [
+    ...SUPER_ADMIN_UUIDS,
+    ...SUB_ADMIN_UUIDS,
     '17da7d22-17ad-4d40-a5d2-9c2ce9216cf0', // Original Admin
     '3a5bb55c-4ffc-4373-a9b5-f211b4b4d63b', // New Admin
-    '68b72a80-57d8-40ee-811e-be58bea1e69f', // ceceloveye@gmail.com
-    '03ff6033-ce0e-41ee-9734-fce32c10b1bb'  // imnivek@gmail.com
+    '03ff6033-ce0e-41ee-9734-fce32c10b1bb',  // imnivek@gmail.com
 ];
 
 // ==================== 學員白名單 ====================

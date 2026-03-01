@@ -667,6 +667,12 @@
                     backupCard.classList.remove('hidden');
                 }
 
+                // 匯入 JSON 按鈕僅最高管理者可見
+                const importBtn = document.getElementById('import-cards-btn');
+                if (importBtn && (typeof SUPER_ADMIN_UUIDS === 'undefined' || !SUPER_ADMIN_UUIDS.includes(apiService.currentUser.id))) {
+                    importBtn.style.display = 'none';
+                }
+
                 // 載入並渲染圖表/區塊
                 await renderRegistrationsChart();
                 await renderTopIncorrectCardsDashboard();
