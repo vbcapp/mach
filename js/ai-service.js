@@ -5,8 +5,8 @@
 
 class AIService {
     constructor() {
-        // OpenAI API Key (應該從安全的地方獲取，但這裡先直接使用)
-        this.apiKey = '***REMOVED***';
+        // OpenAI API Key - 從 localStorage 或設定中讀取
+        this.apiKey = localStorage.getItem('openai_api_key') || '';
         this.apiEndpoint = 'https://api.openai.com/v1/chat/completions';
     }
 
