@@ -1,4 +1,7 @@
-# 📚 VibeCoding Flashcard - 資料庫架構與 API 規格文檔
+# 📚 sandys-exam-card-system - 資料庫架構與 API 規格文檔
+
+> **Supabase 專案：** `sandys-exam-card-system` (Ref: `mwwvrapnjekxwxpyolcm`)
+> **URL：** `https://mwwvrapnjekxwxpyolcm.supabase.co`
 
 ## 📋 目錄
 - [資料庫架構設計](#資料庫架構設計)

@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>美青勞資事務師 - 數據收集說明頁面</title>
+    <title>工商安全衛生協會-新竹職訓中心 - 數據收集說明頁面</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans+TC:wght@400;700&amp;display=swap"
@@ -85,7 +85,7 @@
             class="flex items-center justify-center bg-white dark:bg-black border-[3px] border-black p-4 neo-shadow w-20 h-20 mb-4 rounded-xl">
             <span class="material-symbols-outlined text-4xl font-bold text-black dark:text-white">code_blocks</span>
         </div>
-        <h1 class="text-3xl font-bold tracking-tighter text-black dark:text-white uppercase mb-4">美青勞資事務師</h1>
+        <h1 class="text-3xl font-bold tracking-tighter text-black dark:text-white uppercase mb-4">工商安全衛生協會-新竹職訓中心</h1>
         <p class="text-center text-black dark:text-zinc-200 font-bold leading-relaxed px-2">
             🎯 企業證照考試練習平台！透過互動式測驗、遊戲化等級系統，以及完整的進度追蹤，助你有效準備證照考試
         </p>
@@ -113,6 +113,11 @@
             <input
                 class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
                 id="password" placeholder="請輸入密碼" type="password" />
+        </section>
+        <section id="confirm-password-section">
+            <input
+                class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
+                id="confirm-password" placeholder="請再次輸入密碼" type="password" />
         </section>
 
 
@@ -181,7 +186,7 @@
                 <span class="material-symbols-outlined font-black">arrow_forward</span>
             </button>
             <p class="mt-6 text-xs text-zinc-500 dark:text-zinc-400 font-bold">
-                美青勞資事務師 Flashcard App v1.2.0
+                工商安全衛生協會-新竹職訓中心 Flashcard App v1.2.0
             </p>
         </div>
     </main>
@@ -222,12 +227,15 @@
             const nickSec = document.getElementById('nickname-section');
             const btnText = document.getElementById('submit-btn-text');
 
+            const confirmSec = document.getElementById('confirm-password-section');
+
             if (mode === 'register') {
                 tabReg.classList.replace('border-transparent', 'border-black');
                 tabReg.classList.remove('text-zinc-400');
                 tabLog.classList.replace('border-black', 'border-transparent');
                 tabLog.classList.add('text-zinc-400');
                 nickSec.style.display = 'block';
+                confirmSec.style.display = 'block';
                 btnText.textContent = '註冊並開始使用';
             } else {
                 tabLog.classList.replace('border-transparent', 'border-black');
@@ -235,6 +243,7 @@
                 tabReg.classList.replace('border-black', 'border-transparent');
                 tabReg.classList.add('text-zinc-400');
                 nickSec.style.display = 'none';
+                confirmSec.style.display = 'none';
                 btnText.textContent = '登入';
             }
         }
@@ -257,6 +266,14 @@
             if (currentMode === 'login' && (!email || !password)) {
                 ModalSystem.alert('缺漏資料', '請輸入電子郵件與密碼！');
                 return;
+            }
+
+            if (currentMode === 'register' && password) {
+                const confirmPassword = document.getElementById('confirm-password').value.trim();
+                if (password !== confirmPassword) {
+                    ModalSystem.alert('密碼不一致', '兩次輸入的密碼不相同，請重新確認！');
+                    return;
+                }
             }
 
             if (!consent) {

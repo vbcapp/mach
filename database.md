@@ -2,6 +2,13 @@
 
 > [!NOTE]
 > 本系統採用 **Supabase** 作為後端資料庫 (PostgreSQL)。此文件記錄目前的資料庫架構設計。
+>
+> **Supabase 專案資訊：**
+> - 專案名稱：`sandys-exam-card-system`
+> - 組織：AllinAI
+> - Project Ref：`mwwvrapnjekxwxpyolcm`
+> - URL：`https://mwwvrapnjekxwxpyolcm.supabase.co`
+> - 區域：ap-northeast-1 (東京)
 
 ## 關聯結構 (Relations)
 

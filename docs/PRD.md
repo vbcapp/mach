@@ -760,6 +760,9 @@ const bufferDays = daysRemaining - estimatedDays;
 
 ### 後端技術棧
 - **BaaS**: Supabase
+  - 專案名稱: `sandys-exam-card-system` (Ref: `mwwvrapnjekxwxpyolcm`)
+  - URL: `https://mwwvrapnjekxwxpyolcm.supabase.co`
+  - 組織: AllinAI
   - Auth: Google OAuth
   - Database: PostgreSQL
   - Storage: 頭像儲存

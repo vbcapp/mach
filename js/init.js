@@ -37,7 +37,7 @@ async function initializeApp() {
                     // 清除本地暫存
                     localStorage.removeItem('userNickname');
                     localStorage.removeItem('userConsent');
-                    localStorage.removeItem('sb-vryyyyivmbbqahlaafdn-auth-token');
+                    localStorage.removeItem('sb-mwwvrapnjekxwxpyolcm-auth-token');
 
                     // 導向登入頁並帶上參數以顯示錯誤訊息
                     window.location.href = 'login.html?error=unauthorized';

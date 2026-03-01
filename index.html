@@ -4,14 +4,14 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>美青勞資事務師 - 簡約首頁列表</title>
+    <title>工商安全衛生協會-新竹職訓中心 - 簡約首頁列表</title>
 
     <!-- 登入檢查 -->
     <script>
         // 檢查是否已登入，如果沒有則導向 login.html
         // [Fix] 如果有 hash (OAuth callback) 則不導向，交由 init.js 處理
         if (!window.location.hash) {
-            const hasLogin = localStorage.getItem('userNickname') || localStorage.getItem('sb-vryyyyivmbbqahlaafdn-auth-token');
+            const hasLogin = localStorage.getItem('userNickname') || localStorage.getItem('sb-mwwvrapnjekxwxpyolcm-auth-token');
             // 注意：userNickname 在 Google 登入初次可能為空，改檢查 Supabase token 或 userConsent + hash
             // 這裡簡單寬鬆判斷，主要依賴 init.js 的詳細檢查
             if (!localStorage.getItem('userConsent') && !hasLogin) {
@@ -165,7 +165,7 @@
                 <div class="bg-primary neo-border p-1 flex items-center justify-center">
                     <span class="material-symbols-outlined text-black font-bold">terminal</span>
                 </div>
-                <h1 class="text-xl font-black italic tracking-tighter">美青勞資事務師</h1>
+                <h1 class="text-xl font-black italic tracking-tighter">工商安全衛生協會-新竹職訓中心</h1>
             </div>
             <button id="admin-create-btn" onclick="window.location.href='create.html'"
                 class="w-10 h-10 neo-border-thick bg-primary flex items-center justify-center neo-shadow-sm active:shadow-none active:translate-x-[1px] active:translate-y-[1px] hidden">
