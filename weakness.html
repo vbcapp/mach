@@ -234,7 +234,8 @@
     </style>
 </head>
 
-<body class="bg-background-light dark:bg-background-dark font-display text-black dark:text-white min-h-screen pb-24">
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-black dark:text-white min-h-screen pb-24 leading-relaxed font-normal">
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="text-center">
@@ -298,11 +299,11 @@
                         <label class="block text-xs font-bold text-gray-600 mb-1">每日目標（題數）</label>
                         <input id="daily-goal-input" type="number" min="1" max="100" value="20"
                             class="w-full border-2 border-black p-2 font-bold text-sm focus:outline-none focus:border-primary" />
-                        <div class="text-[10px] text-gray-400 mt-1">建議設定 10-30 題，依個人時間調整</div>
+                        <div class="text-xs text-gray-400 mt-1">建議設定 10-30 題，依個人時間調整</div>
                     </div>
                     <!-- 儲存按鈕 -->
                     <button id="save-exam-settings-btn" onclick="saveExamSettings()"
-                        class="w-full bg-primary border-4 border-black py-3 px-4 font-black italic text-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        class="w-full bg-primary border-4 border-black py-3 px-4 font-black text-center neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                         儲存設定
                     </button>
                 </div>
@@ -472,7 +473,7 @@
     <div class="relative flex min-h-screen w-full flex-col max-w-[430px] mx-auto border-x-2 border-black/5">
         <header class="bg-primary pt-12 pb-6 px-6 border-b-8 border-black sticky top-0 z-40">
             <div class="flex items-center gap-4 mb-2">
-                <h1 class="text-3xl font-black italic tracking-tighter uppercase uppercase">精準弱點打擊</h1>
+                <h1 class="text-3xl font-black tracking-tighter uppercase">精準弱點打擊</h1>
             </div>
             <p class="text-xs font-bold mt-1 text-black/80">系統根據你的答題紀錄，挑出最容易出錯的關鍵題目。</p>
         </header>
@@ -498,7 +499,7 @@
                             <span class="text-xs font-black uppercase">今日目標達成</span>
                         </div>
                         <button onclick="openExamSettingsModal()"
-                            class="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1">
+                            class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
                             <span class="material-symbols-outlined text-sm">edit</span>
                             調整
                         </button>
@@ -511,7 +512,7 @@
                                 <span id="daily-goal-target" class="text-2xl font-bold text-gray-600">--</span>
                                 <span class="text-sm font-bold text-gray-500">題</span>
                             </div>
-                            <div id="goal-status-text" class="text-[10px] text-gray-600">
+                            <div id="goal-status-text" class="text-xs text-gray-600">
                                 <!-- 狀態文字會由 JS 填入 -->
                             </div>
                         </div>
@@ -524,7 +525,7 @@
                         <div id="daily-goal-progress-bar" class="h-full bg-amber-500 transition-all duration-500"
                             style="width: 0%"></div>
                     </div>
-                    <div class="flex justify-between mt-1 text-[9px] text-gray-400">
+                    <div class="flex justify-between mt-1 text-[12px] text-gray-400">
                         <span>0%</span>
                         <span id="daily-goal-percent" class="font-bold text-amber-600">--% 完成</span>
                         <span>100%</span>
@@ -549,10 +550,10 @@
                                     <span id="today-mastered" class="text-3xl font-black text-green-600">--</span>
                                     <span class="text-sm font-bold text-gray-600">題</span>
                                 </div>
-                                <div class="mt-1 text-[10px] text-gray-600">
+                                <div class="mt-1 text-xs text-gray-600">
                                     💪 本週累積：<span id="week-mastered" class="font-bold text-black">--</span> 題
                                 </div>
-                                <div id="consecutive-days" class="mt-1 text-[10px] text-gray-600">
+                                <div id="consecutive-days" class="mt-1 text-xs text-gray-600">
                                     <!-- 連續天數會由 JS 填入 -->
                                 </div>
                             </div>
@@ -574,10 +575,10 @@
                                     <span class="text-blue-600 text-xl">✅</span>
                                     <span id="recent-accuracy" class="text-3xl font-black text-blue-600">--%</span>
                                 </div>
-                                <div id="accuracy-comparison" class="text-[10px] text-gray-600 mt-1">
+                                <div id="accuracy-comparison" class="text-xs text-gray-600 mt-1">
                                     <!-- 比較結果會由 JS 填入 -->
                                 </div>
-                                <div id="best-performance" class="mt-1 text-[10px]">
+                                <div id="best-performance" class="mt-1 text-xs">
                                     <!-- 最佳表現標記會由 JS 填入 -->
                                 </div>
                             </div>
@@ -602,32 +603,32 @@
                     <div class="neo-brutalism-card bg-white p-2.5">
                         <div class="flex items-center gap-1 mb-1">
                             <span class="material-symbols-outlined text-green-500 text-xs">task_alt</span>
-                            <span class="text-[8px] font-bold text-gray-500 uppercase">累計答題</span>
+                            <span class="text-xs font-bold text-gray-500 uppercase">累計答題</span>
                             <button onclick="showCardHelpModal('answered')"
-                                class="w-4 h-4 bg-blue-500 text-white border-[1.5px] border-black rounded-full flex items-center justify-center text-[8px] font-black hover:bg-blue-600 hover:scale-110 transition-transform cursor-pointer ml-auto shrink-0">?</button>
+                                class="w-4 h-4 bg-blue-500 text-white border-[1.5px] border-black rounded-full flex items-center justify-center text-xs font-black hover:bg-blue-600 hover:scale-110 transition-transform cursor-pointer ml-auto shrink-0">?</span>
                         </div>
                         <div class="flex items-baseline gap-0.5">
                             <span id="stat-correct-count" class="text-lg font-black text-green-600">--</span>
-                            <span class="text-gray-400 font-bold text-[10px]">題對</span>
+                            <span class="text-gray-400 font-bold text-xs">題對</span>
                             <span class="text-gray-300 font-bold text-xs mx-0.5">/</span>
                             <span id="stat-answered-count-2" class="text-xs font-bold text-gray-500">--</span>
-                            <span class="text-gray-400 font-bold text-[10px]">題</span>
+                            <span class="text-gray-400 font-bold text-xs">題</span>
                         </div>
-                        <div class="text-[8px] text-gray-400 mt-0.5">已作答過的題目</div>
+                        <div class="text-xs text-gray-400 mt-0.5">已作答過的題目</div>
                     </div>
 
                     <!-- 卡片二：今日正確率 -->
                     <div class="neo-brutalism-card bg-white p-2.5">
                         <div class="flex items-center gap-1 mb-1">
                             <span class="material-symbols-outlined text-blue-500 text-xs">today</span>
-                            <span class="text-[8px] font-bold text-gray-500 uppercase">今日正確率</span>
+                            <span class="text-xs font-bold text-gray-500 uppercase">今日正確率</span>
                             <button onclick="showCardHelpModal('todayAccuracy')"
-                                class="w-4 h-4 bg-blue-500 text-white border-[1.5px] border-black rounded-full flex items-center justify-center text-[8px] font-black hover:bg-blue-600 hover:scale-110 transition-transform cursor-pointer ml-auto shrink-0">?</button>
+                                class="w-4 h-4 bg-blue-500 text-white border-[1.5px] border-black rounded-full flex items-center justify-center text-xs font-black hover:bg-blue-600 hover:scale-110 transition-transform cursor-pointer ml-auto shrink-0">?</button>
                         </div>
                         <div id="today-accuracy-display">
                             <span id="stat-today-accuracy" class="text-lg font-black text-blue-600">--%</span>
                         </div>
-                        <div id="today-accuracy-desc" class="text-[8px] text-gray-400 mt-0.5">今天的表現</div>
+                        <div id="today-accuracy-desc" class="text-xs text-gray-400 mt-0.5">今天的表現</div>
                     </div>
 
                     <!-- 卡片三：近期進步 -->
@@ -636,25 +637,25 @@
                             <span id="improvement-icon"
                                 class="material-symbols-outlined text-sm text-gray-400">trending_flat</span>
                             <span id="improvement-period-label"
-                                class="text-[8px] font-bold text-gray-500 uppercase">近1天</span>
+                                class="text-xs font-bold text-gray-500 uppercase">近1天</span>
                             <button onclick="showCardHelpModal('improvement')"
-                                class="w-4 h-4 bg-blue-500 text-white border-[1.5px] border-black rounded-full flex items-center justify-center text-[8px] font-black hover:bg-blue-600 hover:scale-110 transition-transform cursor-pointer ml-auto shrink-0">?</button>
+                                class="w-4 h-4 bg-blue-500 text-white border-[1.5px] border-black rounded-full flex items-center justify-center text-xs font-black hover:bg-blue-600 hover:scale-110 transition-transform cursor-pointer ml-auto shrink-0">?</button>
                         </div>
                         <div class="flex items-baseline gap-0.5">
                             <span id="stat-improvement" class="text-lg font-black text-gray-400">--</span>
                         </div>
                         <div class="flex items-center justify-between mt-0.5">
-                            <div id="improvement-desc" class="text-[8px] text-gray-400">
+                            <div id="improvement-desc" class="text-xs text-gray-400">
                                 正確率變化
                             </div>
                             <!-- 時段切換按鈕 -->
                             <div class="flex gap-0.5">
                                 <button onclick="switchImprovementPeriod(1)" id="period-btn-1"
-                                    class="text-[7px] font-black px-1 py-0.5 border border-black bg-black text-white rounded">1天</button>
+                                    class="text-xs font-black px-1 py-0.5 border border-black bg-black text-white rounded">1天</button>
                                 <button onclick="switchImprovementPeriod(3)" id="period-btn-3"
-                                    class="text-[7px] font-black px-1 py-0.5 border border-black bg-white text-black rounded hover:bg-gray-100">3天</button>
+                                    class="text-xs font-black px-1 py-0.5 border border-black bg-white text-black rounded hover:bg-gray-100">3天</button>
                                 <button onclick="switchImprovementPeriod(7)" id="period-btn-7"
-                                    class="text-[7px] font-black px-1 py-0.5 border border-black bg-white text-black rounded hover:bg-gray-100">7天</button>
+                                    class="text-xs font-black px-1 py-0.5 border border-black bg-white text-black rounded hover:bg-gray-100">7天</button>
                             </div>
                         </div>
                     </div>
@@ -668,9 +669,9 @@
                             <span class="text-xs font-black uppercase">對：錯 比例趨勢</span>
                         </div>
                         <div class="flex gap-1">
-                            <button id="btn-7days" class="px-3 py-1 text-[10px] font-bold neo-border bg-primary"
+                            <button id="btn-7days" class="px-3 py-1 text-xs font-bold neo-border bg-primary"
                                 onclick="switchTrendPeriod(7)">7天</button>
-                            <button id="btn-30days" class="px-3 py-1 text-[10px] font-bold neo-border bg-white"
+                            <button id="btn-30days" class="px-3 py-1 text-xs font-bold neo-border bg-white"
                                 onclick="switchTrendPeriod(30)">30天</button>
                         </div>
                     </div>
@@ -678,12 +679,12 @@
                     <div id="trend-chart" class="h-32 flex items-end justify-between gap-1">
                         <!-- 長條圖會由 JS 填入 -->
                     </div>
-                    <div class="flex justify-between mt-2 text-[9px] text-gray-400">
+                    <div class="flex justify-between mt-2 text-xs text-gray-400">
                         <span id="trend-start-date">--</span>
                         <span id="trend-end-date">今天</span>
                     </div>
                     <!-- 圖例 -->
-                    <div class="flex justify-center gap-4 mt-3 text-[10px]">
+                    <div class="flex justify-center gap-4 mt-3 text-xs">
                         <div class="flex items-center gap-1">
                             <div class="w-3 h-3 bg-green-500 neo-border"></div>
                             <span class="font-bold">正確數</span>
@@ -701,7 +702,7 @@
                         <span class="material-symbols-outlined text-lg">bar_chart</span>
                         <span class="text-xs font-black uppercase">刷題正確率趨勢</span>
                     </div>
-                    <p class="text-[10px] text-gray-500 font-bold mb-3">每題第 1～6 次作答的平均正確率</p>
+                    <p class="text-xs text-gray-500 font-bold mb-3">每題第 1～6 次作答的平均正確率</p>
                     <div id="attempt-accuracy-chart" class="h-44 flex items-end justify-around gap-3 px-2">
                         <!-- 柱狀圖由 JS 填入 -->
                     </div>
@@ -727,7 +728,7 @@
                             <span class="text-xs font-black uppercase">最常錯的選項</span>
                         </div>
                         <button id="expand-wrong-patterns-btn" onclick="toggleWrongPatterns()"
-                            class="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1">
+                            class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
                             <span id="expand-wrong-patterns-text">展開全部</span>
                             <span id="expand-wrong-patterns-icon"
                                 class="material-symbols-outlined text-sm">expand_more</span>
@@ -746,8 +747,7 @@
                             <span class="material-symbols-outlined text-purple-600 text-xl">auto_awesome</span>
                             <span class="text-xs font-black uppercase">AI 智慧分析</span>
                         </div>
-                        <div id="ai-analysis-status"
-                            class="flex items-center gap-1 text-[10px] font-bold text-gray-400">
+                        <div id="ai-analysis-status" class="flex items-center gap-1 text-xs font-bold text-gray-400">
                             <!-- 狀態會由 JS 更新 -->
                         </div>
                     </div>
@@ -789,7 +789,7 @@
                                 <span class="text-xs font-black uppercase">考試倒數</span>
                             </div>
                             <button onclick="openExamSettingsModal()"
-                                class="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1">
+                                class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
                                 <span class="material-symbols-outlined text-sm">settings</span>
                                 設定
                             </button>
@@ -800,35 +800,35 @@
                                 <span class="text-sm font-bold text-gray-600">天</span>
                                 <span class="text-xs text-gray-500" id="exam-name-display">（--）</span>
                             </div>
-                            <div class="text-[10px] text-gray-500">
+                            <div class="text-xs text-gray-500">
                                 考試日期：<span id="exam-date-display" class="font-bold">--</span>
                             </div>
                         </div>
                         <!-- 完成進度 -->
                         <div class="mb-3">
                             <div class="flex justify-between items-baseline mb-1">
-                                <span class="text-[10px] font-bold text-gray-600 uppercase">你的完成進度</span>
+                                <span class="text-xs font-bold text-gray-600 uppercase">你的完成進度</span>
                                 <span id="progress-percent" class="text-sm font-black text-purple-600">--%</span>
                             </div>
                             <div class="h-4 neo-border bg-white overflow-hidden mb-1">
                                 <div id="progress-bar" class="h-full bg-purple-500 transition-all duration-500"
                                     style="width: 0%"></div>
                             </div>
-                            <div class="text-[10px] text-gray-500">
+                            <div class="text-xs text-gray-500">
                                 已熟練：<span id="mastered-count" class="font-bold text-black">--</span> /
                                 <span id="total-questions" class="font-bold">--</span> 題
                             </div>
                         </div>
                         <!-- 預估完成 -->
                         <div id="estimation-section" class="bg-white/60 border-2 border-black p-3">
-                            <div class="text-[10px] mb-1">
+                            <div class="text-xs mb-1">
                                 💡 <span class="font-bold">以目前速度</span>（每日 <span id="current-speed"
                                     class="font-bold text-purple-600">--</span> 題熟練）
                             </div>
                             <div id="estimation-text" class="text-xs font-bold text-gray-700 mb-2">
                                 <!-- 預估文字會由 JS 填入 -->
                             </div>
-                            <div id="suggestion-text" class="text-[10px] text-orange-600 font-bold">
+                            <div id="suggestion-text" class="text-xs text-orange-600 font-bold">
                                 <!-- 建議文字會由 JS 填入 -->
                             </div>
                         </div>
@@ -853,19 +853,19 @@
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-2">
                                 <span class="material-symbols-outlined text-purple-600 text-lg">calendar_month</span>
-                                <span class="text-[10px] font-bold text-gray-500 uppercase">預估全部熟練</span>
+                                <span class="text-xs font-bold text-gray-500 uppercase">預估全部熟練</span>
                             </div>
                             <div class="flex items-baseline gap-2">
                                 <span id="stat-estimated-days" class="text-3xl font-black text-purple-600">--</span>
                                 <span class="text-sm font-bold text-gray-500">天</span>
                             </div>
-                            <div id="estimated-desc" class="text-[10px] text-gray-500 mt-1">
+                            <div id="estimated-desc" class="text-xs text-gray-500 mt-1">
                                 剩餘 <span id="stat-remaining-questions" class="font-bold">--</span> 題待熟練
                             </div>
                         </div>
                         <!-- 每日題數調整器 -->
                         <div class="flex flex-col items-center gap-1 ml-4">
-                            <span class="text-[9px] font-bold text-gray-400 uppercase">每日題數</span>
+                            <span class="text-xs font-bold text-gray-400 uppercase">每日題數</span>
                             <div class="flex items-center gap-1">
                                 <button onclick="adjustDailyGoal(-5)"
                                     class="w-7 h-7 neo-border bg-white flex items-center justify-center font-black text-lg active:translate-y-0.5 active:shadow-none">-</button>
@@ -883,7 +883,7 @@
                             <div id="mastery-progress-bar" class="h-full bg-purple-500 transition-all duration-500"
                                 style="width: 0%"></div>
                         </div>
-                        <div class="flex justify-between mt-1 text-[9px] text-gray-400">
+                        <div class="flex justify-between mt-1 text-xs text-gray-400">
                             <span>0%</span>
                             <span id="mastery-progress-text" class="font-bold text-purple-600">--% 完成</span>
                             <span>100%</span>
@@ -908,7 +908,7 @@
 
             <div id="empty-state" class="hidden flex-col items-center justify-center py-20 px-4 text-center">
                 <span class="material-symbols-outlined text-6xl mb-4 text-gray-400">task_alt</span>
-                <h3 class="text-xl font-black italic mb-2">太棒了！</h3>
+                <h3 class="text-xl font-black mb-2">太棒了！</h3>
                 <p class="text-sm font-bold text-gray-500">目前沒有發現任何弱點，繼續保持！如果有答錯的題目，它們會出現在這裡。</p>
             </div>
         </main>
@@ -1409,12 +1409,12 @@
                 todayAccuracyEl.textContent = stats.todayAccuracy + '%';
                 todayAccuracyEl.className = 'text-lg font-black text-blue-600';
                 todayDescEl.textContent = '今日 ' + stats.todayCorrect + '/' + stats.todayTotal + ' 題答對';
-                todayDescEl.className = 'text-[8px] text-blue-500 mt-0.5';
+                todayDescEl.className = 'text-xs text-blue-500 mt-0.5';
             } else {
                 todayAccuracyEl.textContent = '尚未作答';
                 todayAccuracyEl.className = 'text-sm font-black text-gray-400';
                 todayDescEl.textContent = '今天還沒開始練習喔';
-                todayDescEl.className = 'text-[8px] text-gray-400 mt-0.5';
+                todayDescEl.className = 'text-xs text-gray-400 mt-0.5';
             }
 
             // 卡片三：進步指標（預設顯示 1 天）
@@ -1445,28 +1445,28 @@
                 improvementIcon.textContent = 'trending_flat';
                 improvementIcon.className = 'material-symbols-outlined text-sm text-gray-400';
                 improvementDesc.textContent = '需要更多答題紀錄';
-                improvementDesc.className = 'text-[8px] text-gray-400';
+                improvementDesc.className = 'text-xs text-gray-400';
             } else if (change > 0) {
                 improvementEl.textContent = '+' + change + '%';
                 improvementEl.className = 'text-lg font-black text-green-600';
                 improvementIcon.textContent = 'trending_up';
                 improvementIcon.className = 'material-symbols-outlined text-sm text-green-600';
                 improvementDesc.textContent = '正確率提升';
-                improvementDesc.className = 'text-[8px] text-green-600';
+                improvementDesc.className = 'text-xs text-green-600';
             } else if (change < 0) {
                 improvementEl.textContent = change + '%';
                 improvementEl.className = 'text-lg font-black text-[#FF3B30]';
                 improvementIcon.textContent = 'trending_down';
                 improvementIcon.className = 'material-symbols-outlined text-sm text-[#FF3B30]';
                 improvementDesc.textContent = '正確率下降';
-                improvementDesc.className = 'text-[8px] text-[#FF3B30]';
+                improvementDesc.className = 'text-xs text-[#FF3B30]';
             } else {
                 improvementEl.textContent = '0%';
                 improvementEl.className = 'text-lg font-black text-gray-500';
                 improvementIcon.textContent = 'trending_flat';
                 improvementIcon.className = 'material-symbols-outlined text-sm text-gray-500';
                 improvementDesc.textContent = '維持穩定';
-                improvementDesc.className = 'text-[8px] text-gray-500';
+                improvementDesc.className = 'text-xs text-gray-500';
             }
         }
 
@@ -1480,9 +1480,9 @@
             [1, 3, 7].forEach(p => {
                 const btn = document.getElementById('period-btn-' + p);
                 if (p === period) {
-                    btn.className = 'text-[7px] font-black px-1 py-0.5 border border-black bg-black text-white rounded';
+                    btn.className = 'text-xs font-black px-1 py-0.5 border border-black bg-black text-white rounded';
                 } else {
-                    btn.className = 'text-[7px] font-black px-1 py-0.5 border border-black bg-white text-black rounded hover:bg-gray-100';
+                    btn.className = 'text-xs font-black px-1 py-0.5 border border-black bg-white text-black rounded hover:bg-gray-100';
                 }
             });
 
@@ -1700,11 +1700,11 @@
             const btn30 = document.getElementById('btn-30days');
 
             if (days === 7) {
-                btn7.className = 'px-3 py-1 text-[10px] font-bold neo-border bg-primary';
-                btn30.className = 'px-3 py-1 text-[10px] font-bold neo-border bg-white';
+                btn7.className = 'px-3 py-1 text-xs font-bold neo-border bg-primary';
+                btn30.className = 'px-3 py-1 text-xs font-bold neo-border bg-white';
             } else {
-                btn7.className = 'px-3 py-1 text-[10px] font-bold neo-border bg-white';
-                btn30.className = 'px-3 py-1 text-[10px] font-bold neo-border bg-primary';
+                btn7.className = 'px-3 py-1 text-xs font-bold neo-border bg-white';
+                btn30.className = 'px-3 py-1 text-xs font-bold neo-border bg-primary';
             }
 
             renderTrendChart(days);
@@ -1748,7 +1748,7 @@
                              style="height: ${Math.max(incorrectHeight, day.incorrect > 0 ? 4 : 0)}px;">
                         </div>
                         <!-- Tooltip -->
-                        <div class="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-[9px] px-2 py-1 whitespace-nowrap z-20 font-bold">
+                        <div class="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs px-2 py-1 whitespace-nowrap z-20 font-bold">
                             ${day.date.slice(5)}<br>
                             錯: ${day.incorrect} / 對: ${day.correct}<br>
                             ${day.accuracy !== null ? '正確率: ' + day.accuracy + '%' : '無作答'}
@@ -1801,8 +1801,8 @@
                              style="height: ${Math.max(barHeight, 8)}px; background-color: ${color};">
                         </div>
                         <!-- 標籤 -->
-                        <span class="text-[10px] font-bold mt-1.5">${roundLabels[item.round - 1]}</span>
-                        <span class="text-[9px] text-gray-400 font-bold">共${item.total}題</span>
+                        <span class="text-xs font-bold mt-1.5">${roundLabels[item.round - 1]}</span>
+                        <span class="text-xs text-gray-400 font-bold">共${item.total}題</span>
                     </div>
                 `;
             });
@@ -1857,7 +1857,7 @@
                         </div>
                         <div class="flex flex-col items-end shrink-0 pl-2 border-l-2 border-dashed border-gray-300">
                             <span class="text-[#FF3B30] font-black text-xl">${errorPercentage}%</span>
-                            <span class="text-[10px] font-bold text-gray-500 text-right uppercase">錯誤率</span>
+                            <span class="text-xs font-bold text-gray-500 text-right uppercase">錯誤率</span>
                         </div>
                     </div>
                     <div class="flex items-center justify-between mt-3 pt-2 neo-border-bottom border-t-2 border-gray-200" style="border-bottom: none">
@@ -1895,7 +1895,7 @@
                 <div class="flex flex-col items-center justify-center py-8 text-gray-400">
                     <span class="material-symbols-outlined text-3xl mb-2 animate-spin">progress_activity</span>
                     <p class="text-xs font-bold">AI 正在分析你的學習數據...</p>
-                    <p class="text-[10px] text-gray-400 mt-1">約需 3-5 秒</p>
+                    <p class="text-xs text-gray-400 mt-1">約需 3-5 秒</p>
                 </div>
             `;
             statusEl.innerHTML = `
@@ -1991,7 +1991,7 @@
                     <div class="flex flex-col items-center justify-center py-6 text-gray-400">
                         <span class="material-symbols-outlined text-2xl mb-2 text-red-400">error</span>
                         <p class="text-xs font-bold text-red-500">分析生成失敗</p>
-                        <p class="text-[10px] text-gray-400 mt-1">${error.message}</p>
+                        <p class="text-xs text-gray-400 mt-1">${error.message}</p>
                         <button onclick="startAIAnalysis()" class="mt-3 px-3 py-1 text-xs font-bold neo-border bg-primary">
                             重試
                         </button>
