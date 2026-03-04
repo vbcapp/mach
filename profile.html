@@ -160,13 +160,21 @@
                      <span class="material-symbols-outlined text-black dark:text-white">insights</span>
                      <h3 class="text-xl font-black uppercase">每日活躍用戶與平均答題數</h3>
                   </div>
-                  <select id="combined-activity-period"
-                     class="border-2 border-black font-bold p-1 bg-white text-black text-sm"
-                     onchange="renderCombinedActivityChart(Number(this.value))">
-                     <option value="3" selected>近 3 日</option>
-                     <option value="7">本週 (7日)</option>
-                     <option value="30">本月 (30日)</option>
-                  </select>
+                  <div class="flex items-center gap-2">
+                     <select id="combined-activity-period"
+                        class="border-2 border-black font-bold p-1 bg-white text-black text-sm"
+                        onchange="handleActivityPeriodChange(this.value)">
+                        <option value="3" selected>近 3 日</option>
+                        <option value="7">本週 (7日)</option>
+                        <option value="30">本月 (30日)</option>
+                     </select>
+                     <button id="expand-activity-btn"
+                        class="border-2 border-black font-bold px-2 py-1 bg-yellow-300 text-black text-sm hover:bg-yellow-400 transition-colors"
+                        style="display:none;" onclick="showExpandedChart()">
+                        <span class="material-symbols-outlined text-sm"
+                           style="font-size:18px;vertical-align:middle;">open_in_full</span> 展開
+                     </button>
+                  </div>
                </div>
                <div class="bg-white p-4 border-2 border-black">
                   <canvas id="combined-activity-chart"></canvas>
@@ -1465,7 +1473,203 @@
             btn.disabled = false;
          }
       }
+
+      // ========== Landscape Expand Mode ==========
+      let expandedChart = null;
+
+      function handleActivityPeriodChange(val) {
+         const days = Number(val);
+         const expandBtn = document.getElementById('expand-activity-btn');
+         if (expandBtn) {
+            expandBtn.style.display = days === 30 ? 'inline-flex' : 'none';
+         }
+         renderCombinedActivityChart(days);
+      }
+
+      async function showExpandedChart() {
+         const overlay = document.getElementById('expanded-chart-overlay');
+         if (!overlay) return;
+
+         overlay.style.display = 'flex';
+         document.body.style.overflow = 'hidden';
+
+         // Fetch 30-day data
+         const [answersResult, usersResult] = await Promise.all([
+            apiService.getAdminDailyAnswers(30),
+            apiService.getAdminDailyActiveUsers(30)
+         ]);
+
+         if (!answersResult.success || !usersResult.success) return;
+
+         const dataMap = new Map();
+         usersResult.data.forEach(item => {
+            dataMap.set(item.date, { activeUsers: item.count, totalAnswers: 0 });
+         });
+         answersResult.data.forEach(item => {
+            if (dataMap.has(item.date)) {
+               dataMap.get(item.date).totalAnswers = item.count;
+            } else {
+               dataMap.set(item.date, { activeUsers: 0, totalAnswers: item.count });
+            }
+         });
+
+         const sortedDates = Array.from(dataMap.keys()).sort((a, b) => new Date(a) - new Date(b));
+         const labels = sortedDates.map(dateStr => {
+            const date = new Date(dateStr);
+            return `${date.getMonth() + 1}/${date.getDate()}`;
+         });
+
+         const activeUsersData = [];
+         const avgAnswersData = [];
+         sortedDates.forEach(dateStr => {
+            const data = dataMap.get(dateStr);
+            activeUsersData.push(data.activeUsers);
+            const avg = data.activeUsers > 0 ? (data.totalAnswers / data.activeUsers).toFixed(1) : 0;
+            avgAnswersData.push(parseFloat(avg));
+         });
+
+         const ctx = document.getElementById('expanded-activity-canvas');
+         if (!ctx) return;
+
+         if (expandedChart) expandedChart.destroy();
+
+         expandedChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+               labels: labels,
+               datasets: [
+                  {
+                     type: 'line',
+                     label: '平均答題數',
+                     data: avgAnswersData,
+                     borderColor: '#2196F3',
+                     backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                     borderWidth: 3,
+                     tension: 0.3,
+                     fill: false,
+                     pointBackgroundColor: '#2196F3',
+                     pointBorderColor: '#000000',
+                     pointBorderWidth: 2,
+                     pointRadius: 5,
+                     yAxisID: 'y1'
+                  },
+                  {
+                     type: 'bar',
+                     label: '每日活躍用戶',
+                     data: activeUsersData,
+                     backgroundColor: '#4CAF50',
+                     borderColor: '#000000',
+                     borderWidth: 2,
+                     yAxisID: 'y'
+                  }
+               ]
+            },
+            options: {
+               responsive: true,
+               maintainAspectRatio: false,
+               interaction: { mode: 'index', intersect: false },
+               plugins: {
+                  legend: { labels: { font: { family: 'Inter', weight: 'bold', size: 14 }, color: '#000' } },
+                  tooltip: {
+                     callbacks: {
+                        label: function (context) {
+                           let label = context.dataset.label || '';
+                           if (label) label += ': ';
+                           if (context.parsed.y !== null) {
+                              label += context.parsed.y;
+                              if (context.datasetIndex === 0) label += ' 題/人';
+                              else label += ' 人';
+                           }
+                           return label;
+                        }
+                     }
+                  }
+               },
+               scales: {
+                  y: {
+                     type: 'linear', display: true, position: 'left', beginAtZero: true,
+                     ticks: { stepSize: 1, font: { family: 'Inter', weight: 'bold', size: 13 } },
+                     title: { display: true, text: '活躍人數', font: { family: 'Inter', weight: 'bold', size: 14 } }
+                  },
+                  y1: {
+                     type: 'linear', display: true, position: 'right', beginAtZero: true,
+                     grid: { drawOnChartArea: false },
+                     ticks: { font: { family: 'Inter', weight: 'bold', size: 13 } },
+                     title: { display: true, text: '平均答題數', font: { family: 'Inter', weight: 'bold', size: 14 } }
+                  },
+                  x: {
+                     ticks: { font: { family: 'Inter', weight: 'bold', size: 12 } },
+                     grid: { display: false }
+                  }
+               }
+            }
+         });
+      }
+
+      function hideExpandedChart() {
+         const overlay = document.getElementById('expanded-chart-overlay');
+         if (!overlay) return;
+         overlay.style.display = 'none';
+         document.body.style.overflow = '';
+         if (expandedChart) {
+            expandedChart.destroy();
+            expandedChart = null;
+         }
+      }
    </script>
+
+   <!-- Expanded Chart Overlay -->
+   <div id="expanded-chart-overlay" style="
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.92);
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+   ">
+      <!-- Close button -->
+      <button onclick="hideExpandedChart()" style="
+         position: fixed;
+         top: 16px; right: 16px;
+         z-index: 10000;
+         background: #FFD600;
+         border: 3px solid #000;
+         padding: 6px 14px;
+         font-weight: 900;
+         font-size: 14px;
+         cursor: pointer;
+         display: flex;
+         align-items: center;
+         gap: 4px;
+      ">
+         <span class="material-symbols-outlined" style="font-size:18px;">close_fullscreen</span> 收起
+      </button>
+
+      <!-- Title -->
+      <div style="color:#fff;font-weight:900;font-size:18px;margin-bottom:12px;text-align:center;padding-top:12px;">
+         📊 本月 (30日) 活躍用戶與平均答題數
+      </div>
+
+      <!-- Scrollable chart container -->
+      <div style="
+         width: 95vw;
+         max-height: 75vh;
+         overflow-x: auto;
+         overflow-y: hidden;
+         -webkit-overflow-scrolling: touch;
+         background: #fff;
+         border: 3px solid #000;
+         padding: 16px;
+      ">
+         <div style="width: 1200px; height: 55vh; min-height: 300px;">
+            <canvas id="expanded-activity-canvas"></canvas>
+         </div>
+      </div>
+      <div style="color:#aaa;font-size:12px;margin-top:8px;">← 左右滑動查看更多 →</div>
+   </div>
 </body>
 
 </html>
