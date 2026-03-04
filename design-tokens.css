@@ -11,7 +11,7 @@
     /* ── 顏色（Colors） ─────────────────────────────────── */
 
     /* 主色 / Primary */
-    --color-primary: #ff0000;
+    --color-primary: #ffd400;
     /* 金黃主色（按鈕、badge、強調） */
     --color-primary-dark: #b8860b;
     /* 主色深色（mastery card 陰影） */
@@ -40,10 +40,14 @@
     /* 邊框 / Border */
     --color-border: #000000;
     /* 主邊框色（Neo-brutalism 黑線） */
+    --color-border-main: #000000;
+    /* 語義別名，供 Tailwind config 引用 */
     --color-border-light: rgba(0, 0, 0, 0.05);
     /* 容器邊框淡色 */
     --color-border-muted: #e4e4e7;
     /* 列表項目淡邊框（zinc-200） */
+    --color-surface: #f4f4f5;
+    /* 表面色（bg-zinc-100 等效，卡片/header 背景） */
 
     /* 功能色 / Semantic */
     --color-danger: #FF3B30;

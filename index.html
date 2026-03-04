@@ -32,9 +32,12 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#ffd400",
-                        "background-light": "#f7f7f7",
-                        "background-dark": "#1a1a1a",
+                        "primary": "var(--color-primary)",
+                        "background-light": "var(--color-bg-light)",
+                        "background-dark": "var(--color-bg-dark)",
+                        "surface": "var(--color-surface)",
+                        "text-base": "var(--color-text-base)",
+                        "border-main": "var(--color-border-main)",
                     },
                     fontFamily: {
                         "display": ["Space Grotesk", "sans-serif"]
@@ -160,10 +163,10 @@
     <script src="js/level-system.js"></script>
 
 <body
-    class="bg-zinc-100 dark:bg-background-dark text-[#1a1a1a] dark:text-white overflow-hidden leading-relaxed font-normal">
-    <div class="relative flex h-screen w-full flex-col max-w-[430px] mx-auto border-x-2 border-black/5">
+    class="bg-surface dark:bg-background-dark text-text-base dark:text-white overflow-hidden leading-relaxed font-normal">
+    <div class="relative flex h-screen w-full flex-col max-w-[430px] mx-auto border-x-2 border-border-main/5">
         <header
-            class="flex-none bg-zinc-100 dark:bg-background-dark border-b-2 border-black px-4 py-4 flex items-center justify-between z-10">
+            class="flex-none bg-surface dark:bg-background-dark border-b-2 border-border-main px-4 py-4 flex items-center justify-between z-10">
             <div class="flex items-center gap-2">
                 <div class="bg-primary neo-border p-1 flex items-center justify-center">
                     <span class="material-symbols-outlined text-black font-bold">terminal</span>
@@ -187,7 +190,7 @@
                     <span class="font-black text-base truncate" id="toast-message">成功新增</span>
                 </div>
                 <div
-                    class="bg-white border-2 border-black px-2 py-0.5 rounded-full flex items-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0 ml-2">
+                    class="bg-white border-2 border-border-main px-2 py-0.5 rounded-full flex items-center neo-shadow-sm shrink-0 ml-2">
                     <span class="font-black text-xs" id="toast-xp">+0 XP</span>
                 </div>
             </div>
@@ -264,7 +267,7 @@
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="filter-backdrop"></div>
         <div class="absolute bottom-0 left-0 right-0 bg-white dark:bg-zinc-900 rounded-t-xl overflow-hidden neo-border-thick transition-transform transform translate-y-full"
             id="filter-content">
-            <div class="p-4 border-b-2 border-black flex justify-between items-center bg-zinc-100 dark:bg-zinc-800">
+            <div class="p-4 border-b-2 border-border-main flex justify-between items-center bg-surface dark:bg-zinc-800">
                 <h3 class="font-black text-lg uppercase">篩選類別</h3>
                 <button id="close-filter" class="material-symbols-outlined font-bold">close</button>
             </div>
@@ -272,7 +275,7 @@
                 <!-- Categories will be injected here -->
                 <div class="text-center text-gray-400 py-4">載入分類中...</div>
             </div>
-            <div class="p-4 border-t-2 border-black bg-zinc-100 dark:bg-zinc-800 flex gap-2">
+            <div class="p-4 border-t-2 border-border-main bg-surface dark:bg-zinc-800 flex gap-2">
                 <button id="clear-filter"
                     class="flex-1 py-3 neo-border bg-white dark:bg-zinc-800 font-bold active:translate-y-[1px] active:shadow-none neo-shadow-sm">清除</button>
                 <button id="apply-filter"
@@ -440,7 +443,7 @@
 
                     div.innerHTML = `
                         <span class="font-bold text-sm ${isSelected ? 'text-black' : 'text-gray-600 dark:text-gray-300'}">${cat}</span>
-                        <div class="w-5 h-5 border-2 border-black flex items-center justify-center ${isSelected ? 'bg-primary' : 'bg-white'}">
+                        <div class="w-5 h-5 border-2 border-border-main flex items-center justify-center ${isSelected ? 'bg-primary' : 'bg-white'}">
                             ${isSelected ? '<span class="material-symbols-outlined text-sm font-bold">check</span>' : ''}
                         </div>
                     `;
