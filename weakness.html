@@ -15,8 +15,10 @@
 
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-    
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet" />
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Noto+Sans+TC:wght@400;700&display=swap"
+        rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         rel="stylesheet" />
@@ -242,19 +244,16 @@
                     <!-- 考試日期 -->
                     <div>
                         <label class="block text-sm font-bold text-gray-600 mb-1">考試日期</label>
-                        <input id="exam-date-input" type="date"
-                            class="vibe-input" />
+                        <input id="exam-date-input" type="date" class="vibe-input" />
                     </div>
                     <!-- 每日目標 -->
                     <div>
                         <label class="block text-sm font-bold text-gray-600 mb-1">每日目標（題數）</label>
-                        <input id="daily-goal-input" type="number" min="1" max="100" value="20"
-                            class="vibe-input" />
+                        <input id="daily-goal-input" type="number" min="1" max="100" value="20" class="vibe-input" />
                         <div class="text-sm text-gray-400 mt-1">建議設定 10-30 題，依個人時間調整</div>
                     </div>
                     <!-- 儲存按鈕 -->
-                    <button id="save-exam-settings-btn" onclick="saveExamSettings()"
-                        class="vibe-btn vibe-btn-primary">
+                    <button id="save-exam-settings-btn" onclick="saveExamSettings()" class="vibe-btn vibe-btn-primary">
                         儲存設定
                     </button>
                 </div>
@@ -624,11 +623,11 @@
                     <div class="flex justify-center gap-4 mt-3 text-sm">
                         <div class="flex items-center gap-1">
                             <div class="w-3 h-3 bg-green-500 neo-border"></div>
-                            <span class="font-bold">正確數</span>
+                            <span class="font-bold">正確率</span>
                         </div>
                         <div class="flex items-center gap-1">
                             <div class="w-3 h-3 bg-[var(--color-danger)] neo-border"></div>
-                            <span class="font-bold">錯題數</span>
+                            <span class="font-bold">錯誤率</span>
                         </div>
                     </div>
                 </div>
@@ -1604,36 +1603,37 @@
                 return;
             }
 
-            // 找出最大值用於計算高度比例
-            const maxIncorrect = Math.max(...data.map(d => d.incorrect), 1);
             const chartHeight = 128; // h-32 = 128px
 
-            // 生成長條圖
+            // 生成堆疊百分比長條圖
             let barsHtml = '';
             data.forEach((day, index) => {
-                const incorrectHeight = (day.incorrect / maxIncorrect) * (chartHeight - 20);
-                const accuracyHeight = day.accuracy !== null ? (day.accuracy / 100) * (chartHeight - 20) : 0;
+                const total = day.correct + day.incorrect;
+                const accuracyPct = total > 0 ? Math.round((day.correct / total) * 100) : 0;
+                const errorPct = total > 0 ? 100 - accuracyPct : 0;
 
-                // 日期標籤（只在特定位置顯示）
-                const showDate = days === 7 || (days === 30 && index % 5 === 0);
+                const greenHeight = total > 0 ? (accuracyPct / 100) * (chartHeight - 8) : 0;
+                const redHeight = total > 0 ? (errorPct / 100) * (chartHeight - 8) : 0;
 
                 barsHtml += `
-                    <div class="flex-1 flex flex-col items-center justify-end gap-1 relative group">
-                        <!-- 正確率線點 -->
-                        ${day.accuracy !== null ? `
-                            <div class="absolute w-2 h-2 bg-green-500 neo-border rounded-full"
-                                 style="bottom: ${accuracyHeight + 4}px; z-index: 10;">
-                            </div>
-                        ` : ''}
-                        <!-- 錯題長條 -->
-                        <div class="w-full max-w-[20px] bg-[var(--color-danger)] neo-border transition-all duration-300 hover:bg-[#FF5B50]"
-                             style="height: ${Math.max(incorrectHeight, day.incorrect > 0 ? 4 : 0)}px;">
+                    <div class="flex-1 flex flex-col items-center justify-end relative group" style="height:${chartHeight}px;">
+                        ${total > 0 ? `
+                        <!-- 堆疊條 -->
+                        <div class="w-full max-w-[20px] flex flex-col neo-border overflow-hidden" style="height:${chartHeight - 8}px;">
+                            <!-- 上方紅色（錯誤率） -->
+                            <div class="w-full bg-[var(--color-danger)] transition-all duration-300"
+                                 style="height: ${errorPct}%; min-height: ${errorPct > 0 ? '2px' : '0'};"></div>
+                            <!-- 下方綠色（正確率） -->
+                            <div class="w-full bg-green-500 transition-all duration-300 flex-1"
+                                 style="height: ${accuracyPct}%; min-height: ${accuracyPct > 0 ? '2px' : '0'};"></div>
                         </div>
+                        ` : `
+                        <div class="w-full max-w-[20px] border-2 border-dashed border-gray-200" style="height:${chartHeight - 8}px;"></div>
+                        `}
                         <!-- Tooltip -->
                         <div class="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-sm px-2 py-1 whitespace-nowrap z-20 font-bold">
                             ${day.date.slice(5)}<br>
-                            錯: ${day.incorrect} / 對: ${day.correct}<br>
-                            ${day.accuracy !== null ? '正確率: ' + day.accuracy + '%' : '無作答'}
+                            ${total > 0 ? `正確率: ${accuracyPct}% (對${day.correct}/錯${day.incorrect})` : '無作答'}
                         </div>
                     </div>
                 `;
