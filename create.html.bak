@@ -2,8 +2,6 @@
 <html lang="zh-Hant">
 
 <head>
-    <link rel="stylesheet" href="design-tokens.css">
-
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>工商安全衛生協會-新竹職訓中心 - 建立考卷</title>
@@ -36,8 +34,8 @@
     </script>
     <!-- Neo-Brutalism Styles -->
     <style type="text/tailwindcss">
-        .neo-shadow { box-shadow: var(--card-shadow); }
-        .neo-shadow-sm { box-shadow: var(--card-shadow-sm); }
+        .neo-shadow { box-shadow: 4px 4px 0px 0px #000000; }
+        .neo-shadow-sm { box-shadow: 2px 2px 0px 0px #000000; }
         .neo-border { border: 2px solid #000000; }
         .neo-border-thick { border: 3px solid #000000; }
         .neo-brutalism-card {
@@ -256,7 +254,7 @@
 
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center">
-        <div class="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_var(--color-primary)]">
+        <div class="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_#FFD600]">
             <div class="flex flex-col items-center gap-4">
                 <div class="w-12 h-12 border-4 border-black border-t-primary animate-spin"></div>
                 <p id="loading-text" class="font-black italic">處理中...</p>

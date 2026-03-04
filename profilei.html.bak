@@ -2,8 +2,6 @@
 <html class="light" lang="zh-Hant">
 
 <head>
-    <link rel="stylesheet" href="design-tokens.css">
-
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>工商安全衛生協會-新竹職訓中心 - 帳號設定</title>
@@ -46,8 +44,8 @@
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
-            .neo-shadow { box-shadow: var(--card-shadow); }
-            .neo-shadow-sm { box-shadow: var(--card-shadow-sm); }
+            .neo-shadow { box-shadow: 4px 4px 0px 0px #000000; }
+            .neo-shadow-sm { box-shadow: 2px 2px 0px 0px #000000; }
             .neo-shadow-danger { box-shadow: 4px 4px 0px 0px #ff4d4d; }
             .neo-border { border: 2px solid #000000; }
             .neo-border-danger { border: 2px solid #ff4d4d; }

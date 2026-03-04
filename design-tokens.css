@@ -1,0 +1,160 @@
+/**
+ * =========================================================
+ *  design-tokens.css  — Sandy's Exam Card System
+ *  全域 CSS 設計變數（Design Tokens）
+ *  命名規則：--[類別]-[語義]-[變體?]
+ * =========================================================
+ */
+
+:root {
+
+    /* ── 顏色（Colors） ─────────────────────────────────── */
+
+    /* 主色 / Primary */
+    --color-primary: #ff0000;
+    /* 金黃主色（按鈕、badge、強調） */
+    --color-primary-dark: #b8860b;
+    /* 主色深色（mastery card 陰影） */
+    --color-primary-glow: rgba(255, 212, 0, 0.8);
+    /* 發光效果使用 */
+
+    /* 背景 / Background */
+    --color-bg-light: #f7f7f7;
+    /* 淺色模式主背景 */
+    --color-bg-dark: #1a1a1a;
+    /* 深色模式主背景 */
+    --color-bg-login-light: #f8f8f5;
+    /* 登入頁淺色背景 */
+    --color-bg-login-dark: #23220f;
+    /* 登入頁深色背景 */
+
+    /* 文字 / Text */
+    --color-text-base: #1a1a1a;
+    /* 主要文字色 */
+    --color-text-muted: #9ca3af;
+    /* 次要文字、副標題 */
+    --color-text-placeholder: #71717a;
+    /* Placeholder（zinc-500） */
+    --color-text-white: #ffffff;
+
+    /* 邊框 / Border */
+    --color-border: #000000;
+    /* 主邊框色（Neo-brutalism 黑線） */
+    --color-border-light: rgba(0, 0, 0, 0.05);
+    /* 容器邊框淡色 */
+    --color-border-muted: #e4e4e7;
+    /* 列表項目淡邊框（zinc-200） */
+
+    /* 功能色 / Semantic */
+    --color-danger: #FF3B30;
+    /* 錯誤、危險 */
+    --color-success: #22c55e;
+    /* 正確、成功（green-500） */
+    --color-success-dark: #16a34a;
+    /* 成功深色（green-600） */
+    --color-info: #3b82f6;
+    /* 資訊、說明（blue-500） */
+    --color-warning: #f59e0b;
+    /* 警告（amber-500） */
+    --color-purple: #a855f7;
+    /* AI 分析、特殊功能 */
+
+    /* 中性色（Neutral / Zinc） */
+    --color-neutral-100: #f4f4f5;
+    /* zinc-100 */
+    --color-neutral-200: #e4e4e7;
+    /* zinc-200 */
+    --color-neutral-700: #3f3f46;
+    /* zinc-700 */
+    --color-neutral-800: #27272a;
+    /* zinc-800 */
+    --color-neutral-900: #18181b;
+    /* zinc-900 */
+
+    /* ── 陰影（Shadows） ───────────────────────────────── */
+    --card-shadow: 4px 4px 0px 0px #000000;
+    /* Neo-brutalism 標準卡片陰影 */
+    --card-shadow-sm: 2px 2px 0px 0px #000000;
+    /* 小型元件陰影 */
+    --card-shadow-lg: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+    /* 大型 Modal 陰影 */
+    --card-shadow-none: 0px 0px 0px 0px rgba(0, 0, 0, 1);
+    /* :active 時清除陰影 */
+    --card-shadow-gold: 4px 4px 0px 0px #b8860b;
+    /* Mastery card 金色陰影 */
+
+    /* ── 邊框（Borders） ───────────────────────────────── */
+    --border-width: 2px;
+    /* 標準邊框寬度 */
+    --border-width-thick: 3px;
+    /* 粗邊框（輸入框、區塊） */
+    --border-width-heavy: 4px;
+    /* 超粗邊框（卡片、Modal） */
+    --border-style: solid;
+    --border-base: 2px solid #000000;
+    --border-thick: 3px solid #000000;
+    --border-heavy: 4px solid #000000;
+    --border-bottom-thick: 3px solid #000000;
+
+    /* ── 圓角（Border Radius） ─────────────────────────── */
+    --radius-none: 0px;
+    /* Neo-brutalism 預設無圓角 */
+    --radius-sm: 0.125rem;
+    /* 2px，Tailwind DEFAULT */
+    --radius-md: 0.25rem;
+    /* 4px，lg */
+    --radius-lg: 0.5rem;
+    /* 8px，xl */
+    --radius-full: 0.75rem;
+    /* 12px，full */
+
+    /* ── 間距（Spacing） ───────────────────────────────── */
+    --spacing-xs: 0.25rem;
+    /* 4px */
+    --spacing-sm: 0.5rem;
+    /* 8px */
+    --spacing-md: 1rem;
+    /* 16px */
+    --spacing-lg: 1.5rem;
+    /* 24px */
+    --spacing-xl: 2rem;
+    /* 32px */
+
+    /* ── 字體（Typography） ────────────────────────────── */
+    --font-family-base: 'Space Grotesk', 'Noto Sans TC', sans-serif;
+    --font-family-display: 'Inter', sans-serif;
+
+    --font-size-xs: 0.75rem;
+    /* 12px */
+    --font-size-sm: 0.875rem;
+    /* 14px */
+    --font-size-base: 1rem;
+    /* 16px */
+    --font-size-lg: 1.125rem;
+    /* 18px */
+    --font-size-xl: 1.25rem;
+    /* 20px */
+    --font-size-2xl: 1.5rem;
+    /* 24px */
+    --font-size-3xl: 1.875rem;
+    /* 30px */
+
+    /* ── 動畫（Animation） ─────────────────────────────── */
+    --transition-base: 0.3s ease;
+    --transition-fast: 0.15s ease;
+    --transition-spring: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* ── 容器（Layout） ────────────────────────────────── */
+    --max-width-mobile: 430px;
+    /* 手機最大寬度 */
+    --z-toast: 10000;
+    --z-modal: 9999;
+    --z-nav: 40;
+}
+
+/* ── 深色模式覆寫（Dark Mode Overrides） ──────────────── */
+.dark {
+    --color-bg-light: #1a1a1a;
+    --color-text-base: #ffffff;
+    --color-border-muted: #3f3f46;
+}

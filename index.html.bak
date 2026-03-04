@@ -2,8 +2,6 @@
 <html class="light" lang="zh-TW">
 
 <head>
-    <link rel="stylesheet" href="design-tokens.css">
-
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>工商安全衛生協會-新竹職訓中心 - 簡約首頁列表</title>
@@ -46,16 +44,16 @@
     </script>
     <style type="text/tailwindcss">
         .neo-shadow {
-            box-shadow: var(--card-shadow);
+            box-shadow: 4px 4px 0px 0px #000000;
         }
         .neo-shadow-sm {
-            box-shadow: var(--card-shadow-sm);
+            box-shadow: 2px 2px 0px 0px #000000;
         }
         .neo-border {
-            border: var(--border-base);
+            border: 2px solid #000000;
         }
         .neo-border-thick {
-            border: var(--border-thick);
+            border: 3px solid #000000;
         }
         body {
             font-family: 'Space Grotesk', sans-serif;
@@ -80,7 +78,7 @@
         .capped-gold-shimmer {
             position: relative;
             overflow: hidden;
-            background-color: var(--color-primary) !important; /* Force gold connection */
+            background-color: #ffd400 !important; /* Force gold connection */
         }
         .capped-gold-shimmer::after {
             content: "";
@@ -105,10 +103,10 @@
         /* Capped 狀態發光動畫 */
         @keyframes cappedGlow {
             0%, 100% {
-                box-shadow: 0 0 5px 2px var(--color-primary-glow);
+                box-shadow: 0 0 5px 2px rgba(255, 214, 0, 0.6);
             }
             50% {
-                box-shadow: 0 0 15px 5px var(--color-primary-glow);
+                box-shadow: 0 0 15px 5px rgba(255, 214, 0, 0.9);
             }
         }
         .capped-glow {
@@ -138,22 +136,22 @@
         /* Mastery Card Styles - Elite Gold */
         .mastery-gold {
             background: linear-gradient(135deg, #fffcf0 0%, #fff9d6 100%) !important;
-            border-color: var(--color-primary) !important;
-            box-shadow: var(--card-shadow-gold) !important;
+            border-color: #ffd400 !important;
+            box-shadow: 4px 4px 0px 0px #b8860b !important;
         }
         .mastery-gold-dark {
             background: linear-gradient(135deg, #2d2a10 0%, #1a1805 100%) !important;
-            border-color: var(--color-primary) !important;
-            box-shadow: var(--card-shadow) !important;
+            border-color: #ffd400 !important;
+            box-shadow: 4px 4px 0px 0px #000000 !important;
         }
         .medal-glow {
-            box-shadow: 0 0 15px var(--color-primary-glow);
+            box-shadow: 0 0 15px rgba(255, 212, 0, 0.8);
             animation: pulse-gold 2s infinite;
         }
         @keyframes pulse-gold {
-            0% { transform: scale(1); box-shadow: 0 0 5px var(--color-primary-glow); }
-            50% { transform: scale(1.1); box-shadow: 0 0 20px var(--color-primary-glow); }
-            100% { transform: scale(1); box-shadow: 0 0 5px var(--color-primary-glow); }
+            0% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 212, 0, 0.5); }
+            50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(255, 212, 0, 0.9); }
+            100% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 212, 0, 0.5); }
         }
     </style>
     <!-- Add LevelSystem Script -->
@@ -181,8 +179,7 @@
             <div class="bg-primary neo-border-thick p-3 flex items-center justify-between neo-shadow animate-float">
                 <div class="flex items-center gap-3 overflow-hidden">
                     <div class="bg-black rounded-full p-1 shrink-0 flex items-center justify-center">
-                        <span
-                            class="material-symbols-outlined text-[var(--color-primary)] font-black text-lg">check</span>
+                        <span class="material-symbols-outlined text-[#ffd400] font-black text-lg">check</span>
                     </div>
                     <span class="font-black text-base truncate" id="toast-message">成功新增</span>
                 </div>

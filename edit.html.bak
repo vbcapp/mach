@@ -2,8 +2,6 @@
 <html lang="zh-Hant">
 
 <head>
-    <link rel="stylesheet" href="design-tokens.css">
-
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Edit Card - 工商安全衛生協會-新竹職訓中心</title>
@@ -47,7 +45,7 @@
             border: 3px solid black;
         }
         .neo-shadow {
-            box-shadow: var(--card-shadow-lg);
+            box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
         }
         .neo-shadow-sm {
             box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
