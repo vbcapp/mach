@@ -772,7 +772,7 @@
                     <div class="flex items-center justify-between mb-3">
                         <div class="flex items-center gap-2">
                             <span class="material-symbols-outlined text-red-600 text-xl">psychology</span>
-                            <span class="text-sm font-black uppercase">最常錯的選項</span>
+                            <span class="text-sm font-black uppercase">慣性誤區</span>
                         </div>
                         <button id="expand-wrong-patterns-btn" onclick="toggleWrongPatterns()"
                             class="text-sm font-bold text-blue-600 hover:underline flex items-center gap-1">
@@ -821,19 +821,21 @@
             <!-- ═══════════════════════════════════════════════ -->
 
             <!-- 10. 弱點題目列表 -->
-            <div class="flex items-center gap-2 mb-3 mt-2">
-                <span class="material-symbols-outlined text-[var(--color-danger)]">priority_high</span>
-                <h2 class="text-sm font-black uppercase">需要加強的題目</h2>
-            </div>
+            <div class="neo-brutalism-card bg-gradient-to-br from-red-50 to-orange-50 p-4">
+                <div class="flex items-center gap-2 mb-3 mt-2">
+                    <span class="material-symbols-outlined text-[var(--color-danger)] text-xl">priority_high</span>
+                    <span class="text-sm font-black uppercase">需要加強的題目</span>
+                </div>
 
-            <div id="weakness-list" class="space-y-4 pb-20">
-                <!-- Data will be injected here -->
-            </div>
+                <div id="weakness-list" class="space-y-4 pb-0">
+                    <!-- Data will be injected here -->
+                </div>
 
-            <div id="empty-state" class="hidden flex-col items-center justify-center py-20 px-4 text-center">
-                <span class="material-symbols-outlined text-6xl mb-4 text-gray-400">task_alt</span>
-                <h3 class="text-xl font-black mb-2">太棒了！</h3>
-                <p class="text-sm font-bold text-gray-500">目前沒有發現任何弱點，繼續保持！如果有答錯的題目，它們會出現在這裡。</p>
+                <div id="empty-state" class="hidden flex-col items-center justify-center py-20 px-4 text-center">
+                    <span class="material-symbols-outlined text-6xl mb-4 text-gray-400">task_alt</span>
+                    <h3 class="text-xl font-black mb-2">太棒了！</h3>
+                    <p class="text-sm font-bold text-gray-500">目前沒有發現任何弱點，繼續保持！如果有答錯的題目，它們會出現在這裡。</p>
+                </div>
             </div>
         </main>
 
