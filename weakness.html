@@ -822,9 +822,16 @@
 
             <!-- 10. 弱點題目列表 -->
             <div class="neo-brutalism-card bg-gradient-to-br from-red-50 to-orange-50 p-4">
-                <div class="flex items-center gap-2 mb-3 mt-2">
-                    <span class="material-symbols-outlined text-[var(--color-danger)] text-xl">priority_high</span>
-                    <span class="text-sm font-black uppercase">需要加強的題目</span>
+                <div class="flex items-center justify-between mb-3 mt-2">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[var(--color-danger)] text-xl">priority_high</span>
+                        <span class="text-sm font-black uppercase">需要加強的題目</span>
+                    </div>
+                    <button id="expand-weakness-btn" onclick="toggleWeaknessList()" style="display: none;"
+                        class="text-sm font-bold text-blue-600 hover:underline flex items-center gap-1">
+                        <span id="expand-weakness-text">展開全部</span>
+                        <span id="expand-weakness-icon" class="material-symbols-outlined text-sm">expand_more</span>
+                    </button>
                 </div>
 
                 <div id="weakness-list" class="space-y-4 pb-0">
@@ -1682,10 +1689,20 @@
             container.innerHTML = barsHtml;
         }
 
+        window.weaknessListExpanded = false;
+
         function renderWeaknessList(data, container) {
             container.innerHTML = ''; // Clear existing
 
-            data.forEach((item, index) => {
+            if (!data || data.length === 0) {
+                document.getElementById('expand-weakness-btn').style.display = 'none';
+                return;
+            }
+
+            // 預設顯示 5 題
+            const displayData = window.weaknessListExpanded ? data : data.slice(0, 5);
+
+            displayData.forEach((item, index) => {
                 // Determine color intensity based on error rate or index
                 // Top 3 get warning colors
                 let rankBadge = '';
@@ -1746,6 +1763,37 @@
 
                 container.appendChild(listItem);
             });
+
+            // 更新按鈕狀態
+            const expandBtn = document.getElementById('expand-weakness-btn');
+            if (data.length > 5) {
+                expandBtn.style.display = 'flex';
+            } else {
+                expandBtn.style.display = 'none';
+            }
+        }
+
+        /**
+         * 切換弱點列表展開/收合
+         */
+        function toggleWeaknessList() {
+            window.weaknessListExpanded = !window.weaknessListExpanded;
+            const textEl = document.getElementById('expand-weakness-text');
+            const iconEl = document.getElementById('expand-weakness-icon');
+
+            if (window.weaknessListExpanded) {
+                textEl.textContent = '收起';
+                iconEl.textContent = 'expand_less';
+            } else {
+                textEl.textContent = '展開全部';
+                iconEl.textContent = 'expand_more';
+            }
+
+            // 重新渲染（使用全域存儲的弱點數據）
+            if (globalWeaknessData) {
+                const listContainer = document.getElementById('weakness-list');
+                renderWeaknessList(globalWeaknessData, listContainer);
+            }
         }
 
         /**
