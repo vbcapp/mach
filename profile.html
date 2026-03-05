@@ -168,12 +168,6 @@
                         <option value="7">本週 (7日)</option>
                         <option value="30">本月 (30日)</option>
                      </select>
-                     <button id="expand-activity-btn"
-                        class="border-2 border-black font-bold px-2 py-1 bg-yellow-300 text-black text-sm hover:bg-yellow-400 transition-colors"
-                        style="display:none;" onclick="showExpandedChart()">
-                        <span class="material-symbols-outlined text-sm"
-                           style="font-size:18px;vertical-align:middle;">open_in_full</span> 展開
-                     </button>
                   </div>
                </div>
                <div class="bg-white p-4 border-2 border-black">
@@ -1477,11 +1471,12 @@
 
       function handleActivityPeriodChange(val) {
          const days = Number(val);
-         const expandBtn = document.getElementById('expand-activity-btn');
-         if (expandBtn) {
-            expandBtn.style.display = days === 30 ? 'inline-flex' : 'none';
+         if (days === 30) {
+            // 直接展開橫式大圖
+            showExpandedChart();
+         } else {
+            renderCombinedActivityChart(days);
          }
-         renderCombinedActivityChart(days);
       }
 
       async function showExpandedChart() {
@@ -1613,6 +1608,10 @@
             expandedChart.destroy();
             expandedChart = null;
          }
+         // 關閉後自動切回近 3 日
+         const select = document.getElementById('combined-activity-period');
+         if (select) select.value = '3';
+         renderCombinedActivityChart(3);
       }
    </script>
 
