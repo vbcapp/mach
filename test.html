@@ -15,11 +15,13 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&amp;family=Noto+Sans+TC:wght@400;500;700;900&amp;display=swap"
         rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Noto+Sans+TC:wght@400;700&display=swap"
+        rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
-    
+
 </head>
 
 <body class="text-black dark:text-white min-h-screen flex flex-col overflow-x-hidden">
@@ -373,24 +375,26 @@
                     isDisabled = true;
                     if (btnIndex === question.correctAnswer) {
                         btnClass += " option-correct shadow-none";
-                        btnClass = btnClass.replace("shadow-neo", "");
                         btnContent = `
-        <p class="font-bold text-lg leading-snug text-green-800 dark:text-green-400">
-            ${String.fromCharCode(64 + btnIndex)}. ${safeOption}
-        </p>
-        <div class="absolute -top-3 -right-3 bg-electric-green text-white rounded-full w-8 h-8 flex items-center justify-center shadow-neo border-2 border-black">
-            <span class="material-symbols-outlined text-xl">check</span>
+        <div class="flex items-center justify-between gap-4">
+            <p class="font-bold text-lg leading-snug text-green-800 dark:text-green-400 text-left">
+                ${String.fromCharCode(64 + btnIndex)}. ${safeOption}
+            </p>
+            <div class="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center border-2 border-black shrink-0 shadow-sm relative z-10 block">
+                <span class="material-symbols-outlined text-xl w-6 h-6 flex flex-col items-center justify-center -ml-[2px] mt-[1px]">check</span>
+            </div>
         </div>
         `;
                     } else if (btnIndex === answerState.selectedIndex && !answerState.isCorrect) {
                         btnClass += " option-incorrect shadow-none";
-                        btnClass = btnClass.replace("shadow-neo", "");
                         btnContent = `
-        <p class="font-bold text-lg leading-snug text-red-800 dark:text-red-400">
-            ${String.fromCharCode(64 + btnIndex)}. ${safeOption}
-        </p>
-        <div class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-neo border-2 border-black">
-            <span class="material-symbols-outlined text-xl">close</span>
+        <div class="flex items-center justify-between gap-4">
+            <p class="font-bold text-lg leading-snug text-red-800 dark:text-red-400 text-left">
+                ${String.fromCharCode(64 + btnIndex)}. ${safeOption}
+            </p>
+            <div class="bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center border-2 border-black shrink-0 shadow-sm relative z-10 block">
+                <span class="material-symbols-outlined text-xl w-6 h-6 flex flex-col items-center justify-center mt-[1px]">close</span>
+            </div>
         </div>
         `;
                     } else {

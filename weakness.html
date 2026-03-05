@@ -1669,16 +1669,16 @@
                 const color = getBarColor(item.accuracy);
 
                 barsHtml += `
-                    <div class="flex flex-col items-center justify-end flex-1 max-w-[56px]">
+                    <div class="flex flex-col items-center justify-end flex-1 min-w-0">
                         <!-- 百分比 -->
-                        <span class="text-sm font-black mb-1" style="color: ${color}">${item.accuracy}%</span>
+                        <span class="text-xs font-black mb-1 whitespace-nowrap" style="color: ${color}">${item.accuracy}%</span>
                         <!-- 柱子 -->
                         <div class="w-full neo-border transition-all duration-300"
                              style="height: ${Math.max(barHeight, 8)}px; background-color: ${color};">
                         </div>
                         <!-- 標籤 -->
-                        <span class="text-sm font-bold mt-1.5">${roundLabels[item.round - 1]}</span>
-                        <span class="text-sm text-gray-400 font-bold">共${item.total}題</span>
+                        <span class="text-xs font-bold mt-1 whitespace-nowrap">${roundLabels[item.round - 1]}</span>
+                        <span class="text-xs text-gray-400 font-bold whitespace-nowrap">共${item.total}題</span>
                     </div>
                 `;
             });

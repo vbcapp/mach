@@ -15,7 +15,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&amp;family=Space+Mono:wght@400;700&amp;display=swap"
         rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Noto+Sans+TC:wght@400;700&display=swap"
+        rel="stylesheet" />
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
@@ -217,13 +219,13 @@
                 if (totalParticipants === 0) {
                     podiumContainer.innerHTML = `<p class="text-center text-gray-500 py-8">${periodLabel}還沒有人答題</p>`;
                 } else if (users.length === 1) {
-                    document.getElementById('rank-2-container').classList.add('hidden');
-                    document.getElementById('rank-3-container').classList.add('hidden');
-                    document.getElementById('rank-1-container').classList.remove('flex-1');
-                    document.getElementById('rank-1-container').classList.add('w-48');
+                    document.getElementById('rank-2-container')?.classList.add('hidden');
+                    document.getElementById('rank-3-container')?.classList.add('hidden');
+                    document.getElementById('rank-1-container')?.classList.remove('flex-1');
+                    document.getElementById('rank-1-container')?.classList.add('w-48');
                     renderPodiumUser(1, users[0], currentUserId);
                 } else if (users.length === 2) {
-                    document.getElementById('rank-3-container').classList.add('hidden');
+                    document.getElementById('rank-3-container')?.classList.add('hidden');
                     renderPodiumUser(1, users[0], currentUserId);
                     renderPodiumUser(2, users[1], currentUserId);
                 } else {
@@ -271,9 +273,11 @@
             // 重置所有容器
             ['rank-1-container', 'rank-2-container', 'rank-3-container'].forEach(id => {
                 const el = document.getElementById(id);
-                el.classList.remove('hidden', 'w-48');
-                if (id === 'rank-1-container') {
-                    el.classList.add('flex-1');
+                if (el) {
+                    el.classList.remove('hidden', 'w-48');
+                    if (id === 'rank-1-container') {
+                        el.classList.add('flex-1');
+                    }
                 }
             });
         }
