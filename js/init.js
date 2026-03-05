@@ -462,6 +462,10 @@ function renderCardItem(card) {
         ? `<span class="vibe-badge-mastery">已精通</span>`
         : `<span class="vibe-badge">${card.question_no || '-'}</span>`;
 
+    // 章節名稱最多顯示 5 個字
+    const chapterName = card.chapter || 'General';
+    const truncatedChapter = chapterName.length > 5 ? chapterName.substring(0, 5) + '...' : chapterName;
+
     return `
         <a href="test.html?id=${card.id}"
            data-card-id="${card.id}"
@@ -473,7 +477,7 @@ function renderCardItem(card) {
                     ${topTag}
                 </div>
                 <div class="flex items-center gap-1">
-                    <span class="vibe-badge">${card.chapter || 'General'}</span>
+                    <span class="vibe-badge" title="${chapterName}">${truncatedChapter}</span>
                     ${publishedTag}
                 </div>
             </div>

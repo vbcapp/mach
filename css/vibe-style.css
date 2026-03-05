@@ -359,27 +359,27 @@ a.material-symbols-outlined {
 }
 
 /* ── Badge（小型 badge：題號、章節） ────────────────────── */
-/*  替代：bg-primary neo-border px-1.5 py-0.5 text-[8px] font-bold uppercase  */
+/*  替代：bg-primary neo-border px-1.5 py-0.5 text-[10px] font-bold uppercase  */
 .vibe-badge {
     display: inline-block;
     background-color: var(--color-primary);
     border: 2px solid #000000;
     padding: 0 0.375rem;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     color: #000000;
 }
 
 /* ── Badge Mastery（精通卡金色 badge） ───────────────────── */
-/*  替代：bg-yellow-500 border-2 border-black text-white px-1.5 py-0.5 text-[8px] font-bold uppercase  */
+/*  替代：bg-yellow-500 border-2 border-black text-white px-1.5 py-0.5 text-[10px] font-bold uppercase  */
 .vibe-badge-mastery {
     display: inline-block;
     background-color: #eab308;
     border: 2px solid #000000;
     color: #ffffff;
     padding: 0.125rem 0.375rem;
-    font-size: 8px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
 }
