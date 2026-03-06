@@ -578,7 +578,7 @@
                         <!-- 預估完成 -->
                         <div id="estimation-section" class="bg-white/60 border-2 border-black p-3">
                             <div class="text-sm mb-1">
-                                💡 <span class="font-bold">以目前速度</span>（每日 <span id="current-speed"
+                                💡 <span class="font-bold">照目前速度</span>（每日 <span id="current-speed"
                                     class="font-bold text-purple-600">--</span> 題熟練）
                             </div>
                             <div id="estimation-text" class="text-sm font-bold text-gray-700 mb-2">
@@ -1117,24 +1117,33 @@
             const progressBar = document.getElementById('progress-bar');
 
             if (remainingQuestions === 0) {
-                estimationText.innerHTML = '🎉 <span class="text-green-600">已完成所有題目！</span>';
+                estimationText.innerHTML = '恭喜！<span class="text-green-600">已達成所有目標</span> 🎉';
                 suggestionText.innerHTML = '✅ 保持複習，鞏固知識';
-                progressBar.className = 'h-full bg-green-500 transition-all duration-500';
-            } else if (bufferDays > 0) {
-                estimationText.innerHTML = `預計 <span class="text-purple-600 font-black">${estimatedDays}</span> 天後達成 100%`;
-                suggestionText.innerHTML = `✅ 距離考試還有 <span class="text-green-600 font-bold">${bufferDays}</span> 天緩衝，進度超前！`;
-                progressBar.className = 'h-full bg-green-500 transition-all duration-500';
-            } else if (bufferDays === 0) {
-                estimationText.innerHTML = `預計 <span class="text-yellow-600 font-black">${estimatedDays}</span> 天後達成 100%`;
-                suggestionText.innerHTML = '⚠️ 進度正常，需持續努力';
-                progressBar.className = 'h-full bg-yellow-500 transition-all duration-500';
+            } else if (daysRemaining < 0) {
+                estimationText.innerHTML = `已過期 <span class="text-red-500">${Math.abs(daysRemaining)}</span> 天`;
+                suggestionText.innerHTML = '⚠️ 請重新設定考試日期';
+            } else if (estimatedDays <= daysRemaining) {
+                // 進度超前或剛好
+                estimationText.innerHTML = `預計 <span class="text-green-600">${estimatedDays}</span> 天後達成 100%`;
+
+                const bufferDays = daysRemaining - estimatedDays;
+                if (bufferDays > 0) {
+                    suggestionText.innerHTML = `🌟 有 <span class="font-bold">${bufferDays}</span> 天緩衝，進度超前！`;
+                    suggestionText.className = "text-sm text-green-600 font-bold";
+                } else {
+                    suggestionText.innerHTML = '✨ 進度剛剛好，請保持！';
+                    suggestionText.className = "text-sm text-blue-600 font-bold";
+                }
             } else {
-                // 進度落後
-                const neededSpeed = Math.ceil(remainingQuestions / daysRemaining);
-                const speedIncrease = neededSpeed - avgDailySpeed;
-                estimationText.innerHTML = `預計 <span class="text-red-600 font-black">${estimatedDays}</span> 天後達成 100%`;
-                suggestionText.innerHTML = `🔥 進度落後 <span class="text-red-600 font-bold">${Math.abs(bufferDays)}</span> 天！建議每日增加到 <span class="font-black">${neededSpeed}</span> 題（+${speedIncrease} 題）`;
-                progressBar.className = 'h-full bg-red-500 transition-all duration-500';
+                // 進度診斷與建議
+                const delayDays = estimatedDays - daysRemaining;
+                // 計算若要準時，每天需要多少題
+                const suggestedDailyTarget = Math.ceil(remainingQuestions * (3 / (stats.overallAccuracy / 100 || 0.5)) / daysRemaining);
+                const currentDailyGoal = dailyGoal || 1; // 預設 1
+
+                estimationText.innerHTML = `照目前速度，將比考試日期<span class="text-red-500 font-black">晚 ${delayDays} 天</span>完成。`;
+                suggestionText.innerHTML = `若要準時達標，每日目標需提升至 <span class="font-black">${suggestedDailyTarget}</span> 題（目前 ${currentDailyGoal} 題）。`;
+                suggestionText.className = "text-sm text-orange-600 font-bold";
             }
         }
 

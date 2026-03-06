@@ -638,3 +638,102 @@ a.material-symbols-outlined {
     border-color: var(--color-success);
     padding: var(--spacing-base);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   XP & CRITICAL HIT ANIMATIONS (test.html)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── XP 飄動動畫（普通答對） ──────────────────────────────── */
+.xp-float {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--color-primary);
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    animation: floatUp 1s ease-out forwards;
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-100px);
+    }
+}
+
+/* ── 爆擊橫幅（Critical Banner） ──────────────────────────── */
+.critical-banner {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10000;
+    font-size: 3rem;
+    font-weight: 900;
+    color: #FF0000;
+    text-shadow:
+        3px 3px 0px #000000,
+        0 0 20px #FFD600,
+        0 0 40px #FFD600;
+    pointer-events: none;
+    animation: criticalBounce 0.5s ease-out;
+    letter-spacing: 0.2em;
+}
+
+@keyframes criticalBounce {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* ── 爆擊 XP 獎勵（Critical XP） ──────────────────────────── */
+.critical-xp {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #FFD600;
+    text-shadow:
+        3px 3px 0px #000000,
+        0 0 15px #FF6B00,
+        0 0 30px #FF6B00;
+    pointer-events: none;
+    animation: criticalFloat 2.4s ease-out forwards;
+    white-space: nowrap;
+}
+
+@keyframes criticalFloat {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.8);
+    }
+    20% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1.1);
+    }
+    80% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-30px) scale(0.9);
+    }
+}
