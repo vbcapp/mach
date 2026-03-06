@@ -132,13 +132,20 @@
                     </button>
                 </div>
 
-                <!-- 搜尋列 -->
-                <div class="relative">
-                    <input id="user-search-input" type="text" oninput="searchUsers(this.value)"
-                        class="w-full border-4 border-black p-3 pl-12 font-bold focus:outline-none focus:ring-2 focus:ring-primary"
-                        placeholder="搜尋學員 (名稱或 Email)">
-                    <span
-                        class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                <!-- 搜尋與篩選列 -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-grow">
+                        <input id="user-search-input" type="text" oninput="filterUsers()"
+                            class="w-full border-4 border-black p-3 pl-12 font-bold focus:outline-none focus:ring-2 focus:ring-primary h-full"
+                            placeholder="搜尋學員 (名稱或 Email)">
+                        <span
+                            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                    </div>
+                    <select id="user-tag-filter" onchange="filterUsers()"
+                        class="border-4 border-black p-3 font-bold focus:outline-none focus:ring-2 focus:ring-primary bg-white h-full sm:w-48 cursor-pointer">
+                        <option value="all">所有學員</option>
+                        <option value="untagged">無標籤</option>
+                    </select>
                 </div>
 
                 <!-- 全選列 -->
@@ -382,6 +389,9 @@
         // 批量操作狀態
         let batchMode = 'add';
         let batchSelectedTags = new Set();
+
+        // 學員列表狀態
+        let currentTagFilter = 'all';
 
         // ==================== 初始化 ====================
         document.addEventListener('DOMContentLoaded', async () => {
@@ -1044,9 +1054,31 @@
             }
 
             allUsers = result.data;
-            filteredUsers = [...allUsers];
-            renderUsersList();
-            updateUserCounts();
+            populateUserTagFilter();
+            filterUsers();
+        }
+
+        function populateUserTagFilter() {
+            const select = document.getElementById('user-tag-filter');
+            if (!select) return;
+
+            // Keep the first two options (All, Untagged)
+            const currentVal = select.value;
+            select.innerHTML = `
+                <option value="all">所有學員</option>
+                <option value="untagged">無標籤</option>
+            `;
+
+            allTags.forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag.name;
+                option.textContent = tag.name;
+                select.appendChild(option);
+            });
+
+            select.value = currentVal;
+            // if current tag was deleted, reset to all
+            if (!select.value) select.value = 'all';
         }
 
         function renderUsersList() {
@@ -1107,17 +1139,36 @@
             }).join('');
         }
 
-        function searchUsers(query) {
-            const q = query.toLowerCase().trim();
+        function filterUsers() {
+            const searchInput = document.getElementById('user-search-input');
+            const tagSelect = document.getElementById('user-tag-filter');
 
-            if (!q) {
-                filteredUsers = [...allUsers];
-            } else {
-                filteredUsers = allUsers.filter(user =>
-                    (user.username && user.username.toLowerCase().includes(q)) ||
-                    (user.email && user.email.toLowerCase().includes(q))
-                );
-            }
+            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const tagFilter = tagSelect ? tagSelect.value : 'all';
+
+            filteredUsers = allUsers.filter(user => {
+                // 1. Tag filter logic
+                let matchesTag = true;
+                const userTags = user.tags || [];
+
+                if (tagFilter === 'untagged') {
+                    matchesTag = userTags.length === 0;
+                } else if (tagFilter !== 'all') {
+                    matchesTag = userTags.includes(tagFilter);
+                }
+
+                // 2. Search query logic
+                let matchesSearch = true;
+                if (query) {
+                    matchesSearch = (user.username && user.username.toLowerCase().includes(query)) ||
+                        (user.email && user.email.toLowerCase().includes(query));
+                }
+
+                return matchesTag && matchesSearch;
+            });
+
+            // Ensure sorting by date descending is maintained (it already comes from the API this way, 
+            // but if we were adding items or modifying the array, we would sort it here. The array `allUsers` is already sorted).
 
             renderUsersList();
             updateUserCounts();
