@@ -715,17 +715,39 @@
 
             if (format === 'json') {
                // 匯出 JSON
-               const exportData = data.map((q, index) => ({
-                  排名: index + 1,
-                  題目ID: q.question_id,
-                  科目: q.subject || '未分類',
-                  章節: q.chapter || '',
-                  題號: q.question_no || '',
-                  題目內容: q.question_text || '',
-                  錯誤率: (q.error_rate * 100).toFixed(1) + '%',
-                  全局作答次數: q.total_reviewed,
-                  全局答錯次數: q.total_incorrect
-               }));
+               const exportData = data.map((q, index) => {
+                  let correctAnswerContent = '';
+                  let correctAnswerLabel = q.correct_answer ?? null;
+
+                  if (q.options && q.correct_answer !== null && q.correct_answer !== undefined) {
+                     if (typeof q.correct_answer === 'number' || (typeof q.correct_answer === 'string' && !isNaN(String(q.correct_answer).trim()) && String(q.correct_answer).trim() !== '')) {
+                        const idx = parseInt(q.correct_answer, 10);
+                        correctAnswerContent = q.options[idx] || '';
+                        correctAnswerLabel = String.fromCharCode(65 + idx);
+                     } else if (typeof q.correct_answer === 'string') {
+                        const idx = q.correct_answer.charCodeAt(0) - 65;
+                        correctAnswerContent = q.options[idx] || '';
+                        correctAnswerLabel = q.correct_answer;
+                     }
+                  }
+
+                  const answerText = correctAnswerContent ? `${correctAnswerLabel}. ${correctAnswerContent}` : (correctAnswerLabel || '');
+
+                  return {
+                     排名: index + 1,
+                     題目ID: q.question_id,
+                     科目: q.subject || '未分類',
+                     章節: q.chapter || '',
+                     題號: q.question_no || '',
+                     題目內容: q.question_text || '',
+                     選項: q.options || [],
+                     正確答案: answerText,
+                     options: q.options || [],
+                     answer: answerText,
+                     錯誤率: (q.error_rate * 100).toFixed(1) + '%',
+                     全局作答: q.total_reviewed
+                  };
+               });
 
                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
                const url = URL.createObjectURL(blob);
@@ -736,18 +758,44 @@
                URL.revokeObjectURL(url);
             } else if (format === 'excel') {
                // 匯出 CSV (Excel 可開啟)
-               const headers = ['排名', '題目ID', '科目', '章節', '題號', '題目內容', '錯誤率', '全局作答次數', '全局答錯次數'];
-               const rows = data.map((q, index) => [
-                  index + 1,
-                  q.question_id,
-                  q.subject || '未分類',
-                  q.chapter || '',
-                  q.question_no || '',
-                  `"${(q.question_text || '').replace(/"/g, '""')}"`, // 處理引號
-                  (q.error_rate * 100).toFixed(1) + '%',
-                  q.total_reviewed,
-                  q.total_incorrect
-               ]);
+               const headers = ['排名', '題目ID', '科目', '章節', '題號', '題目內容', '選項', '正確答案', '錯誤率', '全局作答'];
+               const rows = data.map((q, index) => {
+                  // 將選項陣列格式化為字串 (例如: "A. 選項1 | B. 選項2 | C. 選項3")
+                  let optionsText = '';
+                  if (q.options && Array.isArray(q.options)) {
+                     optionsText = q.options.map((opt, idx) => {
+                        const label = String.fromCharCode(65 + idx); // A, B, C, D...
+                        return `${label}. ${opt}`;
+                     }).join(' | ');
+                  }
+
+                  // 正確答案
+                  let correctAnswerText = '';
+                  if (q.options && q.correct_answer !== null && q.correct_answer !== undefined) {
+                     if (typeof q.correct_answer === 'number' || (typeof q.correct_answer === 'string' && !isNaN(String(q.correct_answer).trim()) && String(q.correct_answer).trim() !== '')) {
+                        const idx = parseInt(q.correct_answer, 10);
+                        const answerLabel = String.fromCharCode(65 + idx);
+                        correctAnswerText = `${answerLabel}. ${q.options[idx] || ''}`;
+                     } else if (typeof q.correct_answer === 'string') {
+                        // It's already a letter like 'A'
+                        const idx = q.correct_answer.charCodeAt(0) - 65;
+                        correctAnswerText = `${q.correct_answer}. ${q.options[idx] || ''}`;
+                     }
+                  }
+
+                  return [
+                     index + 1,
+                     q.question_id,
+                     q.subject || '未分類',
+                     q.chapter || '',
+                     q.question_no || '',
+                     `"${(q.question_text || '').replace(/"/g, '""')}"`, // 處理引號
+                     `"${optionsText.replace(/"/g, '""')}"`, // 處理引號
+                     `"${correctAnswerText.replace(/"/g, '""')}"`, // 處理引號
+                     (Number(q.error_rate) * 100).toFixed(1) + '%',
+                     q.total_reviewed
+                  ];
+               });
 
                // 加上 BOM 讓 Excel 正確識別 UTF-8
                const BOM = '\uFEFF';
