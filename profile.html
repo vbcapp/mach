@@ -1260,11 +1260,13 @@
             const color = getBarColor(item.accuracy);
             barsHtml += `
                <div class="flex flex-col items-center justify-end flex-1 max-w-[56px]">
-                  <span class="text-sm font-black mb-1" style="color: ${color}">${item.accuracy}%</span>
+                  <span class="text-sm font-black mb-1 whitespace-nowrap" style="color: ${color}">${item.accuracy}%</span>
                   <div class="w-full border-2 border-black transition-all duration-300"
                        style="height: ${Math.max(barHeight, 8)}px; background-color: ${color};"></div>
-                  <span class="text-sm font-bold mt-1.5">${roundLabels[item.round - 1]}</span>
-                  <span class="text-sm text-gray-400 font-bold">${item.total}題</span>
+                  <div class="flex flex-col items-center justify-start mt-1.5 h-12">
+                     <span class="text-sm font-bold whitespace-nowrap">${roundLabels[item.round - 1]}</span>
+                     <span class="text-sm text-gray-400 font-bold whitespace-nowrap">${item.total}題</span>
+                  </div>
                </div>
             `;
          });
