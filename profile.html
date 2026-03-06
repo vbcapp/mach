@@ -226,24 +226,7 @@
                </div>
             </div>
 
-            <!-- Chart 8: Overall Accuracy Trend -->
-            <div class="vibe-card dark:bg-gray-800">
-               <div class="flex items-center justify-between mb-4">
-                  <div class="flex items-center gap-3">
-                     <span class="material-symbols-outlined text-black dark:text-white">analytics</span>
-                     <h3 class="text-xl font-black uppercase">整體正確率趨勢</h3>
-                  </div>
-                  <select id="overall-accuracy-period"
-                     class="border-2 border-black font-bold p-1 bg-white text-black text-sm"
-                     onchange="renderOverallAccuracyTrendChart(this.value)">
-                     <option value="week">每週</option>
-                     <option value="month">每月</option>
-                  </select>
-               </div>
-               <div class="bg-white p-4 border-2 border-black">
-                  <canvas id="overall-accuracy-chart"></canvas>
-               </div>
-            </div>
+            <!-- Chart 8: Overall Accuracy Trend (Merged into Chart 7.5 Chapter Accuracy Trend, so this card is removed) -->
 
             <!-- Chart 9: Attempt Accuracy by Round (5 bars) -->
             <div class="vibe-card dark:bg-gray-800">
@@ -520,7 +503,6 @@
             { name: '每日活躍與答題', fn: () => renderCombinedActivityChart() },
             { name: '答題時段分佈', fn: () => renderAnswerTimeDistributionChart() },
             { name: '章節正確率趨勢', fn: () => renderChapterAccuracyTrendChart() },
-            { name: '整體正確率趨勢', fn: () => renderOverallAccuracyTrendChart('week') },
             { name: '刷題正確率趨勢', fn: () => renderAdminAttemptAccuracyChart() },
          ];
 
@@ -1070,62 +1052,7 @@
             }
          });
       }
-      async function renderOverallAccuracyTrendChart(period = 'week') {
-         const result = await apiService.getAdminOverallAccuracyTrend(period);
-         if (!result.success) {
-            console.error('取得整體正確率折線數據失敗:', result.error);
-            return;
-         }
-
-         const ctx = document.getElementById('overall-accuracy-chart');
-         if (!ctx) return;
-
-         const labels = result.data.map(item => item.date);
-         const accuracyData = result.data.map(item => item.accuracy);
-
-         if (overallAccuracyChart) {
-            overallAccuracyChart.destroy();
-         }
-
-         overallAccuracyChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-               labels: labels,
-               datasets: [{
-                  label: '整體正確率 (%)',
-                  data: accuracyData,
-                  borderColor: '#10B981',
-                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                  borderWidth: 3,
-                  tension: 0.3,
-                  fill: true,
-                  pointBackgroundColor: '#10B981',
-                  pointBorderColor: '#000000',
-                  pointBorderWidth: 2,
-                  pointRadius: 4
-               }]
-            },
-            options: {
-               responsive: true,
-               maintainAspectRatio: true,
-               plugins: {
-                  legend: { display: true, labels: { font: { family: 'Inter', weight: 'bold' }, color: '#000' } }
-               },
-               scales: {
-                  y: {
-                     beginAtZero: true,
-                     max: 100,
-                     ticks: { stepSize: 20, font: { family: 'Inter', weight: 'bold' }, callback: function (value) { return value + '%' } },
-                     grid: { color: 'rgba(0, 0, 0, 0.1)' }
-                  },
-                  x: {
-                     ticks: { font: { family: 'Inter', weight: 'bold' } },
-                     grid: { display: false }
-                  }
-               }
-            }
-         });
-      }
+      // (整體正確率函數已合併至章節正確率圖表中)
 
       async function initChapterAccuracySelect() {
          const selectEl = document.getElementById('chapter-accuracy-chapter-select');
@@ -1151,14 +1078,18 @@
 
          if (!chapter) return;
 
-         const result = await apiService.getAdminChapterAccuracyTrend(chapter, period);
+         // 同時取得章節的正確率與整體的正確率
+         const [chapterResult, overallResult] = await Promise.all([
+            apiService.getAdminChapterAccuracyTrend(chapter, period),
+            apiService.getAdminOverallAccuracyTrend(period)
+         ]);
 
          const ctx = document.getElementById('chapter-accuracy-chart');
          if (!ctx) return;
 
          if (chapterAccuracyChart) chapterAccuracyChart.destroy();
 
-         if (!result.success || result.data.length === 0) {
+         if (!chapterResult.success || chapterResult.data.length === 0) {
             // Show empty chart if no data
             chapterAccuracyChart = new Chart(ctx, {
                type: 'line',
@@ -1173,33 +1104,70 @@
             return;
          }
 
-         const labels = result.data.map(item => item.date);
-         const data = result.data.map(item => item.accuracy);
+         // 以整體的日期為基準 (因為整體資料涵蓋最廣，不會因章節而缺日期，這樣整體正確率的線條形狀才會固定)
+         // 如果整體完全沒資料，就退回使用章節的日期
+         let labels = [];
+         if (overallResult.success && overallResult.data && overallResult.data.length > 0) {
+            labels = overallResult.data.map(item => item.date);
+         } else {
+            labels = chapterResult.data.map(item => item.date);
+         }
+
+         // 把章節與整體的數據都轉成 Map，再依照統一的 labels 陣列抽出
+         const chapterDataMap = {};
+         if (chapterResult.success && chapterResult.data) {
+            chapterResult.data.forEach(item => { chapterDataMap[item.date] = item.accuracy; });
+         }
+
+         const overallDataMap = {};
+         if (overallResult.success && overallResult.data) {
+            overallResult.data.forEach(item => { overallDataMap[item.date] = item.accuracy; });
+         }
+
+         // 對齊資料：如果該天沒有章節或整體數據，則填入 null，折線圖會自動斷層或跳過
+         const chapterDataAligned = labels.map(date => chapterDataMap[date] !== undefined ? chapterDataMap[date] : null);
+         const overallDataAligned = labels.map(date => overallDataMap[date] !== undefined ? overallDataMap[date] : null);
 
          chapterAccuracyChart = new Chart(ctx, {
             type: 'line',
             data: {
                labels: labels,
-               datasets: [{
-                  label: `${chapter} 正確率(%)`,
-                  data: data,
-                  borderColor: '#9C27B0',
-                  backgroundColor: 'rgba(156, 39, 176, 0.1)',
-                  borderWidth: 3,
-                  tension: 0.3,
-                  fill: true,
-                  pointBackgroundColor: '#9C27B0',
-                  pointBorderColor: '#000000',
-                  pointBorderWidth: 2,
-                  pointRadius: 4
-               }]
+               datasets: [
+                  {
+                     label: `${chapter} 正確率(%)`,
+                     data: chapterDataAligned,
+                     borderColor: '#9C27B0',
+                     backgroundColor: 'rgba(156, 39, 176, 0.1)',
+                     borderWidth: 3,
+                     tension: 0.3,
+                     fill: true,
+                     pointBackgroundColor: '#9C27B0',
+                     pointBorderColor: '#000000',
+                     pointBorderWidth: 2,
+                     pointRadius: 4
+                  },
+                  {
+                     label: '整體正確率(%)',
+                     data: overallDataAligned,
+                     borderColor: '#10B981',
+                     backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                     borderWidth: 3,
+                     tension: 0.3,
+                     fill: false, // 只有線條不填滿
+                     pointBackgroundColor: '#10B981',
+                     pointBorderColor: '#000000',
+                     pointBorderWidth: 2,
+                     pointRadius: 4,
+                     hidden: false // 預設顯示，可點擊圖例隱藏
+                  }
+               ]
             },
             options: {
                responsive: true,
                maintainAspectRatio: true,
-               plugins: { legend: { labels: { font: { family: 'Inter', weight: 'bold' }, color: '#000' } } },
+               plugins: { legend: { display: true, labels: { font: { family: 'Inter', weight: 'bold' }, color: '#000', usePointStyle: true } } },
                scales: {
-                  y: { beginAtZero: true, max: 100, ticks: { stepSize: 20, font: { family: 'Inter', weight: 'bold' } } },
+                  y: { beginAtZero: true, max: 100, ticks: { stepSize: 20, font: { family: 'Inter', weight: 'bold' }, callback: function (val) { return val + '%' } } },
                   x: { ticks: { font: { family: 'Inter', weight: 'bold' } }, grid: { display: false } }
                }
             }
