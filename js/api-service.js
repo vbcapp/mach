@@ -2401,16 +2401,19 @@ class ApiService {
     }
 
     /**
-     * 取得全體用戶第1~5次作答正確率 (管理員儀表板用)
-     * @returns {{ round: number, accuracy: number, total: number }[]}
+     * [Admin] 取得全體用戶的第1~5次作答正確率
+     * @param {string|null} tag - Optional user tag to filter by
+     * @returns {Promise<Object>} { success: true, data: {round, accuracy, total}[] }
      */
-    async getAdminAttemptAccuracyByRound() {
+    async getAdminAttemptAccuracyByRound(tag = null) {
         try {
-            const { data, error } = await this.supabase.rpc('get_admin_attempt_accuracy_by_round');
+            const params = tag ? { p_tag: tag } : {};
+            const { data, error } = await this.supabase.rpc('get_admin_attempt_accuracy_by_round', params);
             if (error) throw error;
             return { success: true, data };
         } catch (error) {
-            return this._handleError(error);
+            console.error('Error fetching admin attempt accuracy by round:', error);
+            return { success: false, error: error.message };
         }
     }
 

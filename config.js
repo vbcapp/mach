@@ -77,6 +77,10 @@ const RoleManager = {
 
     isMasterAdmin() {
         return this.role === 'master_admin';
+    },
+
+    isSubAdmin() {
+        return this.role === 'sub_admin';
     }
 };
 

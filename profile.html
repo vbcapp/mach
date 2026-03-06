@@ -109,6 +109,24 @@
                <p class="text-sm font-bold">系統數據概覽與分析</p>
             </div>
 
+            <!-- Sub Admin Import Section (Only visible for sub_admin role) -->
+            <div id="sub-admin-import-section" class="hidden">
+               <div class="vibe-card bg-blue-50 dark:bg-blue-900">
+                  <div class="flex items-center justify-between mb-4">
+                     <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-black dark:text-white text-3xl">upload_file</span>
+                        <h2 class="text-xl font-black uppercase">題目管理</h2>
+                     </div>
+                     <a href="import.html"
+                        class="bg-blue-500 border-4 border-black px-4 py-2 font-black text-sm text-white neo-brutalism-button shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-2">
+                        <span class="material-symbols-outlined text-xl">upload</span>
+                        <span>匯入題目</span>
+                     </a>
+                  </div>
+                  <p class="text-sm font-bold text-black dark:text-white">上傳 JSON 格式的題目資料到系統中</p>
+               </div>
+            </div>
+
             <!-- Chart 1: Daily Registrations -->
             <div class="vibe-card dark:bg-gray-800">
                <div class="flex items-center gap-3 mb-4">
@@ -230,12 +248,21 @@
 
             <!-- Chart 9: Attempt Accuracy by Round (5 bars) -->
             <div class="vibe-card dark:bg-gray-800">
-               <div class="flex items-center gap-3 mb-4">
-                  <span class="material-symbols-outlined text-black dark:text-white">compare_arrows</span>
-                  <h3 class="text-xl font-black uppercase">刷題正確率趨勢（第1~5次）</h3>
+               <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+                  <div class="flex items-center gap-3">
+                     <span class="material-symbols-outlined text-black dark:text-white">compare_arrows</span>
+                     <h3 class="text-xl font-black uppercase">第X次刷題/全員答題次數</h3>
+                  </div>
+                  <div class="flex items-center gap-2">
+                     <select id="attempt-accuracy-tag"
+                        class="border-2 border-black font-bold p-1 bg-white text-black text-sm max-w-[150px] truncate"
+                        onchange="renderAdminAttemptAccuracyChart()">
+                        <option value="">全部梯次 (不篩選)</option>
+                     </select>
+                  </div>
                </div>
-               <div class="bg-white p-4 border-2 border-black">
-                  <div id="admin-attempt-accuracy-chart" class="flex items-end justify-around gap-2"
+               <div class="bg-white p-4 border-2 border-black overflow-x-auto">
+                  <div id="admin-attempt-accuracy-chart" class="flex items-end justify-around gap-4 min-w-max p-2"
                      style="min-height: 180px;"></div>
                </div>
             </div>
@@ -492,8 +519,20 @@
             dashboardEl.classList.remove('hidden');
          }
 
+         // 檢查是否為 sub_admin，只有 sub_admin 才顯示匯入區塊
+         if (typeof RoleManager !== 'undefined' && RoleManager.isSubAdmin()) {
+            const subAdminSection = document.getElementById('sub-admin-import-section');
+            if (subAdminSection) {
+               subAdminSection.classList.remove('hidden');
+               console.log('Sub Admin 匯入功能已啟用');
+            }
+         }
+
          // 初始化章節選單
          await initChapterAccuracySelect();
+
+         // 初始化刷題標籤選單
+         await initAttemptAccuracyTagSelect();
 
          // 載入並渲染圖表/區塊（各自獨立 try-catch，避免一個失敗導致全部中斷）
          const dashboardTasks = [
@@ -1174,8 +1213,28 @@
          });
       }
 
+      async function initAttemptAccuracyTagSelect() {
+         const selectEl = document.getElementById('attempt-accuracy-tag');
+         if (!selectEl) return;
+         try {
+            const result = await apiService.getAllTags();
+            if (result.success && result.data) {
+               result.data.forEach(tag => {
+                  const option = document.createElement('option');
+                  option.value = tag.name;
+                  option.textContent = tag.name;
+                  selectEl.appendChild(option);
+               });
+            }
+         } catch (error) {
+            console.error('初始化標籤選單失敗', error);
+         }
+      }
+
       async function renderAdminAttemptAccuracyChart() {
-         const result = await apiService.getAdminAttemptAccuracyByRound();
+         const selectEl = document.getElementById('attempt-accuracy-tag');
+         const tag = selectEl ? selectEl.value : '';
+         const result = await apiService.getAdminAttemptAccuracyByRound(tag || null);
          const container = document.getElementById('admin-attempt-accuracy-chart');
          if (!container) return;
 
@@ -1205,7 +1264,7 @@
                   <div class="w-full border-2 border-black transition-all duration-300"
                        style="height: ${Math.max(barHeight, 8)}px; background-color: ${color};"></div>
                   <span class="text-sm font-bold mt-1.5">${roundLabels[item.round - 1]}</span>
-                  <span class="text-sm text-gray-400 font-bold">共${item.total}題</span>
+                  <span class="text-sm text-gray-400 font-bold">${item.total}題</span>
                </div>
             `;
          });
