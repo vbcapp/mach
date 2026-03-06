@@ -689,6 +689,8 @@ a.material-symbols-outlined {
     pointer-events: none;
     animation: criticalBounce 0.5s ease-out;
     letter-spacing: 0.2em;
+    text-align: center;
+    line-height: 1.2;
 }
 
 @keyframes criticalBounce {
