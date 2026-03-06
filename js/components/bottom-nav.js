@@ -123,7 +123,7 @@ const BottomNav = {
         }).join('');
 
         return `
-            <nav class="fixed bottom-0 w-full max-w-[430px] bg-white dark:bg-zinc-900 border-t-thick border-black flex justify-around items-center px-2 py-4 pb-8 z-50">
+            <nav class="fixed bottom-0 w-full max-w-[430px] bg-white dark:bg-zinc-900 border-t-thick border-black flex justify-around items-center px-2 py-4 z-50" style="padding-bottom: max(2rem, env(safe-area-inset-bottom))">
                 ${navItemsHtml}
             </nav>
         `;

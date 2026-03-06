@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="css/vibe-style.css">
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>熟練度卡片 UI 方案預覽</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="js/theme-config.js"></script>
@@ -446,6 +446,14 @@
                 });
             }
         });
+    </script>
+    <!-- Service Worker Registration -->
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("/sw.js").catch(() => {});
+            });
+        }
     </script>
 </body>
 </html>

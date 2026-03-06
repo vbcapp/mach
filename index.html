@@ -7,7 +7,13 @@
 
 
     <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="職訓考試" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <title>工商安全衛生協會-新竹職訓中心 - 簡約首頁列表</title>
 
     <!-- 登入檢查 -->
@@ -466,6 +472,14 @@
         // 如果應用已經初始化完成（可能事件已經觸發過了），立即檢查
         if (typeof appInitialized !== 'undefined' && appInitialized) {
             showAdminButtonIfAllowed();
+        }
+    </script>
+    <!-- Service Worker Registration -->
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("/sw.js").catch(() => {});
+            });
         }
     </script>
 </body>
