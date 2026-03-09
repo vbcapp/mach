@@ -33,6 +33,11 @@ class ApiService {
                 await RoleManager.init(this.supabase);
             }
 
+            // 從資料庫載入組織品牌設定（覆蓋 config.js 的預設值）
+            if (typeof OrgBranding !== 'undefined') {
+                await OrgBranding.fetch(this.supabase);
+            }
+
             return { success: true, user };
         } catch (error) {
             console.error('初始化失敗:', error);

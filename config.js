@@ -1,9 +1,159 @@
-// ==================== Supabase 配置 ====================
-// ✅ 已自動配置為你的 Supabase 專案
+// ==================== SaaS 企業設定 ====================
+// 部署給不同企業時，只需修改這 2 個值（指向該企業的 Supabase 專案）
+// 企業名稱、Logo 等品牌資訊全部從資料庫 organization_settings 表讀取
 const SUPABASE_CONFIG = {
     url: 'https://mwwvrapnjekxwxpyolcm.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13d3ZyYXBuamVreHd4cHlvbGNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyOTM5MjgsImV4cCI6MjA4Nzg2OTkyOH0.kfzTvhZaaV7JPP38fu60b9sCTrBf5XTxYiT78Oov2lw'
 };
+
+// ==================== 租戶工具（從 SUPABASE_CONFIG 衍生） ====================
+const TenantResolver = {
+    getProjectRef() {
+        const match = SUPABASE_CONFIG.url.match(/https:\/\/([^.]+)\.supabase\.co/);
+        return match ? match[1] : '';
+    },
+    getAuthTokenKey() {
+        return `sb-${this.getProjectRef()}-auth-token`;
+    }
+};
+
+// ==================== 組織品牌 ====================
+// 所有品牌資訊從資料庫 organization_settings 表讀取
+// 切換 Supabase 專案 = 自動切換企業名稱、Logo 等
+const OrgBranding = {
+    orgName: '',
+    shortName: '',
+    description: '',
+    footerText: '',
+    appVersion: '',
+    primaryColor: '#FFD600',
+    logoUrl: '',
+    _loaded: false,
+    _fetchPromise: null,
+
+    // 從資料庫讀取品牌資料（不需要登入，用 anon key 即可讀取）
+    async fetch(supabaseClient) {
+        // 避免重複發請求
+        if (this._loaded) {
+            this.applyToDOM();
+            return;
+        }
+        if (this._fetchPromise) return this._fetchPromise;
+
+        this._fetchPromise = (async () => {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('organization_settings')
+                    .select('*')
+                    .single();
+
+                if (data && !error) {
+                    this.orgName = data.org_name || '';
+                    this.shortName = data.short_name || '';
+                    this.description = data.description || '';
+                    this.appVersion = data.app_version || '';
+                    this.footerText = data.footer_text || '';
+                    this.primaryColor = data.primary_color || this.primaryColor;
+                    this.logoUrl = data.logo_url || '';
+                    this._loaded = true;
+                }
+            } catch (e) {
+                console.warn('從資料庫載入組織設定失敗:', e);
+            }
+
+            this.applyToDOM();
+            this._updateManifest();
+        })();
+
+        return this._fetchPromise;
+    },
+
+    // 將品牌資訊套用到 DOM
+    applyToDOM() {
+        if (!this.orgName) return; // 尚未載入，跳過
+
+        document.querySelectorAll('[data-brand="org-name"]').forEach(el => {
+            el.textContent = this.orgName;
+        });
+
+        document.querySelectorAll('[data-brand="short-name"]').forEach(el => {
+            el.textContent = this.shortName;
+        });
+
+        document.querySelectorAll('[data-brand="footer"]').forEach(el => {
+            el.textContent = this.footerText;
+        });
+
+        document.querySelectorAll('[data-brand="description"]').forEach(el => {
+            el.textContent = this.description;
+        });
+
+        // Logo
+        document.querySelectorAll('[data-brand="logo"]').forEach(el => {
+            if (this.logoUrl && el.tagName === 'IMG') {
+                el.src = this.logoUrl;
+            }
+        });
+
+        // 頁面標題（<title> tag）
+        const titleSuffix = document.title.replace(/^[^-–—]*[-–—]\s*/, '');
+        if (titleSuffix && titleSuffix !== document.title) {
+            document.title = `${this.orgName} - ${titleSuffix}`;
+        } else {
+            document.title = this.orgName;
+        }
+
+        // Apple meta tag
+        const appleMeta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+        if (appleMeta) {
+            appleMeta.setAttribute('content', this.shortName);
+        }
+
+        // 重新渲染 Header（因為 AppHeader.init() 可能在品牌載入前就執行了）
+        if (typeof AppHeader !== 'undefined') {
+            AppHeader.init();
+        }
+    },
+
+    // 動態產生 PWA Manifest
+    _updateManifest() {
+        const manifest = {
+            name: this.orgName || '考試系統',
+            short_name: this.shortName || '考試',
+            description: this.description || '企業證照考試練習平台',
+            start_url: '/index.html',
+            display: 'standalone',
+            orientation: 'portrait',
+            background_color: '#ffffff',
+            theme_color: '#000000',
+            icons: [
+                { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+                { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+                { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+            ]
+        };
+
+        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const manifestUrl = URL.createObjectURL(blob);
+
+        const existing = document.querySelector('link[rel="manifest"]');
+        if (existing) existing.remove();
+
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = manifestUrl;
+        document.head.appendChild(link);
+    }
+};
+
+// ==================== 頁面載入時自動讀取品牌 ====================
+// 用 anon key 建立輕量 client，不需要登入就能讀 organization_settings（RLS 允許公開讀取）
+document.addEventListener('DOMContentLoaded', async () => {
+    if (typeof supabase !== 'undefined') {
+        const anonClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        await OrgBranding.fetch(anonClient);
+    }
+});
 
 // ==================== XP 系統常數 ====================
 const XP_REWARDS = {

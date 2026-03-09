@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="職訓考試" />
     <meta name="theme-color" content="#000000" />
-    <link rel="manifest" href="manifest.json" />
+    <!-- manifest 由 config.js 動態產生 -->
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <title>工商安全衛生協會-新竹職訓中心 - 帳號設定</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -137,7 +137,7 @@
             <div class="bg-zinc-400 p-1">
                 <span class="material-symbols-outlined text-white text-xs">terminal</span>
             </div>
-            <p class="text-[10px] font-black uppercase tracking-[0.2em]">工商安全衛生協會-新竹職訓中心 v2.4.0</p>
+            <p class="text-[10px] font-black uppercase tracking-[0.2em]" data-brand="footer">工商安全衛生協會-新竹職訓中心 v2.4.0</p>
         </div>
     </div>
 
@@ -276,7 +276,7 @@
                         () => {
                             localStorage.clear();
                             // TODO: API Call to delete user
-                            ModalSystem.alert('帳號已刪除', '感謝您使用 工商安全衛生協會-新竹職訓中心。', () => {
+                            ModalSystem.alert('帳號已刪除', `感謝您使用 ${OrgBranding.orgName}。`, () => {
                                 window.location.href = 'login.html';
                             });
                         },

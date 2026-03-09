@@ -12,16 +12,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="職訓考試" />
     <meta name="theme-color" content="#000000" />
-    <link rel="manifest" href="manifest.json" />
+    <!-- manifest 由 config.js 動態產生 -->
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <title>工商安全衛生協會-新竹職訓中心 - 簡約首頁列表</title>
 
-    <!-- 登入檢查 -->
+    <!-- 租戶解析 + 登入檢查 -->
+    <script src="config.js"></script>
     <script>
         // 檢查是否已登入，如果沒有則導向 login.html
         // [Fix] 如果有 hash (OAuth callback) 則不導向，交由 init.js 處理
         if (!window.location.hash) {
-            const hasLogin = localStorage.getItem('userNickname') || localStorage.getItem('sb-mwwvrapnjekxwxpyolcm-auth-token');
+            const hasLogin = localStorage.getItem('userNickname') || localStorage.getItem(TenantResolver.getAuthTokenKey());
             // 注意：userNickname 在 Google 登入初次可能為空，改檢查 Supabase token 或 userConsent + hash
             // 這裡簡單寬鬆判斷，主要依賴 init.js 的詳細檢查
             if (!localStorage.getItem('userConsent') && !hasLogin) {
@@ -43,7 +44,7 @@
 
 <body class="bg-surface dark:bg-background-dark text-text-base dark:text-white leading-relaxed">
     <div class="vibe-app-shell">
-        <div id="app-header" data-variant="brand" data-title="工商安全衛生協會-新竹職訓中心" data-admin-btn="true"></div>
+        <div id="app-header" data-variant="brand" data-title="" data-admin-btn="true"></div>
 
         <!-- Success Notification Toast -->
         <div id="success-toast" class="absolute top-20 left-4 right-4 z-50 hidden toast-enter">
@@ -438,8 +439,7 @@
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- 專案配置與 API Service -->
-    <script src="config.js"></script>
+    <!-- 專案配置與 API Service（config.js 已在 <head> 載入） -->
     <script src="js/api-service.js"></script>
     <script src="js/init.js"></script>
     <script src="js/modal-system.js"></script>

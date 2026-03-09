@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="職訓考試" />
     <meta name="theme-color" content="#000000" />
-    <link rel="manifest" href="manifest.json" />
+    <!-- manifest 由 config.js 動態產生 -->
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
    <title>工商安全衛生協會-新竹職訓中心 - 個人中心</title>
    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -44,7 +44,7 @@
                <a href="rule.html" class="vibe-square-btn">
                   <span class="material-symbols-outlined text-black block text-xl">terminal</span>
                </a>
-               <h1 class="text-xl font-black tracking-tighter">工商安全衛生協會-新竹職訓中心</h1>
+               <h1 class="text-xl font-black tracking-tighter" data-brand="org-name">工商安全衛生協會-新竹職訓中心</h1>
             </div>
             <button class="vibe-icon-btn bg-white" style="width:auto;height:auto;border-width:4px"
                onclick="window.location.href='profilei.html'">

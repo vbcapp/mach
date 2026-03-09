@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="職訓考試" />
     <meta name="theme-color" content="#000000" />
-    <link rel="manifest" href="manifest.json" />
+    <!-- manifest 由 config.js 動態產生 -->
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
     <title>工商安全衛生協會-新竹職訓中心 - 數據收集說明頁面</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -31,7 +31,7 @@
             class="flex items-center justify-center bg-white dark:bg-black border-[3px] border-black p-4 neo-shadow w-20 h-20 mb-4 rounded-xl">
             <span class="material-symbols-outlined text-4xl font-bold text-black dark:text-white">code_blocks</span>
         </div>
-        <h1 class="text-3xl font-bold tracking-tighter text-black dark:text-white uppercase mb-4">工商安全衛生協會-新竹職訓中心</h1>
+        <h1 class="text-3xl font-bold tracking-tighter text-black dark:text-white uppercase mb-4" data-brand="org-name">工商安全衛生協會-新竹職訓中心</h1>
         <p class="text-center text-black dark:text-zinc-200 font-bold leading-relaxed px-2">
             🎯 企業證照考試練習平台！透過互動式測驗、遊戲化等級系統，以及完整的進度追蹤，助你有效準備證照考試
         </p>
@@ -131,7 +131,7 @@
                 <span id="submit-btn-text">註冊並開始使用</span>
                 <span class="material-symbols-outlined font-black">arrow_forward</span>
             </button>
-            <p class="mt-6 text-xs text-zinc-500 dark:text-zinc-400 font-bold">
+            <p class="mt-6 text-xs text-zinc-500 dark:text-zinc-400 font-bold" data-brand="footer">
                 工商安全衛生協會-新竹職訓中心 Flashcard App v1.2.0
             </p>
         </div>

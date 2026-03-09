@@ -26,7 +26,11 @@ const AppHeader = {
         if (!container) return;
 
         const variant = container.getAttribute('data-variant') || 'brand';
-        const title = container.getAttribute('data-title') || '';
+        // brand variant 使用 OrgBranding 動態組織名稱，back variant 使用 data-title（頁面專屬標題）
+        let title = container.getAttribute('data-title') || '';
+        if (variant === 'brand' && typeof OrgBranding !== 'undefined' && OrgBranding.orgName) {
+            title = OrgBranding.orgName;
+        }
         const backHref = container.getAttribute('data-back-href') || 'index.html';
         const adminBtn = container.getAttribute('data-admin-btn') === 'true';
 
