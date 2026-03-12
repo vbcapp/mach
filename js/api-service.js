@@ -1558,6 +1558,71 @@ class ApiService {
     }
 
     /**
+     * 批量刪除題目（僅管理員可用）
+     * @param {string[]} questionIds - 要刪除的題目 ID 陣列
+     * @returns {Promise<{success: boolean, deletedCount: number}>}
+     */
+    async deleteQuestions(questionIds) {
+        try {
+            if (!questionIds || questionIds.length === 0) {
+                return { success: false, error: { message: '請選擇要刪除的題目' } };
+            }
+
+            const { error } = await this.supabase
+                .from('questions')
+                .delete()
+                .in('id', questionIds);
+
+            if (error) throw error;
+
+            await this._syncUserCardCount();
+
+            return { success: true, deletedCount: questionIds.length };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 取得所有題目（管理員用，不受權限限制）
+     * 支援科目、章節篩選和搜尋
+     */
+    async getAdminQuestions(options = {}) {
+        try {
+            const {
+                subject = null,
+                chapter = null,
+                searchQuery = null
+            } = options;
+
+            let query = this.supabase
+                .from('questions')
+                .select('id, subject, subject_no, chapter, chapter_no, question_no, question, question_type, option_a, option_b, option_c, option_d, correct_answer')
+                .order('subject_no', { ascending: true })
+                .order('chapter_no', { ascending: true })
+                .order('question_no', { ascending: true });
+
+            if (subject) {
+                query = query.eq('subject', subject);
+            }
+            if (chapter) {
+                query = query.eq('chapter', chapter);
+            }
+            if (searchQuery) {
+                query = query.or(`question.ilike.%${searchQuery}%,explanation.ilike.%${searchQuery}%`);
+            }
+
+            const { data, error } = await query;
+
+            if (error) throw error;
+
+            return { success: true, data: data || [] };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 內部函數：同步系統題目總數
      * 在上傳或刪除題目後，計算總題數，更新給特定管理員，
      * 因為我們現在已經移除了每個使用者自己的 flashcards 總量邏輯，可以統一更新 (如果需要的話)。

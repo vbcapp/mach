@@ -525,12 +525,12 @@
             dashboardEl.classList.remove('hidden');
          }
 
-         // 檢查是否為 sub_admin，只有 sub_admin 才顯示匯入區塊
-         if (typeof RoleManager !== 'undefined' && RoleManager.isSubAdmin()) {
+         // 檢查是否為管理員（master_admin / super_admin / sub_admin 都顯示匯入區塊）
+         if (typeof RoleManager !== 'undefined' && RoleManager.isAdmin()) {
             const subAdminSection = document.getElementById('sub-admin-import-section');
             if (subAdminSection) {
                subAdminSection.classList.remove('hidden');
-               console.log('Sub Admin 匯入功能已啟用');
+               console.log('管理員匯入功能已啟用');
             }
          }
 
