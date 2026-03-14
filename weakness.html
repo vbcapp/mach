@@ -427,7 +427,7 @@
     </div>
 
     <div class="vibe-app-shell">
-        <header class="bg-primary pt-12 pb-6 px-6 border-b-8 border-black sticky top-0 z-40">
+        <header class="bg-primary pt-4 pb-3 px-6 border-b-8 border-black sticky top-0 z-40">
             <div class="flex items-center gap-4 mb-2">
                 <h1 class="text-3xl font-black tracking-tighter uppercase">精準弱點打擊</h1>
             </div>
@@ -800,7 +800,8 @@
                         <button onclick="toggleChapterDashboard()"
                             class="text-sm font-bold text-blue-600 hover:underline flex items-center gap-1 mx-auto">
                             <span id="chapter-dashboard-toggle-text">展開全部</span>
-                            <span id="chapter-dashboard-toggle-icon" class="material-symbols-outlined text-sm">expand_more</span>
+                            <span id="chapter-dashboard-toggle-icon"
+                                class="material-symbols-outlined text-sm">expand_more</span>
                         </button>
                     </div>
                 </div>
@@ -2379,9 +2380,9 @@
                         </div>
                         <div class="flex items-center gap-2 shrink-0 ml-2">
                             ${ch.answeredCount === 0
-                                ? '<span class="text-sm font-bold text-gray-400">未作答</span>'
-                                : `<span class="text-lg font-black ${barColor.textClass}">${ch.correctRate}%</span>`
-                            }
+                    ? '<span class="text-sm font-bold text-gray-400">未作答</span>'
+                    : `<span class="text-lg font-black ${barColor.textClass}">${ch.correctRate}%</span>`
+                }
                         </div>
                     </div>
                     <div class="h-3 neo-border bg-gray-100 overflow-hidden relative">
@@ -2479,9 +2480,9 @@
                             <div class="text-sm font-bold text-gray-800 flex-1 truncate" title="${ch.chapter}">${ch.chapter}</div>
                             <div class="flex items-center gap-2 shrink-0 ml-2">
                                 ${ch.answeredCount === 0
-                                    ? '<span class="text-sm font-bold text-gray-400">未作答</span>'
-                                    : `<span class="text-lg font-black ${barColor.textClass}">${ch.correctRate}%</span>`
-                                }
+                            ? '<span class="text-sm font-bold text-gray-400">未作答</span>'
+                            : `<span class="text-lg font-black ${barColor.textClass}">${ch.correctRate}%</span>`
+                        }
                             </div>
                         </div>
                         <!-- 進度條 -->
