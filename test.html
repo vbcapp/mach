@@ -311,7 +311,14 @@
             }
         }
 
-        // 移除：shuffleArray 已不需要
+        function shuffleArray(arr) {
+            const shuffled = arr.slice();
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
 
         function renderQuestion() {
             const question = quizQuestions[currentQuestionIndex];
@@ -319,6 +326,16 @@
             const hasAnswered = !!answerState;
 
             questionText.textContent = question.question;
+
+            // 若尚未產生洗牌順序，則產生並存起來（每題只洗一次，重新渲染不重洗）
+            if (!question.shuffledOptions) {
+                const indices = question.options.map((_, i) => i); // [0,1,2,3]
+                const shuffledIndices = shuffleArray(indices);
+                question.shuffledOptions = shuffledIndices.map(i => question.options[i]);
+                // correctAnswer 是 1-based，轉成 0-based 找在 shuffledIndices 中的位置
+                const originalCorrectIdx = question.correctAnswer - 1;
+                question.shuffledCorrectAnswer = shuffledIndices.indexOf(originalCorrectIdx) + 1; // 1-based
+            }
 
             // 渲染統計標籤 (Badge)
             const badgeContainer = document.getElementById('stats-badge-container');
@@ -348,7 +365,10 @@
                 badgeContainer.innerHTML = badgeHTML;
             }
 
-            optionsContainer.innerHTML = question.options.map((option, index) => {
+            const displayOptions = question.shuffledOptions;
+            const shuffledCorrectAnswer = question.shuffledCorrectAnswer;
+
+            optionsContainer.innerHTML = displayOptions.map((option, index) => {
                 const btnIndex = index + 1;
                 // HTML Escape helper
                 const escapeHtml = (unsafe) => {
@@ -370,7 +390,7 @@
 
                 if (hasAnswered) {
                     isDisabled = true;
-                    if (btnIndex === question.correctAnswer) {
+                    if (btnIndex === shuffledCorrectAnswer) {
                         btnClass += " option-correct shadow-none";
                         btnContent = `
         <div class="flex items-center justify-between gap-4">
@@ -429,7 +449,8 @@
             if (userAnswers[currentQuestionIndex]) return;
 
             const question = quizQuestions[currentQuestionIndex];
-            const isCorrect = selectedIndex === question.correctAnswer;
+            // 比對洗牌後的正確答案
+            const isCorrect = selectedIndex === question.shuffledCorrectAnswer;
 
             userAnswers[currentQuestionIndex] = { selectedIndex, isCorrect };
 
@@ -461,7 +482,10 @@
             // 非同步呼叫 API 儲存結果（不阻塞頁面跳轉）
             const cardId = sessionStorage.getItem('currentCardId');
             if (apiService.currentUser && cardId) {
-                const userAnswer = String.fromCharCode(64 + selectedIndex); // 1 -> A, 2 -> B, etc.
+                // 將用戶選擇的洗牌位置轉換回原始選項字母
+                // shuffledOptions[selectedIndex-1] 對應原始 options 的某個 index
+                const originalOptionIndex = question.options.indexOf(question.shuffledOptions[selectedIndex - 1]);
+                const userAnswer = String.fromCharCode(65 + (originalOptionIndex >= 0 ? originalOptionIndex : selectedIndex - 1)); // 'A'=65
                 apiService.submitAnswer({
                     userId: apiService.currentUser.id,
                     questionId: cardId,
