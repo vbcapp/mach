@@ -56,14 +56,29 @@
                 id="email" placeholder="請輸入電子郵件" type="email" />
         </section>
         <section>
-            <input
-                class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
-                id="password" placeholder="請輸入密碼" type="password" />
+            <div class="relative">
+                <input
+                    class="w-full bg-white text-black border-[3px] border-black p-4 pr-14 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
+                    id="password" placeholder="請輸入密碼" type="password" />
+                <button type="button" onclick="togglePasswordVisibility('password', this)"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-black transition-colors"
+                    aria-label="顯示密碼">
+                    <span class="material-symbols-outlined text-2xl">visibility_off</span>
+                </button>
+            </div>
+            <p id="password-hint" class="text-sm text-zinc-500 font-bold mt-2 ml-1">密碼至少需要 6 個字元</p>
         </section>
         <section id="confirm-password-section">
-            <input
-                class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
-                id="confirm-password" placeholder="請再次輸入密碼" type="password" />
+            <div class="relative">
+                <input
+                    class="w-full bg-white text-black border-[3px] border-black p-4 pr-14 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
+                    id="confirm-password" placeholder="請再次輸入密碼" type="password" />
+                <button type="button" onclick="togglePasswordVisibility('confirm-password', this)"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-black transition-colors"
+                    aria-label="顯示密碼">
+                    <span class="material-symbols-outlined text-2xl">visibility_off</span>
+                </button>
+            </div>
         </section>
 
 
@@ -155,6 +170,19 @@
     <script src="js/modal-system.js"></script>
 
     <script>
+        // 切換密碼顯示/隱藏
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('.material-symbols-outlined');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility_off';
+            }
+        }
+
         // Toggle Details Function
         function toggleDetails() {
             const content = document.getElementById('data-details');
