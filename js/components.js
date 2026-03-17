@@ -4,7 +4,7 @@
  * 使用方式：
  * 1. 在 HTML <head> 末尾加入 <script src="js/components.js"></script>
  * 2. 在 body 最前面放 placeholder：
- *      <div id="app-header" data-variant="brand" data-title="工商安全衛生協會-新竹職訓中心"></div>
+ *      <div id="app-header" data-variant="brand" data-title="考試神器"></div>
  *    或
  *      <div id="app-header" data-variant="back" data-title="權限管理" data-back-href="profile.html"></div>
  *

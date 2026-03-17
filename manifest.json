@@ -1,7 +1,7 @@
 {
-  "name": "工商安全衛生協會 - 新竹職訓中心",
-  "short_name": "職訓考試",
-  "description": "工商安全衛生協會新竹職訓中心考試系統",
+  "name": "考試神器",
+  "short_name": "考試神器",
+  "description": "智慧考試練習平台，隨時隨地刷題備考",
   "start_url": "/index.html",
   "display": "standalone",
   "orientation": "portrait",

@@ -129,6 +129,19 @@ const OrgBranding = {
             appleMeta.setAttribute('content', this.shortName);
         }
 
+        // OG / Twitter meta tags（覆蓋靜態預設值，讓分享預覽顯示企業品牌）
+        const metaUpdates = {
+            'meta[property="og:title"]': this.orgName,
+            'meta[property="og:description"]': this.description || '智慧考試練習平台，隨時隨地刷題備考',
+            'meta[name="twitter:title"]': this.orgName,
+            'meta[name="twitter:description"]': this.description || '智慧考試練習平台，隨時隨地刷題備考',
+            'meta[name="description"]': this.description || '智慧考試練習平台，隨時隨地刷題備考',
+        };
+        for (const [selector, value] of Object.entries(metaUpdates)) {
+            const el = document.querySelector(selector);
+            if (el) el.setAttribute('content', value);
+        }
+
         // 社群連結
         this.renderSocialLinks();
 

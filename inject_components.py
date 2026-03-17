@@ -20,7 +20,7 @@ HEADER_RULES = {
     # 首頁：品牌型 header
     'index.html': {
         'variant': 'brand',
-        'title': '工商安全衛生協會-新竹職訓中心',
+        'title': '考試神器',
         'extra': ' data-admin-btn="true"',
         'pattern': r'<header\s+class="flex-none bg-surface.*?</header>',
     },
