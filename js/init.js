@@ -205,7 +205,7 @@ function updateUserUI(userData) {
         }
     }
 
-    console.log('使用者 UI 已更新:', levelState);
+    // console.log('使用者 UI 已更新:', levelState);
 }
 
 /**

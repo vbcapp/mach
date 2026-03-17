@@ -377,6 +377,29 @@
 
             // === 搜尋與篩選邏輯 ===
 
+            // === 更新章節快速篩選按鈕（根據 Modal 選擇結果） ===
+            function updateChapterFilterButtons() {
+                const filterContainer = document.getElementById('filter-buttons');
+                if (!filterContainer) return;
+
+                const chapterBtns = filterContainer.querySelectorAll('.filter-btn[data-filter^="chapter:"]');
+
+                if (selectedPairs.size === 0) {
+                    // 沒有篩選 → 顯示所有章節按鈕
+                    chapterBtns.forEach(btn => btn.style.display = '');
+                } else {
+                    // 取得已選的章節名稱
+                    const selectedChapters = new Set(
+                        Array.from(selectedPairs).map(key => parsePairKey(key).chapter)
+                    );
+
+                    chapterBtns.forEach(btn => {
+                        const chapter = btn.getAttribute('data-filter').replace('chapter:', '');
+                        btn.style.display = selectedChapters.has(chapter) ? '' : 'none';
+                    });
+                }
+            }
+
             async function applyFilter() {
                 const userId = apiService.currentUser?.id;
                 if (!userId) return;
@@ -388,6 +411,9 @@
                         <p class="text-xs">載入中...</p>
                     </div>
                 `;
+
+                // 更新章節快速篩選按鈕的顯示/隱藏
+                updateChapterFilterButtons();
 
                 // 將 selectedPairs 轉為 subject+chapter 組合
                 let subjectChapterPairs = null;
