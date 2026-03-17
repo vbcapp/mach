@@ -1,10 +1,11 @@
-const CACHE_NAME = 'exam-system-v2';
+const CACHE_NAME = 'exam-system-v3';
 
 // Only cache essential app shell files
 const APP_SHELL = [
   '/',
   '/index.html',
   '/login.html',
+  '/login-page.html',
   '/design-tokens.css',
   '/css/vibe-style.css',
   '/js/theme-config.js',

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-TW">
+
+<head>
+    <link rel="stylesheet" href="design-tokens.css">
+    <link rel="stylesheet" href="css/vibe-style.css">
+
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="考試神器" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="智慧考試練習平台，隨時隨地刷題備考" />
+    <meta property="og:title" content="考試神器" />
+    <meta property="og:description" content="智慧考試練習平台，隨時隨地刷題備考" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="考試神器" />
+    <meta name="twitter:description" content="智慧考試練習平台，隨時隨地刷題備考" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <title>考試神器 - 登入</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="js/theme-config.js"></script>
+    <script src="js/components.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+
+</head>
+
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col items-center justify-start p-6">
+    <header class="w-full max-w-md flex flex-col items-center mb-6 pt-4">
+        <div
+            class="flex items-center justify-center bg-white dark:bg-black border-[3px] border-black p-4 neo-shadow w-20 h-20 mb-4 rounded-xl">
+            <span class="material-symbols-outlined text-4xl font-bold text-black dark:text-white">quiz</span>
+        </div>
+        <h1 class="text-3xl font-bold tracking-tighter text-black dark:text-white uppercase mb-4" data-brand="org-name">考試神器</h1>
+        <p class="text-center text-black dark:text-zinc-200 font-bold leading-relaxed px-2" data-brand="description">
+            智慧考試練習平台，隨時隨地刷題備考
+        </p>
+    </header>
+
+    <main class="w-full max-w-md space-y-4 pb-12">
+        <div class="flex justify-center mb-6">
+            <h2 class="text-xl font-bold border-b-[3px] border-black pb-1 px-2">登入帳號</h2>
+        </div>
+
+        <section>
+            <input
+                class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
+                id="email" placeholder="請輸入電子郵件" type="email" />
+        </section>
+        <section>
+            <div class="relative">
+                <input
+                    class="w-full bg-white text-black border-[3px] border-black p-4 pr-14 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
+                    id="password" placeholder="請輸入密碼" type="password" />
+                <button type="button" onclick="togglePasswordVisibility('password', this)"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-black transition-colors"
+                    aria-label="顯示密碼">
+                    <span class="material-symbols-outlined text-2xl">visibility_off</span>
+                </button>
+            </div>
+        </section>
+
+        <div class="pt-4 flex flex-col items-center">
+            <button onclick="handleLogin()" id="submit-btn"
+                class="w-full bg-primary text-black border-[3px] border-black py-4 px-8 text-xl font-bold uppercase neo-shadow neo-shadow-active rounded-xl flex items-center justify-center gap-2">
+                <span id="submit-btn-text">登入</span>
+                <span class="material-symbols-outlined font-black">arrow_forward</span>
+            </button>
+            <p class="mt-4 text-sm text-zinc-600 dark:text-zinc-400 font-bold">
+                還沒有帳號？<a href="login.html" class="text-primary underline underline-offset-4 hover:text-black dark:hover:text-white transition-colors">前往註冊</a>
+            </p>
+            <p class="mt-4 text-xs text-zinc-500 dark:text-zinc-400 font-bold" data-brand="footer">
+                考試神器
+            </p>
+        </div>
+    </main>
+
+    <div class="fixed top-10 left-10 -z-10 opacity-10 dark:opacity-5 pointer-events-none">
+        <div class="w-32 h-32 border-4 border-black dark:border-white rotate-12"></div>
+    </div>
+    <div class="fixed bottom-10 right-10 -z-10 opacity-10 dark:opacity-5 pointer-events-none">
+        <div class="w-24 h-24 bg-primary border-4 border-black -rotate-12 neo-shadow"></div>
+    </div>
+
+    <!-- ==================== Supabase 整合 ==================== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="js/api-service.js"></script>
+    <script src="js/init.js"></script>
+    <script src="js/modal-system.js"></script>
+
+    <script>
+        // 切換密碼顯示/隱藏
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('.material-symbols-outlined');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility_off';
+            }
+        }
+
+        /**
+         * 純登入邏輯
+         */
+        async function handleLogin() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const btn = document.getElementById('submit-btn');
+
+            if (!email || !password) {
+                ModalSystem.alert('缺漏資料', '請輸入電子郵件與密碼！');
+                return;
+            }
+
+            // 更新按鈕狀態
+            document.getElementById('submit-btn-text').innerHTML = '處理中...';
+            btn.disabled = true;
+
+            try {
+                await apiService.initialize();
+
+                const result = await apiService.loginWithEmailPassword(email, password);
+
+                if (result.success) {
+                    const nickname = result.nickname || 'User';
+                    localStorage.setItem('userNickname', nickname);
+                    localStorage.setItem('userConsent', 'true');
+                    localStorage.setItem('loginTime', new Date().toISOString());
+
+                    console.log('登入成功:', result.user);
+                    window.location.href = 'index.html';
+                } else {
+                    throw new Error(result.error?.message || '登入失敗');
+                }
+            } catch (error) {
+                console.error('登入錯誤:', error);
+
+                let msg = error.message;
+                if (msg.includes('Invalid login credentials')) msg = 'Email 或密碼錯誤，請確認後重試。';
+                if (msg.includes('Email not confirmed')) msg = '您的 Email 尚未驗證，請前往信箱點擊驗證連結。';
+
+                ModalSystem.alert('登入失敗', msg);
+
+                // 恢復按鈕
+                document.getElementById('submit-btn-text').innerHTML = '登入';
+                btn.disabled = false;
+            }
+        }
+    </script>
+    <!-- Service Worker Registration -->
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("/sw.js").catch(() => {});
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -45,17 +45,14 @@
     </header>
 
     <main class="w-full max-w-md space-y-4 pb-12">
-        <div class="flex justify-center gap-6 mb-6">
-            <button id="tab-register" onclick="switchMode('register')"
-                class="text-xl font-bold border-b-[3px] border-black pb-1 px-2 transition-colors">註冊帳號</button>
-            <button id="tab-login" onclick="switchMode('login')"
-                class="text-xl font-bold border-b-[3px] border-transparent text-zinc-400 pb-1 px-2 transition-colors">登入</button>
+        <div class="flex justify-center mb-6">
+            <h2 class="text-xl font-bold border-b-[3px] border-black pb-1 px-2">註冊帳號</h2>
         </div>
 
         <section id="nickname-section">
             <input
                 class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
-                id="nickname" placeholder="請輸入你的姓名或暱稱（註冊必填）" type="text" />
+                id="nickname" placeholder="請輸入你的姓名或暱稱" type="text" />
         </section>
         <section>
             <input
@@ -153,7 +150,10 @@
                 <span id="submit-btn-text">註冊並開始使用</span>
                 <span class="material-symbols-outlined font-black">arrow_forward</span>
             </button>
-            <p class="mt-6 text-xs text-zinc-500 dark:text-zinc-400 font-bold" data-brand="footer">
+            <p class="mt-4 text-sm text-zinc-600 dark:text-zinc-400 font-bold">
+                已經有帳號了？<a href="login-page.html" class="text-primary underline underline-offset-4 hover:text-black dark:hover:text-white transition-colors">前往登入</a>
+            </p>
+            <p class="mt-4 text-xs text-zinc-500 dark:text-zinc-400 font-bold" data-brand="footer">
                 考試神器
             </p>
         </div>
@@ -199,131 +199,85 @@
             arrow.classList.toggle('open');
         }
 
-        let currentMode = 'register';
-
-        function switchMode(mode) {
-            currentMode = mode;
-            const tabReg = document.getElementById('tab-register');
-            const tabLog = document.getElementById('tab-login');
-            const nickSec = document.getElementById('nickname-section');
-            const btnText = document.getElementById('submit-btn-text');
-
-            const confirmSec = document.getElementById('confirm-password-section');
-
-            if (mode === 'register') {
-                tabReg.classList.replace('border-transparent', 'border-black');
-                tabReg.classList.remove('text-zinc-400');
-                tabLog.classList.replace('border-black', 'border-transparent');
-                tabLog.classList.add('text-zinc-400');
-                nickSec.style.display = 'block';
-                confirmSec.style.display = 'block';
-                btnText.textContent = '註冊並開始使用';
-            } else {
-                tabLog.classList.replace('border-transparent', 'border-black');
-                tabLog.classList.remove('text-zinc-400');
-                tabReg.classList.replace('border-black', 'border-transparent');
-                tabReg.classList.add('text-zinc-400');
-                nickSec.style.display = 'none';
-                confirmSec.style.display = 'none';
-                btnText.textContent = '登入';
-            }
-        }
-
         /**
-         * Email/Password 登入 (原始邏輯)
+         * 純註冊邏輯
          */
         async function handleStart() {
             const nickname = document.getElementById('nickname').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
+            const confirmPassword = document.getElementById('confirm-password').value.trim();
             const consent = document.getElementById('consent').checked;
             const btn = document.getElementById('submit-btn');
 
-            if (currentMode === 'register' && !nickname) {
+            if (!nickname) {
                 ModalSystem.alert('缺漏資料', '請輸入你的姓名或暱稱！');
                 return;
             }
-
-            if (currentMode === 'login' && (!email || !password)) {
-                ModalSystem.alert('缺漏資料', '請輸入電子郵件與密碼！');
+            if (!email) {
+                ModalSystem.alert('缺漏資料', '請輸入電子郵件！');
                 return;
             }
-
-            if (currentMode === 'register' && password) {
-                const confirmPassword = document.getElementById('confirm-password').value.trim();
-                if (password !== confirmPassword) {
-                    ModalSystem.alert('密碼不一致', '兩次輸入的密碼不相同，請重新確認！');
-                    return;
-                }
+            if (!password) {
+                ModalSystem.alert('缺漏資料', '請輸入密碼！');
+                return;
             }
-
+            if (password !== confirmPassword) {
+                ModalSystem.alert('密碼不一致', '兩次輸入的密碼不相同，請重新確認！');
+                return;
+            }
             if (!consent) {
                 ModalSystem.alert('需同意條款', '請勾選同意收集資料以繼續使用！');
                 return;
             }
 
             // 更新按鈕狀態
-            const originalTextContent = document.getElementById('submit-btn-text').textContent;
             document.getElementById('submit-btn-text').innerHTML = '處理中...';
             btn.disabled = true;
 
             try {
                 // 初始化 API
                 await apiService.initialize();
-                let result;
-                let finalNickname = nickname;
 
-                if (currentMode === 'register') {
-                    // 註冊模式
-                    if (email && password) {
-                        // 白名單檢查
-                        if (typeof STUDENT_EMAILS !== 'undefined' && Array.isArray(STUDENT_EMAILS)) {
-                            const isWhitelisted = STUDENT_EMAILS.includes(email);
-                            if (!isWhitelisted) {
-                                ModalSystem.alert('存取被拒', '抱歉，你不是本課程的學員，無法註冊或登入。');
-                                document.getElementById('submit-btn-text').innerHTML = originalTextContent;
-                                btn.disabled = false;
-                                return;
-                            }
-                        }
-                        result = await apiService.authWithEmailPassword(email, password, nickname);
-                    } else {
-                        // 快速登入
-                        result = await apiService.quickLogin(nickname);
-                    }
-                } else {
-                    // 登入模式
-                    result = await apiService.loginWithEmailPassword(email, password);
-                    if (result.success && result.nickname) {
-                        finalNickname = result.nickname;
+                // 白名單檢查
+                if (typeof STUDENT_EMAILS !== 'undefined' && Array.isArray(STUDENT_EMAILS)) {
+                    const isWhitelisted = STUDENT_EMAILS.includes(email);
+                    if (!isWhitelisted) {
+                        ModalSystem.alert('存取被拒', '抱歉，你不是本課程的學員，無法註冊。');
+                        document.getElementById('submit-btn-text').innerHTML = '註冊並開始使用';
+                        btn.disabled = false;
+                        return;
                     }
                 }
+
+                // 純註冊（不做登入嘗試）
+                const result = await apiService.registerWithEmailPassword(email, password, nickname);
 
                 if (result.success) {
                     // 儲存本地狀態
-                    localStorage.setItem('userNickname', finalNickname);
+                    localStorage.setItem('userNickname', nickname);
                     localStorage.setItem('userConsent', 'true');
                     localStorage.setItem('loginTime', new Date().toISOString());
 
-                    console.log('登入/註冊成功:', result.user);
-                    // 導向首頁
+                    console.log('註冊成功:', result.user);
                     window.location.href = 'index.html';
                 } else {
-                    throw new Error(result.error?.message || '操作失敗');
+                    throw new Error(result.error?.message || '註冊失敗');
                 }
             } catch (error) {
-                console.error('登入/註冊錯誤:', error);
+                console.error('註冊錯誤:', error);
 
                 let msg = error.message;
                 if (msg.includes('Password should be')) msg = '密碼長度至少需要 6 個字元';
                 if (msg.includes('Invalid email')) msg = 'Email 格式不正確';
-                if (msg.includes('Invalid login credentials')) msg = 'Email 或密碼錯誤';
+                if (msg.includes('already registered') || msg.includes('already been registered')) msg = '此 Email 已經註冊過了，請直接到登入頁面登入。';
+                if (msg.includes('Invalid login credentials')) msg = '此 Email 已經註冊過了，請直接到登入頁面登入。';
 
-                const alertTitle = msg.includes('驗證') || msg.includes('信箱') ? '請完成 Email 驗證' : '操作失敗';
+                const alertTitle = msg.includes('驗證') || msg.includes('信箱') ? '請完成 Email 驗證' : '註冊失敗';
                 ModalSystem.alert(alertTitle, msg);
 
                 // 恢復按鈕
-                document.getElementById('submit-btn-text').innerHTML = originalTextContent;
+                document.getElementById('submit-btn-text').innerHTML = '註冊並開始使用';
                 btn.disabled = false;
             }
         }

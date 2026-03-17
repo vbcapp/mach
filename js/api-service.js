@@ -146,6 +146,47 @@ class ApiService {
     }
 
     /**
+     * 純註冊（不嘗試登入）
+     */
+    async registerWithEmailPassword(email, password, nickname) {
+        try {
+            console.log('純註冊模式...', email);
+            const { data, error } = await this.supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        username: nickname
+                    }
+                }
+            });
+
+            if (error) {
+                throw error;
+            }
+
+            if (data.user && data.session) {
+                // 註冊成功且自動登入
+                console.log('註冊成功，建立 Profile...');
+                this.currentUser = data.user;
+                await this._createUserProfile(this.currentUser.id, nickname, email);
+                return { success: true, user: this.currentUser, isNewUser: true };
+            }
+
+            if (data.user && !data.session) {
+                // 可能需要 Email 驗證，或使用者已存在（Prevent Email Enumeration 開啟時）
+                // 不嘗試登入，直接提示用戶
+                return { success: false, error: { message: '此 Email 可能已經註冊過了，請直接到登入頁面登入。若是新帳號，請檢查信箱完成驗證。' } };
+            }
+
+            return { success: false, error: { message: '註冊失敗，請稍後再試' } };
+
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 使用 Email/密碼 登入
      */
     async loginWithEmailPassword(email, password) {
