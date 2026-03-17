@@ -169,7 +169,7 @@ const OrgBranding = {
         grid.innerHTML = '';
 
         links.forEach(item => {
-            const config = this.SOCIAL_PLATFORM_MAP[item.platform];
+            const config = this.SOCIAL_PLATFORM_MAP[item.type || item.platform];
             if (!config || !item.url) return;
 
             const a = document.createElement('a');
