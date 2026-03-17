@@ -736,15 +736,28 @@
                   let correctAnswerLabel = q.correct_answer ?? null;
 
                   const optionsMap = { 0: q.option_a, 1: q.option_b, 2: q.option_c, 3: q.option_d };
+                  const optionsArr = [q.option_a, q.option_b, q.option_c, q.option_d];
                   if (q.correct_answer !== null && q.correct_answer !== undefined) {
                      if (typeof q.correct_answer === 'number' || (typeof q.correct_answer === 'string' && !isNaN(String(q.correct_answer).trim()) && String(q.correct_answer).trim() !== '')) {
                         const idx = parseInt(q.correct_answer, 10);
                         correctAnswerContent = optionsMap[idx] || '';
                         correctAnswerLabel = String.fromCharCode(65 + idx);
                      } else if (typeof q.correct_answer === 'string') {
-                        const idx = q.correct_answer.charCodeAt(0) - 65;
-                        correctAnswerContent = optionsMap[idx] || '';
-                        correctAnswerLabel = q.correct_answer;
+                        const letterMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+                        if (letterMap[q.correct_answer.toUpperCase()] !== undefined) {
+                           const idx = letterMap[q.correct_answer.toUpperCase()];
+                           correctAnswerContent = optionsMap[idx] || '';
+                           correctAnswerLabel = q.correct_answer.toUpperCase();
+                        } else {
+                           // correct_answer 是選項文字，比對找出對應字母
+                           const matchIdx = optionsArr.findIndex(opt => opt && opt.trim() === q.correct_answer.trim());
+                           if (matchIdx >= 0) {
+                              correctAnswerLabel = String.fromCharCode(65 + matchIdx);
+                              correctAnswerContent = optionsArr[matchIdx];
+                           } else {
+                              correctAnswerContent = q.correct_answer;
+                           }
+                        }
                      }
                   }
 
@@ -783,14 +796,25 @@
 
                   // 正確答案
                   let correctAnswerText = '';
+                  const optionsArr2 = [q.option_a, q.option_b, q.option_c, q.option_d];
                   if (q.correct_answer !== null && q.correct_answer !== undefined) {
                      if (typeof q.correct_answer === 'number' || (typeof q.correct_answer === 'string' && !isNaN(String(q.correct_answer).trim()) && String(q.correct_answer).trim() !== '')) {
                         const idx = parseInt(q.correct_answer, 10);
                         const answerLabel = String.fromCharCode(65 + idx);
                         correctAnswerText = `${answerLabel}. ${optionsMap[idx] || ''}`;
                      } else if (typeof q.correct_answer === 'string') {
-                        const idx = q.correct_answer.charCodeAt(0) - 65;
-                        correctAnswerText = `${q.correct_answer}. ${optionsMap[idx] || ''}`;
+                        const letterMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+                        if (letterMap[q.correct_answer.toUpperCase()] !== undefined) {
+                           const idx = letterMap[q.correct_answer.toUpperCase()];
+                           correctAnswerText = `${q.correct_answer.toUpperCase()}. ${optionsMap[idx] || ''}`;
+                        } else {
+                           const matchIdx = optionsArr2.findIndex(opt => opt && opt.trim() === q.correct_answer.trim());
+                           if (matchIdx >= 0) {
+                              correctAnswerText = `${String.fromCharCode(65 + matchIdx)}. ${optionsArr2[matchIdx]}`;
+                           } else {
+                              correctAnswerText = q.correct_answer;
+                           }
+                        }
                      }
                   }
 
