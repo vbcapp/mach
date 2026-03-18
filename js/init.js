@@ -10,6 +10,27 @@ let currentFilter = 'all'; // 目前篩選條件 ('all', 'unfamiliar', 'lv1'...)
 // [Security Check] 管理員角色由資料庫 users.role 欄位管理，透過 RoleManager 查詢
 
 /**
+ * 監聽 Auth 狀態變化（跨 tab 登出、token 過期自動處理）
+ */
+function setupAuthListener() {
+    const client = getSharedSupabaseClient();
+    if (!client) return;
+
+    client.auth.onAuthStateChange((event, session) => {
+        const currentPage = window.location.pathname;
+        const isAuthPage = currentPage.endsWith('login.html') || currentPage.endsWith('login-page.html');
+
+        if (event === 'SIGNED_OUT' && !isAuthPage) {
+            // 被登出（可能是其他 tab、token 過期等）
+            console.warn('Auth 狀態變化: SIGNED_OUT，導向登入頁');
+            window.location.href = 'login-page.html';
+        } else if (event === 'TOKEN_REFRESHED') {
+            console.log('Auth token 已自動刷新');
+        }
+    });
+}
+
+/**
  * 初始化應用
  */
 async function initializeApp() {
@@ -20,6 +41,9 @@ async function initializeApp() {
         loadUserUIFromCache();
 
         await apiService.initialize();
+
+        // 設定 Auth 狀態監聽（token 刷新、跨 tab 登出偵測）
+        setupAuthListener();
 
         if (apiService.currentUser) {
             currentUser = apiService.currentUser;
@@ -39,7 +63,7 @@ async function initializeApp() {
                     localStorage.removeItem(TenantResolver.getAuthTokenKey());
 
                     // 導向登入頁並帶上參數以顯示錯誤訊息
-                    window.location.href = 'login.html?error=unauthorized';
+                    window.location.href = 'login-page.html?error=unauthorized';
                     return { success: false };
                 }
             }
@@ -64,7 +88,7 @@ async function initializeApp() {
             const currentPage = window.location.pathname;
             if (!currentPage.endsWith('login.html') && !currentPage.endsWith('login-page.html')) {
                 console.log('使用者未登入，請先登入');
-                window.location.href = 'login.html';
+                window.location.href = 'login-page.html';
             }
         }
 
@@ -184,21 +208,12 @@ function updateUserUI(userData) {
         nextLevelXpEl.textContent = levelState.xpForNextLevel;
     }
 
-    // [NEW] 處理等級卡片點擊事件：當 XP 滿但滿分卡不足時，點擊跳轉到 rule.html
+    // 處理等級卡片顯示狀態
     const levelCardEl = document.getElementById('level-card');
     if (levelCardEl) {
         if (levelState.isCapped) {
-            // XP 已滿，顯示為可點擊狀態
-            levelCardEl.style.cursor = 'pointer';
-            levelCardEl.classList.add('capped-glow'); // 添加閃爍效果
-
-            // 移除舊的事件監聽器（避免重複綁定）
-            levelCardEl.replaceWith(levelCardEl.cloneNode(true));
-            const newLevelCardEl = document.getElementById('level-card');
-
-            newLevelCardEl.addEventListener('click', () => {
-                window.location.href = 'rule.html';
-            });
+            // XP 已滿，顯示閃爍效果
+            levelCardEl.classList.add('capped-glow');
         } else {
             // XP 未滿，移除點擊效果
             levelCardEl.style.cursor = 'default';

@@ -26,14 +26,13 @@
     <!-- 租戶解析 + 登入檢查 -->
     <script src="config.js"></script>
     <script>
-        // 檢查是否已登入，如果沒有則導向 login.html
+        // 檢查是否已登入，如果沒有則導向登入頁
         // [Fix] 如果有 hash (OAuth callback) 則不導向，交由 init.js 處理
         if (!window.location.hash) {
-            const hasLogin = localStorage.getItem('userNickname') || localStorage.getItem(TenantResolver.getAuthTokenKey());
-            // 注意：userNickname 在 Google 登入初次可能為空，改檢查 Supabase token 或 userConsent + hash
-            // 這裡簡單寬鬆判斷，主要依賴 init.js 的詳細檢查
-            if (!localStorage.getItem('userConsent') && !hasLogin) {
-                window.location.href = 'login.html';
+            // 以 Supabase auth token 為唯一判斷依據（最可靠）
+            const hasAuthToken = localStorage.getItem(TenantResolver.getAuthTokenKey());
+            if (!hasAuthToken) {
+                window.location.href = 'login-page.html';
             }
         }
     </script>
