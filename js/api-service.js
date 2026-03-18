@@ -75,7 +75,8 @@ class ApiService {
                 options: {
                     data: {
                         username: nickname
-                    }
+                    },
+                    emailRedirectTo: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/index.html')
                 }
             });
 
@@ -157,7 +158,8 @@ class ApiService {
                 options: {
                     data: {
                         username: nickname
-                    }
+                    },
+                    emailRedirectTo: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/index.html')
                 }
             });
 
@@ -245,7 +247,8 @@ class ApiService {
                     options: {
                         data: {
                             username: nickname
-                        }
+                        },
+                        emailRedirectTo: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/index.html')
                     }
                 });
 
