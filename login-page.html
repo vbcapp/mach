@@ -29,9 +29,112 @@
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
 
+    <style>
+        /* Tab 切換動畫 */
+        .tab-btn {
+            transition: all 0.2s ease;
+        }
+        .tab-btn.active {
+            background-color: var(--color-primary);
+            box-shadow: var(--card-shadow);
+        }
+        .tab-btn:not(.active) {
+            background-color: #ffffff;
+        }
+        .dark .tab-btn:not(.active) {
+            background-color: #27272a;
+        }
+
+        /* 表單面板切換 */
+        .auth-panel {
+            display: none;
+            animation: fadeSlideIn 0.3s ease;
+        }
+        .auth-panel.active {
+            display: block;
+        }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 即時驗證樣式 */
+        .field-error {
+            border-color: var(--color-danger) !important;
+            box-shadow: 4px 4px 0px 0px var(--color-danger) !important;
+        }
+        .field-success {
+            border-color: var(--color-success) !important;
+            box-shadow: 4px 4px 0px 0px var(--color-success) !important;
+        }
+        .hint-error {
+            color: var(--color-danger);
+        }
+        .hint-success {
+            color: var(--color-success);
+        }
+
+        /* 密碼強度條 */
+        .strength-bar {
+            height: 6px;
+            border: 2px solid #000;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #e5e5e5;
+        }
+        .strength-fill {
+            height: 100%;
+            transition: width 0.3s ease, background-color 0.3s ease;
+            width: 0%;
+        }
+
+        /* Loading spinner */
+        .btn-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #000;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 成功動畫 */
+        .success-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.2s ease;
+        }
+        .success-box {
+            background: white;
+            border: 4px solid black;
+            box-shadow: 8px 8px 0px 0px #000;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            animation: popIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
 </head>
 
 <body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col items-center justify-start p-6">
+    <!-- Header -->
     <header class="w-full max-w-md flex flex-col items-center mb-6 pt-4">
         <div
             class="flex items-center justify-center bg-white dark:bg-black border-[3px] border-black p-4 neo-shadow w-20 h-20 mb-4 rounded-xl">
@@ -43,44 +146,167 @@
         </p>
     </header>
 
-    <main class="w-full max-w-md space-y-4 pb-12">
-        <div class="flex justify-center mb-6">
-            <h2 class="text-xl font-bold border-b-[3px] border-black pb-1 px-2">登入帳號</h2>
+    <main class="w-full max-w-md pb-12">
+        <!-- Tab 切換 -->
+        <div class="flex gap-0 mb-6">
+            <button onclick="switchTab('login')" id="tab-login"
+                class="tab-btn active flex-1 py-3 text-lg font-bold text-black border-[3px] border-black rounded-l-xl uppercase tracking-wide">
+                登入
+            </button>
+            <button onclick="switchTab('register')" id="tab-register"
+                class="tab-btn flex-1 py-3 text-lg font-bold text-black dark:text-white border-[3px] border-l-0 border-black rounded-r-xl uppercase tracking-wide">
+                註冊
+            </button>
         </div>
 
-        <section>
-            <input
-                class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
-                id="email" placeholder="請輸入電子郵件" type="email" />
-        </section>
-        <section>
-            <div class="relative">
+        <!-- ==================== 登入面板 ==================== -->
+        <div id="panel-login" class="auth-panel active space-y-4">
+            <section>
                 <input
-                    class="w-full bg-white text-black border-[3px] border-black p-4 pr-14 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
-                    id="password" placeholder="請輸入密碼" type="password" />
-                <button type="button" onclick="togglePasswordVisibility('password', this)"
-                    class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-black transition-colors"
-                    aria-label="顯示密碼">
-                    <span class="material-symbols-outlined text-2xl">visibility_off</span>
+                    class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
+                    id="login-email" placeholder="電子郵件" type="email"
+                    oninput="validateLoginEmail()" />
+                <p id="login-email-hint" class="text-sm font-bold mt-2 ml-1 hidden"></p>
+            </section>
+            <section>
+                <div class="relative">
+                    <input
+                        class="w-full bg-white text-black border-[3px] border-black p-4 pr-14 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
+                        id="login-password" placeholder="密碼" type="password"
+                        onkeydown="if(event.key==='Enter') handleLogin()" />
+                    <button type="button" onclick="togglePasswordVisibility('login-password', this)"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-black transition-colors"
+                        aria-label="顯示密碼">
+                        <span class="material-symbols-outlined text-2xl">visibility_off</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 忘記密碼 -->
+            <div class="flex justify-end">
+                <button onclick="handleForgotPassword()" class="text-sm font-bold text-zinc-500 hover:text-black dark:hover:text-white transition-colors underline underline-offset-4">
+                    忘記密碼？
                 </button>
             </div>
-        </section>
 
-        <div class="pt-4 flex flex-col items-center">
-            <button onclick="handleLogin()" id="submit-btn"
-                class="w-full bg-primary text-black border-[3px] border-black py-4 px-8 text-xl font-bold uppercase neo-shadow neo-shadow-active rounded-xl flex items-center justify-center gap-2">
-                <span id="submit-btn-text">登入</span>
-                <span class="material-symbols-outlined font-black">arrow_forward</span>
-            </button>
-            <p class="mt-4 text-sm text-zinc-600 dark:text-zinc-400 font-bold">
-                還沒有帳號？<a href="login.html" class="text-primary underline underline-offset-4 hover:text-black dark:hover:text-white transition-colors">前往註冊</a>
-            </p>
-            <p class="mt-4 text-xs text-zinc-500 dark:text-zinc-400 font-bold" data-brand="footer">
-                考試神器
-            </p>
+            <div class="pt-2 flex flex-col items-center">
+                <button onclick="handleLogin()" id="login-btn"
+                    class="w-full bg-primary text-black border-[3px] border-black py-4 px-8 text-xl font-bold uppercase neo-shadow rounded-xl flex items-center justify-center gap-2 active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all disabled:opacity-60">
+                    <span id="login-btn-text">登入</span>
+                    <span id="login-btn-icon" class="material-symbols-outlined font-black">arrow_forward</span>
+                </button>
+            </div>
         </div>
+
+        <!-- ==================== 註冊面板 ==================== -->
+        <div id="panel-register" class="auth-panel space-y-4">
+            <section>
+                <input
+                    class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
+                    id="reg-nickname" placeholder="姓名或暱稱" type="text"
+                    oninput="validateRegNickname()" />
+                <p id="reg-nickname-hint" class="text-sm font-bold mt-2 ml-1 hidden"></p>
+            </section>
+            <section>
+                <input
+                    class="w-full bg-white text-black border-[3px] border-black p-4 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
+                    id="reg-email" placeholder="電子郵件" type="email"
+                    oninput="validateRegEmail()" />
+                <p id="reg-email-hint" class="text-sm font-bold mt-2 ml-1 hidden"></p>
+            </section>
+            <section>
+                <div class="relative">
+                    <input
+                        class="w-full bg-white text-black border-[3px] border-black p-4 pr-14 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
+                        id="reg-password" placeholder="密碼" type="password"
+                        oninput="validateRegPassword()" />
+                    <button type="button" onclick="togglePasswordVisibility('reg-password', this)"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-black transition-colors"
+                        aria-label="顯示密碼">
+                        <span class="material-symbols-outlined text-2xl">visibility_off</span>
+                    </button>
+                </div>
+                <!-- 密碼強度 -->
+                <div class="mt-2 ml-1">
+                    <div class="strength-bar">
+                        <div id="strength-fill" class="strength-fill"></div>
+                    </div>
+                    <p id="reg-password-hint" class="text-sm font-bold mt-1 text-zinc-500">密碼至少需要 6 個字元</p>
+                </div>
+            </section>
+            <section>
+                <div class="relative">
+                    <input
+                        class="w-full bg-white text-black border-[3px] border-black p-4 pr-14 text-lg font-bold neo-shadow focus:ring-0 focus:outline-none placeholder:text-zinc-500 rounded-xl transition-all"
+                        id="reg-confirm-password" placeholder="再次輸入密碼" type="password"
+                        oninput="validateRegConfirmPassword()" />
+                    <button type="button" onclick="togglePasswordVisibility('reg-confirm-password', this)"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-black transition-colors"
+                        aria-label="顯示密碼">
+                        <span class="material-symbols-outlined text-2xl">visibility_off</span>
+                    </button>
+                </div>
+                <p id="reg-confirm-hint" class="text-sm font-bold mt-2 ml-1 hidden"></p>
+            </section>
+
+            <!-- 資料收集說明（精簡版） -->
+            <section class="bg-white dark:bg-zinc-900 border-[3px] border-black p-4 neo-shadow rounded-xl !mt-6">
+                <label class="flex items-start gap-4 cursor-pointer group">
+                    <div class="relative flex-shrink-0 mt-1">
+                        <input id="consent"
+                            class="h-7 w-7 appearance-none border-[3px] border-black bg-white checked:bg-primary transition-colors cursor-pointer rounded-lg peer"
+                            type="checkbox" />
+                        <div
+                            class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 peer-checked:opacity-100 text-black">
+                            <span class="material-symbols-outlined font-black text-xl">check</span>
+                        </div>
+                    </div>
+                    <span class="text-black dark:text-white font-bold leading-snug text-sm">
+                        我同意收集學習數據以改善體驗
+                    </span>
+                </label>
+                <button onclick="toggleDetails()" class="flex items-center gap-1 mt-3 ml-11 text-xs font-bold text-zinc-500 hover:text-black dark:hover:text-white transition-colors">
+                    <span>查看收集哪些資料</span>
+                    <span id="details-arrow" class="material-symbols-outlined text-sm arrow-icon">keyboard_arrow_down</span>
+                </button>
+                <div id="data-details" class="collapsible-content ml-11 mt-2 space-y-2">
+                    <div class="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 font-bold">
+                        <span class="material-symbols-outlined text-sm">person</span>暱稱和更新時間
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 font-bold">
+                        <span class="material-symbols-outlined text-sm">devices</span>裝置類型和瀏覽器
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 font-bold">
+                        <span class="material-symbols-outlined text-sm">fullscreen</span>螢幕解析度
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 font-bold">
+                        <span class="material-symbols-outlined text-sm">location_on</span>地區資訊
+                    </div>
+                    <div class="bg-primary/10 border-2 border-dashed border-black/20 dark:border-white/20 p-2 rounded-lg mt-2">
+                        <p class="text-xs font-bold text-zinc-600 dark:text-zinc-300 flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">lock</span>
+                            僅用於改善服務，不會用於商業用途
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="pt-2 flex flex-col items-center">
+                <button onclick="handleRegister()" id="reg-btn"
+                    class="w-full bg-primary text-black border-[3px] border-black py-4 px-8 text-xl font-bold uppercase neo-shadow rounded-xl flex items-center justify-center gap-2 active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all disabled:opacity-60">
+                    <span id="reg-btn-text">註冊並開始使用</span>
+                    <span id="reg-btn-icon" class="material-symbols-outlined font-black">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <p class="mt-6 text-xs text-zinc-500 dark:text-zinc-400 font-bold text-center" data-brand="footer">
+            考試神器
+        </p>
     </main>
 
+    <!-- 背景裝飾 -->
     <div class="fixed top-10 left-10 -z-10 opacity-10 dark:opacity-5 pointer-events-none">
         <div class="w-32 h-32 border-4 border-black dark:border-white rotate-12"></div>
     </div>
@@ -96,7 +322,27 @@
     <script src="js/modal-system.js"></script>
 
     <script>
-        // 切換密碼顯示/隱藏
+        // ==================== Tab 切換 ====================
+        function switchTab(tab) {
+            const loginTab = document.getElementById('tab-login');
+            const registerTab = document.getElementById('tab-register');
+            const loginPanel = document.getElementById('panel-login');
+            const registerPanel = document.getElementById('panel-register');
+
+            if (tab === 'login') {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                loginPanel.classList.add('active');
+                registerPanel.classList.remove('active');
+            } else {
+                registerTab.classList.add('active');
+                loginTab.classList.remove('active');
+                registerPanel.classList.add('active');
+                loginPanel.classList.remove('active');
+            }
+        }
+
+        // ==================== 密碼可見性切換 ====================
         function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
             const icon = btn.querySelector('.material-symbols-outlined');
@@ -109,26 +355,175 @@
             }
         }
 
-        /**
-         * 純登入邏輯
-         */
+        // ==================== 資料收集詳情展開 ====================
+        function toggleDetails() {
+            document.getElementById('data-details').classList.toggle('open');
+            document.getElementById('details-arrow').classList.toggle('open');
+        }
+
+        // ==================== 即時驗證 ====================
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        function setFieldState(inputId, hintId, state, message) {
+            const input = document.getElementById(inputId);
+            const hint = document.getElementById(hintId);
+            if (!hint) return;
+
+            input.classList.remove('field-error', 'field-success');
+            hint.classList.remove('hint-error', 'hint-success', 'hidden');
+
+            if (state === 'error') {
+                input.classList.add('field-error');
+                hint.classList.add('hint-error');
+                hint.textContent = message;
+            } else if (state === 'success') {
+                input.classList.add('field-success');
+                hint.classList.add('hint-success');
+                hint.textContent = message;
+            } else {
+                hint.classList.add('hidden');
+                hint.textContent = '';
+            }
+        }
+
+        function validateLoginEmail() {
+            const val = document.getElementById('login-email').value.trim();
+            if (!val) return setFieldState('login-email', 'login-email-hint', 'none', '');
+            if (!emailRegex.test(val)) return setFieldState('login-email', 'login-email-hint', 'error', 'Email 格式不正確');
+            setFieldState('login-email', 'login-email-hint', 'success', '');
+        }
+
+        function validateRegNickname() {
+            const val = document.getElementById('reg-nickname').value.trim();
+            if (!val) return setFieldState('reg-nickname', 'reg-nickname-hint', 'none', '');
+            if (val.length < 2) return setFieldState('reg-nickname', 'reg-nickname-hint', 'error', '至少 2 個字元');
+            setFieldState('reg-nickname', 'reg-nickname-hint', 'success', '');
+        }
+
+        function validateRegEmail() {
+            const val = document.getElementById('reg-email').value.trim();
+            if (!val) return setFieldState('reg-email', 'reg-email-hint', 'none', '');
+            if (!emailRegex.test(val)) return setFieldState('reg-email', 'reg-email-hint', 'error', 'Email 格式不正確');
+            setFieldState('reg-email', 'reg-email-hint', 'success', '');
+        }
+
+        function validateRegPassword() {
+            const val = document.getElementById('reg-password').value;
+            const hint = document.getElementById('reg-password-hint');
+            const fill = document.getElementById('strength-fill');
+            const input = document.getElementById('reg-password');
+
+            input.classList.remove('field-error', 'field-success');
+
+            if (!val) {
+                hint.textContent = '密碼至少需要 6 個字元';
+                hint.className = 'text-sm font-bold mt-1 text-zinc-500';
+                fill.style.width = '0%';
+                fill.style.backgroundColor = '';
+                return;
+            }
+
+            // 密碼強度計算
+            let score = 0;
+            if (val.length >= 6) score++;
+            if (val.length >= 8) score++;
+            if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+            if (/\d/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+
+            if (val.length < 6) {
+                hint.textContent = '密碼至少需要 6 個字元';
+                hint.className = 'text-sm font-bold mt-1 hint-error';
+                input.classList.add('field-error');
+                fill.style.width = '15%';
+                fill.style.backgroundColor = 'var(--color-danger)';
+            } else if (score <= 2) {
+                hint.textContent = '密碼強度：弱';
+                hint.className = 'text-sm font-bold mt-1';
+                hint.style.color = '#f59e0b';
+                fill.style.width = '40%';
+                fill.style.backgroundColor = '#f59e0b';
+                input.classList.add('field-success');
+            } else if (score <= 3) {
+                hint.textContent = '密碼強度：中';
+                hint.className = 'text-sm font-bold mt-1';
+                hint.style.color = '#f59e0b';
+                fill.style.width = '70%';
+                fill.style.backgroundColor = '#f59e0b';
+                input.classList.add('field-success');
+            } else {
+                hint.textContent = '密碼強度：強';
+                hint.className = 'text-sm font-bold mt-1 hint-success';
+                hint.style.color = '';
+                fill.style.width = '100%';
+                fill.style.backgroundColor = 'var(--color-success)';
+                input.classList.add('field-success');
+            }
+
+            // 同時重新驗證確認密碼
+            const confirmVal = document.getElementById('reg-confirm-password').value;
+            if (confirmVal) validateRegConfirmPassword();
+        }
+
+        function validateRegConfirmPassword() {
+            const pw = document.getElementById('reg-password').value;
+            const cpw = document.getElementById('reg-confirm-password').value;
+            if (!cpw) return setFieldState('reg-confirm-password', 'reg-confirm-hint', 'none', '');
+            if (cpw !== pw) return setFieldState('reg-confirm-password', 'reg-confirm-hint', 'error', '密碼不一致');
+            setFieldState('reg-confirm-password', 'reg-confirm-hint', 'success', '密碼一致 ✓');
+        }
+
+        // ==================== Loading 狀態 ====================
+        function setButtonLoading(btnId, textId, iconId, loading, originalText) {
+            const btn = document.getElementById(btnId);
+            const text = document.getElementById(textId);
+            const icon = document.getElementById(iconId);
+
+            if (loading) {
+                btn.disabled = true;
+                text.textContent = '處理中';
+                icon.outerHTML = '<span id="' + iconId + '" class="btn-spinner"></span>';
+            } else {
+                btn.disabled = false;
+                text.textContent = originalText;
+                const spinner = document.getElementById(iconId);
+                spinner.outerHTML = '<span id="' + iconId + '" class="material-symbols-outlined font-black">arrow_forward</span>';
+            }
+        }
+
+        // ==================== 成功動畫 ====================
+        function showSuccess(message) {
+            return new Promise(resolve => {
+                const overlay = document.createElement('div');
+                overlay.className = 'success-overlay';
+                overlay.innerHTML = `
+                    <div class="success-box">
+                        <span class="material-symbols-outlined text-5xl text-green-600 mb-2">check_circle</span>
+                        <p class="text-xl font-bold text-black">${message}</p>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+                setTimeout(() => {
+                    overlay.remove();
+                    resolve();
+                }, 800);
+            });
+        }
+
+        // ==================== 登入邏輯 ====================
         async function handleLogin() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const btn = document.getElementById('submit-btn');
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
 
             if (!email || !password) {
                 ModalSystem.alert('缺漏資料', '請輸入電子郵件與密碼！');
                 return;
             }
 
-            // 更新按鈕狀態
-            document.getElementById('submit-btn-text').innerHTML = '處理中...';
-            btn.disabled = true;
+            setButtonLoading('login-btn', 'login-btn-text', 'login-btn-icon', true);
 
             try {
                 await apiService.initialize();
-
                 const result = await apiService.loginWithEmailPassword(email, password);
 
                 if (result.success) {
@@ -137,7 +532,7 @@
                     localStorage.setItem('userConsent', 'true');
                     localStorage.setItem('loginTime', new Date().toISOString());
 
-                    console.log('登入成功:', result.user);
+                    await showSuccess('登入成功！');
                     window.location.href = 'index.html';
                 } else {
                     throw new Error(result.error?.message || '登入失敗');
@@ -150,12 +545,134 @@
                 if (msg.includes('Email not confirmed')) msg = '您的 Email 尚未驗證，請前往信箱點擊驗證連結。';
 
                 ModalSystem.alert('登入失敗', msg);
-
-                // 恢復按鈕
-                document.getElementById('submit-btn-text').innerHTML = '登入';
-                btn.disabled = false;
+                setButtonLoading('login-btn', 'login-btn-text', 'login-btn-icon', false, '登入');
             }
         }
+
+        // ==================== 忘記密碼 ====================
+        async function handleForgotPassword() {
+            const email = document.getElementById('login-email').value.trim();
+
+            if (!email) {
+                ModalSystem.alert('請先輸入 Email', '請在 Email 欄位輸入你的電子郵件，再點擊忘記密碼。');
+                return;
+            }
+
+            if (!emailRegex.test(email)) {
+                ModalSystem.alert('Email 格式錯誤', '請輸入正確的電子郵件格式。');
+                return;
+            }
+
+            try {
+                await apiService.initialize();
+                const { error } = await apiService.supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/reset-password.html')
+                });
+
+                if (error) throw error;
+
+                ModalSystem.alert('已寄出重設信件', `密碼重設連結已寄到 ${email}，請前往信箱點擊連結。`);
+            } catch (error) {
+                console.error('忘記密碼錯誤:', error);
+                ModalSystem.alert('發送失敗', '無法發送重設信件，請稍後再試。');
+            }
+        }
+
+        // ==================== 註冊邏輯 ====================
+        async function handleRegister() {
+            const nickname = document.getElementById('reg-nickname').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            const confirmPassword = document.getElementById('reg-confirm-password').value.trim();
+            const consent = document.getElementById('consent').checked;
+
+            if (!nickname) {
+                ModalSystem.alert('缺漏資料', '請輸入你的姓名或暱稱！');
+                return;
+            }
+            if (!email) {
+                ModalSystem.alert('缺漏資料', '請輸入電子郵件！');
+                return;
+            }
+            if (!password) {
+                ModalSystem.alert('缺漏資料', '請輸入密碼！');
+                return;
+            }
+            if (password.length < 6) {
+                ModalSystem.alert('密碼太短', '密碼至少需要 6 個字元！');
+                return;
+            }
+            if (password !== confirmPassword) {
+                ModalSystem.alert('密碼不一致', '兩次輸入的密碼不相同，請重新確認！');
+                return;
+            }
+            if (!consent) {
+                ModalSystem.alert('需同意條款', '請勾選同意收集資料以繼續使用！');
+                return;
+            }
+
+            setButtonLoading('reg-btn', 'reg-btn-text', 'reg-btn-icon', true);
+
+            try {
+                await apiService.initialize();
+
+                // 白名單檢查
+                if (typeof STUDENT_EMAILS !== 'undefined' && Array.isArray(STUDENT_EMAILS)) {
+                    if (!STUDENT_EMAILS.includes(email)) {
+                        ModalSystem.alert('存取被拒', '抱歉，你不是本課程的學員，無法註冊。');
+                        setButtonLoading('reg-btn', 'reg-btn-text', 'reg-btn-icon', false, '註冊並開始使用');
+                        return;
+                    }
+                }
+
+                const result = await apiService.registerWithEmailPassword(email, password, nickname);
+
+                if (result.success) {
+                    localStorage.setItem('userNickname', nickname);
+                    localStorage.setItem('userConsent', 'true');
+                    localStorage.setItem('loginTime', new Date().toISOString());
+
+                    await showSuccess('註冊成功！');
+                    window.location.href = 'index.html';
+                } else {
+                    throw new Error(result.error?.message || '註冊失敗');
+                }
+            } catch (error) {
+                console.error('註冊錯誤:', error);
+
+                let msg = error.message;
+                if (msg.includes('Password should be')) msg = '密碼長度至少需要 6 個字元';
+                if (msg.includes('Invalid email')) msg = 'Email 格式不正確';
+                if (msg.includes('already registered') || msg.includes('already been registered')) msg = '此 Email 已經註冊過了，請切換到登入。';
+                if (msg.includes('Invalid login credentials')) msg = '此 Email 已經註冊過了，請切換到登入。';
+
+                const alertTitle = msg.includes('驗證') || msg.includes('信箱') ? '請完成 Email 驗證' : '註冊失敗';
+                ModalSystem.alert(alertTitle, msg);
+                setButtonLoading('reg-btn', 'reg-btn-text', 'reg-btn-icon', false, '註冊並開始使用');
+            }
+        }
+
+        // ==================== 初始化 ====================
+        window.addEventListener('DOMContentLoaded', function () {
+            // URL 參數處理
+            const urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.get('error') === 'unauthorized') {
+                ModalSystem.alert('存取被拒', '抱歉，你不是本課程的學員，無法注冊或登入。若有問題，可聯係 ceceloveye@gmail.com');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            // 如果 URL 帶 tab=register 直接切到註冊
+            if (urlParams.get('tab') === 'register') {
+                switchTab('register');
+            }
+
+            // 預填資料
+            const nickname = localStorage.getItem('userNickname');
+            const consent = localStorage.getItem('userConsent');
+            if (nickname) document.getElementById('reg-nickname').value = nickname;
+            if (consent === 'true') document.getElementById('consent').checked = true;
+        });
     </script>
     <!-- Service Worker Registration -->
     <script>

@@ -248,21 +248,26 @@
                     if (btn) btn.innerHTML = '登出中...';
 
                     try {
-                        // 使用 apiService 的登出方法
+                        // 使用 apiService 的登出方法（內部會清除 auth token 與相關 localStorage）
                         if (apiService) {
                             await apiService.logout();
                         } else {
-                            localStorage.clear();
+                            // fallback：只清除已知的 key，不用 localStorage.clear()
+                            localStorage.removeItem('userNickname');
+                            localStorage.removeItem('userConsent');
+                            localStorage.removeItem('loginTime');
+                            localStorage.removeItem('user_device_id');
+                            localStorage.removeItem(TenantResolver.getAuthTokenKey());
                             sessionStorage.clear();
                         }
 
                         ModalSystem.toast('已登出', 'success');
                         setTimeout(() => {
-                            window.location.href = 'login.html';
+                            window.location.href = 'login-page.html';
                         }, 500);
                     } catch (e) {
                         console.error('Logout failed:', e);
-                        window.location.href = 'login.html';
+                        window.location.href = 'login-page.html';
                     }
                 },
                 null,
@@ -280,11 +285,17 @@
                     ModalSystem.confirm(
                         '最後確認',
                         '這項操作無法復原。真的要刪除嗎？',
-                        () => {
-                            localStorage.clear();
+                        async () => {
+                            // 清除已知 key（不用 localStorage.clear 避免影響其他資料）
+                            localStorage.removeItem('userNickname');
+                            localStorage.removeItem('userConsent');
+                            localStorage.removeItem('loginTime');
+                            localStorage.removeItem('user_device_id');
+                            localStorage.removeItem(TenantResolver.getAuthTokenKey());
+                            sessionStorage.clear();
                             // TODO: API Call to delete user
                             ModalSystem.alert('帳號已刪除', `感謝您使用 ${OrgBranding.orgName}。`, () => {
-                                window.location.href = 'login.html';
+                                window.location.href = 'login-page.html';
                             });
                         },
                         null,

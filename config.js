@@ -232,7 +232,14 @@ window._sharedSupabaseClient = null;
 
 function getSharedSupabaseClient() {
     if (!window._sharedSupabaseClient && typeof supabase !== 'undefined') {
-        window._sharedSupabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        window._sharedSupabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                storageKey: TenantResolver.getAuthTokenKey(),
+                storage: window.localStorage
+            }
+        });
     }
     return window._sharedSupabaseClient;
 }
