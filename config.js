@@ -201,7 +201,7 @@ const OrgBranding = {
             name: this.orgName || '考試系統',
             short_name: this.shortName || '考試',
             description: this.description || '企業證照考試練習平台',
-            start_url: '/index.html',
+            start_url: './',
             display: 'standalone',
             orientation: 'portrait',
             background_color: '#ffffff',

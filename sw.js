@@ -1,19 +1,20 @@
 const CACHE_NAME = 'exam-system-v3';
 
-// Only cache essential app shell files
+// Only cache essential app shell files (use relative paths for subdirectory deployment)
+const BASE = self.registration.scope;
 const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/login.html',
-  '/login-page.html',
-  '/design-tokens.css',
-  '/css/vibe-style.css',
-  '/js/theme-config.js',
-  '/js/components.js',
-  '/js/modal-system.js',
-  '/js/components/bottom-nav.js',
-  '/favicon.ico'
-];
+  '',
+  'index.html',
+  'login.html',
+  'login-page.html',
+  'design-tokens.css',
+  'css/vibe-style.css',
+  'js/theme-config.js',
+  'js/components.js',
+  'js/modal-system.js',
+  'js/components/bottom-nav.js',
+  'favicon.ico'
+].map(path => BASE + path);
 
 // Install: cache app shell
 self.addEventListener('install', (event) => {

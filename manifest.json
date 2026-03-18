@@ -2,7 +2,7 @@
   "name": "考試神器",
   "short_name": "考試神器",
   "description": "智慧考試練習平台，隨時隨地刷題備考",
-  "start_url": "/index.html",
+  "start_url": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
