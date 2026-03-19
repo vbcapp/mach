@@ -338,7 +338,7 @@
                         <p class="text-xs text-gray-500">啟用後，所有學員都可存取</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="chapter-batch-is-public" onchange="toggleChapterBatchTagsSection()"
+                        <input type="checkbox" id="chapter-batch-is-public" onchange="toggleChapterBatchPublic()"
                             class="sr-only peer">
                         <div
                             class="w-12 h-6 bg-gray-300 border-2 border-black peer-checked:bg-green-500 relative transition-colors">
@@ -348,9 +348,18 @@
                         </div>
                     </label>
                 </div>
-                <!-- 標籤選擇 -->
-                <div id="chapter-batch-tags-section">
-                    <label class="text-xs font-black uppercase tracking-widest mb-2 block">開放給以下標籤的學員</label>
+                <!-- 操作類型 + 標籤選擇 -->
+                <div id="chapter-batch-tags-section" class="space-y-4">
+                    <div class="flex gap-2">
+                        <button onclick="setChapterBatchMode('add')" id="chapter-batch-add-mode"
+                            class="flex-1 bg-primary border-4 border-black py-2 font-black text-sm">
+                            新增標籤
+                        </button>
+                        <button onclick="setChapterBatchMode('remove')" id="chapter-batch-remove-mode"
+                            class="flex-1 bg-white border-4 border-black py-2 font-black text-sm">
+                            移除標籤
+                        </button>
+                    </div>
                     <div id="chapter-batch-tags-options" class="space-y-2 max-h-48 overflow-y-auto"></div>
                 </div>
             </div>
@@ -443,6 +452,7 @@
         let selectedChapterTags = new Set();
         let selectedChapterIds = new Set();
         let chapterBatchTags = new Set();
+        let chapterBatchMode = 'add';
 
         // 學員編輯狀態
         let editingUserId = null;
@@ -1021,10 +1031,12 @@
             if (selectedChapterIds.size === 0) return;
 
             chapterBatchTags = new Set();
+            chapterBatchMode = 'add';
             document.getElementById('chapter-batch-is-public').checked = false;
+            document.getElementById('chapter-batch-tags-section').classList.remove('hidden');
 
             document.getElementById('chapter-batch-count').textContent = `已選取 ${selectedChapterIds.size} 個章節`;
-            toggleChapterBatchTagsSection();
+            setChapterBatchMode('add');
             renderChapterBatchTagOptions();
             document.getElementById('chapter-batch-modal').classList.remove('hidden');
         }
@@ -1033,15 +1045,36 @@
             document.getElementById('chapter-batch-modal').classList.add('hidden');
         }
 
-        function toggleChapterBatchTagsSection() {
+        function toggleChapterBatchPublic() {
             const isPublic = document.getElementById('chapter-batch-is-public').checked;
             const section = document.getElementById('chapter-batch-tags-section');
-
             if (isPublic) {
                 section.classList.add('hidden');
             } else {
                 section.classList.remove('hidden');
             }
+        }
+
+        function setChapterBatchMode(mode) {
+            chapterBatchMode = mode;
+            chapterBatchTags = new Set();
+
+            const addBtn = document.getElementById('chapter-batch-add-mode');
+            const removeBtn = document.getElementById('chapter-batch-remove-mode');
+
+            if (mode === 'add') {
+                addBtn.classList.add('bg-primary');
+                addBtn.classList.remove('bg-white');
+                removeBtn.classList.remove('bg-primary');
+                removeBtn.classList.add('bg-white');
+            } else {
+                removeBtn.classList.add('bg-primary');
+                removeBtn.classList.remove('bg-white');
+                addBtn.classList.remove('bg-primary');
+                addBtn.classList.add('bg-white');
+            }
+
+            renderChapterBatchTagOptions();
         }
 
         function renderChapterBatchTagOptions() {
@@ -1072,25 +1105,44 @@
 
         async function executeChapterBatchOperation() {
             const isPublic = document.getElementById('chapter-batch-is-public').checked;
-            const allowedTags = isPublic ? [] : Array.from(chapterBatchTags);
+            const accessIds = Array.from(selectedChapterIds);
 
-            if (!isPublic && allowedTags.length === 0) {
-                ModalSystem.alert('請選擇標籤', '請選擇要開放的標籤，或啟用「公開給所有學員」');
+            let result;
+            if (isPublic) {
+                result = await apiService.batchUpdateChapterAccess(accessIds, {
+                    is_public: true,
+                    allowed_tags: []
+                });
+                if (result.success) {
+                    closeChapterBatchModal();
+                    selectedChapterIds.clear();
+                    updateChapterBatchButton();
+                    ModalSystem.toast(`已將 ${result.updatedCount} 個章節設為公開`, 'success');
+                    await loadChapterAccess();
+                    updateChapterCounts();
+                } else {
+                    ModalSystem.alert('操作失敗', result.error?.message);
+                }
                 return;
             }
 
-            const accessIds = Array.from(selectedChapterIds);
+            if (chapterBatchTags.size === 0) {
+                ModalSystem.alert('請選擇標籤', '請選擇要操作的標籤');
+                return;
+            }
 
-            const result = await apiService.batchUpdateChapterAccess(accessIds, {
-                is_public: isPublic,
-                allowed_tags: allowedTags
-            });
+            const tags = Array.from(chapterBatchTags);
+            if (chapterBatchMode === 'add') {
+                result = await apiService.addTagsToChapters(accessIds, tags);
+            } else {
+                result = await apiService.removeTagsFromChapters(accessIds, tags);
+            }
 
             if (result.success) {
                 closeChapterBatchModal();
                 selectedChapterIds.clear();
                 updateChapterBatchButton();
-                ModalSystem.toast(`已更新 ${result.updatedCount} 個章節的權限`, 'success');
+                ModalSystem.toast(`已${chapterBatchMode === 'add' ? '新增' : '移除'}標籤給 ${result.updatedCount} 個章節`, 'success');
                 await loadChapterAccess();
                 updateChapterCounts();
             } else {

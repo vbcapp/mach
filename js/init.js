@@ -429,7 +429,7 @@ function renderCards(cards, container) {
         return;
     }
 
-    container.innerHTML = cards.map(card => renderCardItem(card)).join('');
+    container.innerHTML = cards.map((card, index) => renderCardItem(card, index + 1)).join('');
 
     // [Navigation] 儲存當前顯示的卡片 ID 列表，供詳情頁滑動切換使用
     sessionStorage.setItem('currentCardIds', JSON.stringify(cards.map(c => c.id)));
@@ -444,7 +444,7 @@ function renderCards(cards, container) {
 /**
  * 渲染單張卡片
  */
-function renderCardItem(card) {
+function renderCardItem(card, displayIndex) {
     const description = card.description
         ? card.description.substring(0, 40) + (card.description.length > 40 ? '...' : '')
         : '';
@@ -500,7 +500,7 @@ function renderCardItem(card) {
     // 頂部標籤：如果是熟練卡，顯示 已精通
     const topTag = isMastered
         ? `<span class="vibe-badge-mastery">已精通</span>`
-        : `<span class="vibe-badge">${card.question_no || '-'}</span>`;
+        : `<span class="vibe-badge">${displayIndex ?? card.question_no ?? '-'}</span>`;
 
     // 章節名稱最多顯示 5 個字
     const chapterName = card.chapter || 'General';

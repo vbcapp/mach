@@ -2176,6 +2176,80 @@ class ApiService {
     }
 
     /**
+     * 批量新增標籤到多個章節的 allowed_tags
+     * @param {string[]} accessIds - 章節權限 ID 陣列
+     * @param {string[]} tagsToAdd - 要新增的標籤
+     */
+    async addTagsToChapters(accessIds, tagsToAdd) {
+        try {
+            const { data: chapters, error: fetchError } = await this.supabase
+                .from('chapter_access')
+                .select('id, allowed_tags')
+                .in('id', accessIds);
+
+            if (fetchError) throw fetchError;
+
+            const updates = chapters.map(chapter => {
+                const currentTags = chapter.allowed_tags || [];
+                const mergedTags = [...new Set([...currentTags, ...tagsToAdd])];
+                return {
+                    id: chapter.id,
+                    allowed_tags: mergedTags,
+                    updated_at: new Date().toISOString()
+                };
+            });
+
+            for (const u of updates) {
+                const { error: updateError } = await this.supabase
+                    .from('chapter_access')
+                    .update({ allowed_tags: u.allowed_tags, updated_at: u.updated_at })
+                    .eq('id', u.id);
+                if (updateError) throw updateError;
+            }
+            return { success: true, updatedCount: updates.length };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
+     * 批量移除多個章節的特定標籤
+     * @param {string[]} accessIds - 章節權限 ID 陣列
+     * @param {string[]} tagsToRemove - 要移除的標籤
+     */
+    async removeTagsFromChapters(accessIds, tagsToRemove) {
+        try {
+            const { data: chapters, error: fetchError } = await this.supabase
+                .from('chapter_access')
+                .select('id, allowed_tags')
+                .in('id', accessIds);
+
+            if (fetchError) throw fetchError;
+
+            const updates = chapters.map(chapter => {
+                const currentTags = chapter.allowed_tags || [];
+                const filteredTags = currentTags.filter(t => !tagsToRemove.includes(t));
+                return {
+                    id: chapter.id,
+                    allowed_tags: filteredTags,
+                    updated_at: new Date().toISOString()
+                };
+            });
+
+            for (const u of updates) {
+                const { error: updateError } = await this.supabase
+                    .from('chapter_access')
+                    .update({ allowed_tags: u.allowed_tags, updated_at: u.updated_at })
+                    .eq('id', u.id);
+                if (updateError) throw updateError;
+            }
+            return { success: true, updatedCount: updates.length };
+        } catch (error) {
+            return this._handleError(error);
+        }
+    }
+
+    /**
      * 批量更新章節的 allowed_tags
      * @param {string} subject - 大科目
      * @param {string} chapter - 章節
