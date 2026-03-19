@@ -177,8 +177,8 @@ const OrgBranding = {
         const grid = container.querySelector('#social-links-grid');
         if (!grid) return;
 
-        // 動態調整 grid 欄數
-        grid.className = `grid grid-cols-${links.length} gap-3`;
+        // 固定 4 欄，icon 大小不隨數量變化
+        grid.className = 'grid grid-cols-4 gap-3';
         grid.innerHTML = '';
 
         links.forEach(item => {
