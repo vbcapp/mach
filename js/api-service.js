@@ -2752,7 +2752,7 @@ class ApiService {
             // 1. 取得所有題目的 original_subject, original_chapter（用原始分類統計）
             const { data: questionsData, error: qError } = await this.supabase
                 .from('questions')
-                .select('id, original_subject, original_chapter, subject_no, chapter_no');
+                .select('id, subject, chapter, original_subject, original_chapter, subject_no, chapter_no');
 
             if (qError) throw qError;
 
@@ -2773,8 +2773,8 @@ class ApiService {
 
             questionsData?.forEach(q => {
                 // 使用原始分類（fallback 到當前分類）
-                const subject = q.original_subject || '未分類';
-                const chapter = q.original_chapter || '未分類';
+                const subject = q.original_subject || q.subject || '未分類';
+                const chapter = q.original_chapter || q.chapter || '未分類';
                 const key = `${subject}|||${chapter}`;
 
                 if (!chapterMap.has(key)) {
