@@ -37,6 +37,7 @@ const OrgBranding = {
     criticalHitEnabled: true,
     criticalHitMultipliers: [2, 3, 4, 5, 10],
     levelRequirements: null,
+    shuffleOptions: true,
 
     _loaded: false,
     _fetchPromise: null,
@@ -74,6 +75,7 @@ const OrgBranding = {
                     this.criticalHitMultipliers = Array.isArray(data.critical_hit_multipliers) ? data.critical_hit_multipliers : [2, 3, 4, 5, 10];
                     this.levelRequirements = data.level_requirements || null;
                     this.socialLinks = Array.isArray(data.social_links) ? data.social_links : [];
+                    this.shuffleOptions = (data.shuffle_options != null) ? data.shuffle_options : true;
 
                     this._loaded = true;
                 }

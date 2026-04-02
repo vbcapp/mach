@@ -342,10 +342,11 @@
 
             questionText.textContent = question.question;
 
-            // 若尚未產生洗牌順序，則產生並存起來（每題只洗一次，重新渲染不重洗）
+            // 若尚未產生洗牌順序，則依設定決定是否洗牌（每題只處理一次，重新渲染不重做）
             if (!question.shuffledOptions) {
                 const indices = question.options.map((_, i) => i); // [0,1,2,3]
-                const shuffledIndices = shuffleArray(indices);
+                const shouldShuffle = typeof OrgBranding !== 'undefined' ? OrgBranding.shuffleOptions : true;
+                const shuffledIndices = shouldShuffle ? shuffleArray(indices) : indices;
                 question.shuffledOptions = shuffledIndices.map(i => question.options[i]);
                 // correctAnswer 是 1-based，轉成 0-based 找在 shuffledIndices 中的位置
                 const originalCorrectIdx = question.correctAnswer - 1;
