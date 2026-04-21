@@ -690,36 +690,63 @@ GET /users/550e8400-e29b-41d4-a716-446655440000/export
 }
 ```
 
-#### 3. 匯入卡片資料 (JSON)
+#### 3. 匯入題目資料 (JSON)
 
-**端點:** `POST /users/:user_id/import`
+對應前端頁面：[import.html](../import.html)
+對應資料表：`public.questions`
 
 **請求 Body:**
+直接傳一個**題目物件的陣列**（不是 `{ "flashcards": [...] }` 包裝）。
+
 ```json
-{
-  "flashcards": [
-    {
-      "category": "Backend",
-      "english_term": "RESTful API",
-      "chinese_translation": "表現層狀態轉換 API",
-      "abbreviation": "REST",
-      "description": "...",
-      "analogy": "..."
-    }
-  ]
-}
+[
+  {
+    "subject_no": 1,
+    "subject": "勞動基準法",
+    "chapter_no": 1,
+    "chapter": "第一章 總則",
+    "question_no": 1,
+    "question": "勞動基準法的主管機關為何？",
+    "option_a": "勞動部",
+    "option_b": "經濟部",
+    "option_c": "內政部",
+    "option_d": "法務部",
+    "correct_answer": "勞動部",
+    "question_type": "single",
+    "explanation": "依勞動基準法第 4 條規定...",
+    "difficulty": "medium",
+    "question_style": "情境題"
+  }
+]
 ```
+
+**欄位說明：**
+
+| 欄位 | 型別 | 必填 | 說明 |
+|------|------|------|------|
+| `question` | string | ✅ | 題目內容（唯一必填欄位） |
+| `subject_no` | int | - | 科目編號 |
+| `subject` | string | - | 科目名稱 |
+| `chapter_no` | int | - | 章節編號 |
+| `chapter` | string | - | 章節名稱 |
+| `question_no` | int | - | 題號 |
+| `option_a` ~ `option_d` | string | - | 四個選項（字串） |
+| `correct_answer` | string | - | 正確答案（字串，非陣列） |
+| `question_type` | string | - | 題型，目前使用 `single`（單選）／`choice` |
+| `explanation` | string | - | 題目詳解 |
+| `difficulty` | string | - | 難度：`easy` / `medium` / `hard` |
+| `question_style` | string | - | 題型風格：`情境題` / `反面題` / `比較題` / `綜合題` |
+
+**匯入流程行為：**
+- 前端會自動剝除 `id`、`user_id`、`created_at`、`updated_at` 等欄位，讓資料庫自動生成
+- 空字串 / `null` / `undefined` 的欄位會被過濾，避免覆蓋資料庫預設值
+- 呼叫 `apiService.createQuestions(questionsToImport)` 批次寫入
 
 **回應格式:**
 ```json
 {
   "success": true,
-  "message": "已成功匯入 5 張卡片",
-  "data": {
-    "imported_count": 5,
-    "skipped_count": 2,
-    "failed_count": 0
-  }
+  "count": 5
 }
 ```
 
