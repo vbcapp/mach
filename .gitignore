@@ -2,3 +2,9 @@ node_modules/
 .DS_Store
 .env
 **/nul
+
+# Ken 老師 Excel 題庫來源與產出（避免大量題幹進 git）
+Kens-excel-to-json/input/*.xlsx
+Kens-excel-to-json/output/*.json
+Kens-excel-to-json/output/*.xlsx
+Kens-excel-to-json/__pycache__/
